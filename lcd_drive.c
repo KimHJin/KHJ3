@@ -1,44 +1,37 @@
 #include "lcd_driver.h"
 
-// 원복 합니다.
-
 #define NUMBER_DISP_0(position) NUMBER_CLEAR(position);\
                                 NUMBER_0(position);
 
 #define NUMBER_DISP_1(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
+                                NUMBER_1(position);
                                 
 #define NUMBER_DISP_2(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
+                                NUMBER_2(position);
                                 
 #define NUMBER_DISP_3(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
+                                NUMBER_3(position);
 
 #define NUMBER_DISP_4(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
-                                
-                                
+                                NUMBER_4(position);
+                                            
 #define NUMBER_DISP_5(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
-
+                                NUMBER_5(position);
 
 #define NUMBER_DISP_6(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
-
+                                NUMBER_6(position);
 
 #define NUMBER_DISP_7(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);     
+                                NUMBER_7(position);     
                                 
 #define NUMBER_DISP_8(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
+                                NUMBER_8(position);
                                 
 #define NUMBER_DISP_9(position) NUMBER_CLEAR(position);\
-                                NUMBER_0(position);
+                                NUMBER_9(position);
                                 
           
                                 
-                                
-
 void LCD_Display_init()
 {
   CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);
