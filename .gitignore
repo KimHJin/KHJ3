@@ -8,6 +8,7 @@
 *.ewt
 
 *.o
+**/Debug/
 
 # IAR Debugger files
 *.ewd

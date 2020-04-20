@@ -75,9 +75,9 @@ VOID IWON_TEMP_TASK::Init(VOID) {
 	TTtime = startTime;
 	MGtime = startTime;
 	
-	VrefintAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefvddAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefbatAvg = new IWON_TEMP_VAVG(5, 5);
+        VrefintAvg = new IWON_TEMP_VAVG(5, 2);
+	VrefvddAvg = new IWON_TEMP_VAVG(5, 2);
+	VrefbatAvg = new IWON_TEMP_VAVG(5, 2);
 	VrefntcAvg = new IWON_TEMP_VAVG(10, 5);
 	VreftpcAvg = new IWON_TEMP_VAVG(15);	
 	
