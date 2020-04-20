@@ -335,6 +335,8 @@ int main( void )
 						  tempValueDisplay((int16_t)TEMP);
                                                   
 						   memNumber_p++;
+                                                   
+                                                   if(memNumber_p > 32) memNumber_p = 1;
 						  
 						  __EEPROM->memTempData[memNumber_p] = TEMP;    // save Temp
 						  
@@ -392,11 +394,13 @@ int main( void )
 					  tempValueDisplay((int16_t)TEMP);
                                           
 					   memNumber_p++;
-							  
+					
+                                           if(memNumber_p > 32) memNumber_p = 1;
+                                           
 					   __EEPROM->memTempData[memNumber_p] = TEMP;    // save Temp
 							  
 					   memNumberDisplay(memNumber_p); 
-						memTempDataDisplay(memNumber_p, __EEPROM->memTempData[memNumber_p]);
+				           memTempDataDisplay(memNumber_p, __EEPROM->memTempData[memNumber_p]);
                                           
                                           
 					  Beep(850);
