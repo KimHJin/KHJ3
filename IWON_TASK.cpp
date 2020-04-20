@@ -78,8 +78,8 @@ VOID IWON_TEMP_TASK::Init(VOID) {
 	VrefintAvg = new IWON_TEMP_VAVG(5, 5);
 	VrefvddAvg = new IWON_TEMP_VAVG(5, 5);
 	VrefbatAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefntcAvg = new IWON_TEMP_VAVG(2);
-	VreftpcAvg = new IWON_TEMP_VAVG(2);	
+	VrefntcAvg = new IWON_TEMP_VAVG(10, 5);
+	VreftpcAvg = new IWON_TEMP_VAVG(15);	
 	
   	Init_Clock();
 	Init_TIM4();
@@ -202,34 +202,36 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 			
 			// constants for the thermopile calculation
 			const float k = 0.004313f; 
-			//const float k = 0.004313f + 0.0002; 	// 값을 높이면 측정온도가 내려간다. 0.0001 당 0.7~0.8도
+			//const float k = 0.004313f + 0.0095; 	// 값을 높이면 측정온도가 내려간다. 0.0001 당 0.7~0.8도 (단, 높은 온도쪽이 많이 떨어진다)
+
 			// 값을 키우면 TOBJ 온도가 올라간다.
 			float delta = 2.468f + 0.150f + (float)VADJ1 / 1000.f;
 
 			
-			AMB_TEMP = 280;
+			//AMB_TEMP = 280;
 			
 			float ambtemp = (float)AMB_TEMP / 10.f;
 			//float reftemp = 23.f;       // 값을 낮추면 온도가 올라간다.
 			//reftemp += 32.0f - ambtemp; // 즉, 이값을 높이면 온도가 올라간다.
-			float reftemp = 23.f;
+			float reftemp = 25.f ;
+			//reftemp = ambtemp;
 
 			// 값을 높이면 TOBJ 온도가 내려간다.
 			// 값을 높이면 낮은 쪽의 온도차가 높은쪽의 온도차 감소량보다 많이 감소한다.
 			float shiftv = 0.81f + (float)VADJ2 / 100.f;
 			float comp = k * (pow(ambtemp,4.f-delta)-pow(reftemp,4.f-delta));  // equivalent thermopile V for amb temp
 
-			VreftpcmV = 2250;	// 72.0 oC
+			//VreftpcmV = 2250;	// 72.0 oC
 			//VreftpcmV = 2185;	// 70.0 oC
 			//VreftpcmV = 2100;	// 68.0 oC
 			//VreftpcmV = 1950;	// 62.2 oC
 
-			VreftpcmV = 1071;	// 30.8 oC
+			//VreftpcmV = 1071;	// 30.8 oC
 			
 			
 			float v2 = (float)VreftpcmV / 1000.f + comp - shiftv;
 			float objtemp = pow((v2+k*pow(ambtemp,4.f-delta))/k, 1.f/(4.f-delta)); // object temp                    
-			INT16 T_OBJ = (INT16)(objtemp * 10.f) - TADJ0;
+			INT16 T_OBJ = (INT16)(objtemp * 10.f) - 59 + TADJ0 ;
 			
 			INT16 BB = GetTSUMB();						
 			//printf("BB=%d\r\n", BB);			
@@ -240,7 +242,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 			}			
 			OBJ_TEMP = AddTSUMB(T_OBJ);
 			//printf("BB=%d\r\n", BB);
-			OBJ_TEMP = T_OBJ;
+			//OBJ_TEMP = T_OBJ;
 			
 			
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
@@ -254,9 +256,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 			} else {
 				BDY_TEMP = OBJ_TEMP + (INT16)TBL;
 				//printf("BDY_TEMP %d.%d\r\n", BDY_TEMP/10, BDY_TEMP%10);
-			}	
-			
-			BDY_TEMP = OBJ_TEMP;
+			}				
 		}
 
 		MGtime = GetTimeOutStartTime();
@@ -380,7 +380,7 @@ VOID IWON_TEMP_TASK::Set_AdjValue(INT32 ADJV) {
 
 
 BOOL IWON_TEMP_TASK::NeedPowerDown(VOID) {
-  	return (powerDown_msec>1500000);
+  	return (powerDown_msec>15000);
 }
 VOID IWON_TEMP_TASK::ClearPowerDown(VOID) {
   	powerDown_msec = 0;

@@ -268,7 +268,7 @@ int main( void )
   IWonTask = new IWON_TEMP_TASK(10);	// 온도를 10개 합산해서 평균낸다.
 
   //읽어서...
-  IWonTask->Set_AdjValue(-15);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  IWonTask->Set_AdjValue(0);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
  
   Beep();
 
@@ -309,6 +309,29 @@ int main( void )
 	  else
 	  if(Measuring) {	// 온도 측정
 		  INT32 TEMP = IWonTask->Get_AMB_TEMP();	// -1 : LOW , -2 : HIGH
+		  
+		  if(TEMP < 0 || 500 < TEMP) { // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+				displayRGB(RED);
+				//displayERR();
+				
+				tempValueDisplay((int16_t)TEMP);
+				
+				MeasredTemp = 0;
+				
+				Measuring = false;
+				Measured = true;
+				MeasredCount1 = 0;
+				MeasredCount2 = 0;				
+				
+				delay_ms(50);
+				Beep(1000);
+				delay_ms(40);
+				Beep(1000);
+				delay_ms(40);	
+				Beep(1000);
+				delay_ms(40);	
+				
+		  } else
 		  if(TEMP>0) {
 			if(measureMode_p==1) {
 			  	// 인체 측정
@@ -336,7 +359,7 @@ int main( void )
                                                   
 						   memNumber_p++;
                                                    
-                                                   if(memNumber_p > 32) memNumber_p = 1;
+                           if(memNumber_p > 32) memNumber_p = 1;
 						  
 						  __EEPROM->memTempData[memNumber_p] = TEMP;    // save Temp
 						  
