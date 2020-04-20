@@ -377,8 +377,9 @@ int main( void )
   IWonTask = new IWON_TEMP_TASK(10);	// 온도를 10개 합산해서 평균낸다.
 
   //읽어서...
-  // IWonTask->Set_AdjValue(-93);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-  IWonTask->Set_AdjValue(-6);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  IWonTask->Set_AdjValue(-93);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  //IWonTask->Set_AdjValue(-15);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  //IWonTask->Set_AdjValue(-50);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
   
 
   
@@ -458,7 +459,7 @@ int main( void )
 			  	// 인체 측정
 				TEMP = IWonTask->Get_BDY_TEMP();
                                 
-				if(TEMP<334) {                  // LOW  Less Than 33.4 C
+				if(TEMP!=-2 && TEMP<334) {                  // LOW  Less Than 33.4 C
                                   
                                        delay_ms(2000);
                                        MeasredTemp = TEMP;
@@ -472,12 +473,9 @@ int main( void )
                                         Measuring = false;
 				        Measured = true;
 				        MeasredCount1 = 0;
-					MeasredCount2 = 0;
-
-					TEMP = 0;
-                                        
+					MeasredCount2 = 0;                                        
 				} else
-				if(TEMP>425) {                  // HIGH Greater Than 42.5 C
+				if(TEMP==-2 || TEMP>425) {                  // HIGH Greater Than 42.5 C
                                      
                                        delay_ms(2000);
                                   
@@ -492,9 +490,7 @@ int main( void )
                                         Measuring = false;
 				        Measured = true;
 				        MeasredCount1 = 0;
-					MeasredCount2 = 0;
-                                        
-					TEMP = 0;
+					MeasredCount2 = 0;                                        
 				} else {
                              
 					if(MeasredCount1>0 && MeasredCount2<50 && (TEMP-MeasredTemp>2 || TEMP-MeasredTemp<-2)) {
