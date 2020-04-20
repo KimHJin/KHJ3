@@ -374,7 +374,7 @@ int main( void )
   IWonTask = new IWON_TEMP_TASK(10);	// 온도를 10개 합산해서 평균낸다.
 
   //읽어서...
-  IWonTask->Set_AdjValue(-15);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  IWonTask->Set_AdjValue(0);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
   
 
   

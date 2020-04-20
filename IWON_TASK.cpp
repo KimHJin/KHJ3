@@ -383,7 +383,7 @@ VOID IWON_TEMP_TASK::Set_AdjValue(INT32 ADJV) {
 
 
 BOOL IWON_TEMP_TASK::NeedPowerDown(VOID) {
-  	return (powerDown_msec>1500000);
+  	return (powerDown_msec>15000);
 }
 VOID IWON_TEMP_TASK::ClearPowerDown(VOID) {
   	powerDown_msec = 0;
