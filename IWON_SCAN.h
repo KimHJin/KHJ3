@@ -69,8 +69,9 @@ typedef const BYTE *	LPCBYTE;
 #define NTC_MIN -40
 #define NTC_MAX 125
 
+// 사물기준   (체온 계산용)
 #define TB_MIN 281
-#define TB_MAX 389
+#define TB_MAX 425
 
 
 //#define ADC_CONVERT_RATIO	806		/* (3300mV / 0xFFF) x 1000 */
