@@ -1,8 +1,6 @@
 #include "lcd_driver.h"
 
-
-// git test 
-
+// 원복 합니다.
 
 #define NUMBER_DISP_0(position) NUMBER_CLEAR(position);\
                                 NUMBER_0(position);
