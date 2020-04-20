@@ -30,7 +30,7 @@
 #define NUMBER_DISP_9(position) NUMBER_CLEAR(position);\
                                 NUMBER_9(position);
                                 
-          
+int16_t  unitCalc(int16_t temp, int unit);
                                 
 void LCD_Display_init()
 {
@@ -55,16 +55,14 @@ void LCD_Display_init()
   
   LCD_Cmd(ENABLE);
   
-  displayNumber(4,1);
-  displayNumber(7,2);
+  displayNumber(0,1);
+  displayNumber(0,2);
   displayNumber(0,3);
- 
-  displayNumber(3,6);
-  displayNumber(6,7);
-  displayNumber(5,8);
-  
+                                
+  TEMP = 0;
+
   memNumberDisplay(memNumber_p);
-  memTempDataDisplay(memNumber_p, __EEPROM->memTempData[memNumber_p]);
+  memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p-1], tempUnit_p));
   measureModeSet(measureMode_p);
   buzzerCMD(buzzerState_p);
   tempUnitSet(tempUnit_p);
@@ -212,16 +210,21 @@ void displayNumber(int number, int position)
 
 void tempValueDisplay(int16_t value)
 {
-  int thirdNumber = value%10;
-  int secondNumber = value/10%10;
-  int firstNumber =  value/100;
+  int forthNumber  = value%10;
+  int thirdNumber = (value/10)%10;
+  int secondNumber  = (value/100)%10;
+  int firstNumber  = value/1000;
+
+  if(firstNumber == 1) LCD->X9 = 1;
+  else LCD->X9 = 0;
   
-  void delay_ms(int ms);
-  if(firstNumber==0) displayNumber(-1,  1);
-  else displayNumber(firstNumber,  1);
-  
-  displayNumber(secondNumber, 2);
-  displayNumber(thirdNumber,  3);  
+  if(firstNumber == 1 || (firstNumber == 0 && secondNumber != 0)) 
+  {
+    displayNumber(secondNumber,1);
+  }
+  displayNumber(thirdNumber, 2);
+  displayNumber(forthNumber,  3);  
+  LCD->DP1 = 1;
 }
 
 void memNumberDisplay(int number)
@@ -236,13 +239,21 @@ void memNumberDisplay(int number)
 void memTempDataDisplay(int memNumber, int tempData)
 {
   
-  int thirdNumber = (tempData)%10;
-  int secondNumber = (tempData/10) % 10;
-  int firstNumber =  (tempData/10) / 10;
+  int forthNumber  = tempData%10;
+  int thirdNumber = (tempData/10)%10;
+  int secondNumber  = (tempData/100)%10;
+  int firstNumber  = tempData/1000;
+
+  if(firstNumber == 1) LCD->X10 = 1;
+  else LCD->X10 = 0;
   
-  displayNumber(firstNumber, 6);
-  displayNumber(secondNumber, 7);
-  displayNumber(thirdNumber, 8);
+  if(firstNumber == 1 || (firstNumber == 0 && secondNumber != 0)) 
+  {
+    displayNumber(secondNumber,6);
+  }
+  displayNumber(thirdNumber, 7);
+  displayNumber(forthNumber, 8);  
+  LCD->DP2 = 1;
   
 }
 
