@@ -123,23 +123,10 @@ void delay_10us(int us) {
 }
 void delay_ms(int ms) {
   for(int i=0;i<ms;i++) {
-	delay_10us(100);
+	delay_10us(200);
   }
 }
-
 /************************************************************************/
-
-typedef struct {
-  
-  int keyLongPress;
-  int keyShortPress;
- 
-}Switch;
-
-Switch SW_PWR;
-Switch SW_LEFT;
-Switch SW_RIGHT;
-
 
 void Beep(int length)
 {
