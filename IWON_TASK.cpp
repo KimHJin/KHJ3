@@ -86,6 +86,7 @@ VOID IWON_TEMP_TASK::Init(VOID) {
 	Init_ADC();	
 	
 	powerDown_msec = 0;
+        count = 0;
 }
 
 
@@ -373,3 +374,21 @@ VOID IWON_TEMP_TASK::ClearPowerDown(VOID) {
   	powerDown_msec = 0;
 }
 
+VOID IWON_TEMP_TASK::YellowDisp(VOID)
+{
+           count++;            
+            if(count < 5)
+            {
+              GPIO_LOW(GPIOD, GPIO_Pin_4);  //RED
+              
+              GPIO_HIGH(GPIOF, GPIO_Pin_0); //GREEN
+            }
+            else 
+            {
+               GPIO_LOW(GPIOF, GPIO_Pin_0); //GREEN
+               
+               GPIO_HIGH(GPIOD, GPIO_Pin_4);  //RED
+               
+               count = 0;
+            }
+}

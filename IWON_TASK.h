@@ -21,6 +21,10 @@
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
 
+#define GPIO_HIGH(a,b) 		a->ODR|=b
+#define GPIO_LOW(a,b)		a->ODR&=~b
+#define GPIO_TOGGLE(a,b) 	a->ODR^=b
+
 
 class IWON_TEMP_TASK : IWON_TEMP_SCAN{
     
@@ -45,6 +49,8 @@ public:
 	
 	BOOL NeedPowerDown(VOID);
 	VOID ClearPowerDown(VOID);
+        
+        VOID YellowDisp(VOID);
 
 private:  
 	VOID Init(VOID);
@@ -113,6 +119,8 @@ private:
 	INT16 BDY_TEMP;
 	
 	INT16 ADJ_VALUE;
+        
+        int count;
 };
 
 #endif
