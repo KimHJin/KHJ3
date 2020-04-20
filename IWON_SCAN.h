@@ -59,9 +59,9 @@ typedef const BYTE *	LPCBYTE;
 #define CRLF		"\r\n"
 #define CRLFSP		"     \r\n"
 
-#define DEFINED_TADJ0 60
-#define DEFINED_VADJ1 130
-#define DEFINED_VADJ2 127
+#define DEFINED_TADJ0 0
+#define DEFINED_VADJ1 0
+#define DEFINED_VADJ2 0
 
 #define DEFINED_TSUMN 10
 
