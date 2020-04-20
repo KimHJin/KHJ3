@@ -1,6 +1,9 @@
 #include "lcd_driver.h"
 
 
+// git test 
+
+
 #define NUMBER_DISP_0(position) NUMBER_CLEAR(position);\
                                 NUMBER_0(position);
 
