@@ -325,7 +325,7 @@ void specialMode()
         else 
         {
             caliData_p--;
-            if(caliData_p == 0)  PLUS_MINUS = 0;
+            if(caliData_p <= 0)  PLUS_MINUS = 0;
         }
         
         specialModeDisp();
@@ -348,7 +348,7 @@ void specialMode()
         {
           caliData_p--;
           
-           if(caliData_p == 0)  PLUS_MINUS = 1;
+           if(caliData_p >= 0)  PLUS_MINUS = 1;
         }
        
         specialModeDisp();
@@ -578,7 +578,8 @@ int main( void )
   EEPROM_init();  
   LCD_Display_init();
   
-
+  if(caliData_p>99 || caliData_p<-99) caliData_p = 0;
+  
     
    if(measureMode_p) displayRGB(BLUE);
    else displayRGB(GREEN);
