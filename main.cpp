@@ -139,6 +139,29 @@ void displayHIGH(void)
   
 }
 
+
+void displayError(void)
+{
+  	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+	NUMBER_CLEAR(4);
+
+	LCD->A1 = 1; // E
+        LCD->D1 = 1;
+        LCD->E1 = 1;
+        LCD->F1 = 1;
+        LCD->G1 = 1;
+        
+        LCD->G2 = 1; //r
+        LCD->E2 = 1;
+        
+        LCD->G3 = 1; //r
+        LCD->E3 = 1;
+        
+        LCD->DP1 = 0;
+        
+}
 /************************************************************************/
 
 void delay_10us(int us) {
@@ -359,6 +382,20 @@ void saveTemp()
       memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p-1], tempUnit_p));
 }
 
+
+void systemError(VOID) {
+	displayRGB(RED);
+	displayError();
+			
+	delay_ms(50);
+	Beep(1000);
+	delay_ms(40);
+	Beep(1000);
+	delay_ms(40);	
+	Beep(1000);
+	delay_ms(40);					  
+}
+
 /*********************************************/
 /*****************  MAIN  ********************/
 /*********************************************/
@@ -381,7 +418,6 @@ int main( void )
   //IWonTask->Set_AdjValue(-15);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
   //IWonTask->Set_AdjValue(-50);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
   
-
   
   Beep();
   
@@ -391,8 +427,16 @@ int main( void )
   INT8 MeasredCount1 = 0;
   INT8 MeasredCount2 = 0;
 
-  while(SW_PWR_ON);
 
+  delay_ms(100);
+  if(IWonTask->Task()) {
+	  INT32 AMB = IWonTask->Get_AMB_TEMP();		 
+	  if(AMB < 0 || 500 < AMB) { // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+		systemError();
+	  }                   
+  }
+
+  while(SW_PWR_ON);
   
   while(IWonTask->NeedPowerDown()==false)
   {
@@ -429,30 +473,17 @@ int main( void )
 	  } 
 	  else
 	  if(Measuring) {	// 온도 측정
-		  INT32 AMB = IWonTask->Get_AMB_TEMP();
-                  if(AMB < 0 || 500 < AMB) { // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-				displayRGB(RED);
-				//displayERR();
-				
-				tempValueDisplay((int16_t)AMB);
-				
-				MeasredTemp = 0;
-				
-				Measuring = false;
-				Measured = true;
-				MeasredCount1 = 0;
-				MeasredCount2 = 0;				
-				
-				delay_ms(50);
-				Beep(1000);
-				delay_ms(40);
-				Beep(1000);
-				delay_ms(40);	
-				Beep(1000);
-				delay_ms(40);	
-				
-		  } 
-                  
+		  INT32 AMB = IWonTask->Get_AMB_TEMP();		 
+          if(AMB < 0 || 500 < AMB) { // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+			systemError();
+			
+			MeasredTemp = 0;
+			
+			Measuring = false;
+			Measured = true;
+			MeasredCount1 = 0;
+			MeasredCount2 = 0;							
+		  }                   
 		  else if(AMB>0) {
 			if(measureMode_p==1) {
                           
@@ -569,7 +600,7 @@ int main( void )
 			}
 		  }
 	  }
-        }
+    }
   }
   
   GPIO_LOW(GPIOD, GPIO_Pin_7);
