@@ -58,6 +58,15 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler,25) {
 #define GREEN  2
 #define BLUE  3
 #define YELLOW 4
+#define CLEAR 5
+
+void LCD_clear()
+{
+    for(int i=0; i<14; i++)
+    {
+        LCD->RAM[i] = 0;
+    }
+}
 
 
 void displayRGB(int color)
@@ -95,6 +104,14 @@ void displayRGB(int color)
     GPIO_HIGH(GPIOF, GPIO_Pin_0 );
     GPIO_HIGH(GPIOB, GPIO_Pin_7 );
     yellowFlag = 1;
+  }
+  
+  else if(color == CLEAR)
+  {
+    GPIO_HIGH(GPIOD, GPIO_Pin_4 );
+    GPIO_HIGH(GPIOF, GPIO_Pin_0 );
+    GPIO_HIGH(GPIOB, GPIO_Pin_7 );
+    yellowFlag = 0;    
   }
   
 }
@@ -234,15 +251,121 @@ void tempUnitTask()
    tempUnit_p ^= 1;
     
   tempUnitSet(tempUnit_p); 
+  
+  if((334<=TEMP && TEMP <= 425) || measureMode_p == 0)
   tempValueDisplay(unitCalc(TEMP, tempUnit_p)); 
   memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p-1], tempUnit_p));
 }
 
-
-
-
-
 /*********************************************/
+
+
+
+
+void specialModeDisp()
+{
+    int forthNumber  = caliData_p%10;
+    int thirdNumber = (caliData_p/10)%10;
+    int secondNumber  = (caliData_p/100)%10;
+
+    NUMBER_CLEAR(1);
+    
+    if(!PLUS_MINUS && caliData_p != 0) 
+    {
+      NUMBER_CLEAR(1);
+      LCD->G1 = 1;
+    }
+    else displayNumber(secondNumber,1);
+    displayNumber(thirdNumber, 2);
+    displayNumber(forthNumber,  3); 
+  
+}
+
+void specialMode()
+{
+  
+      if(SW_LEFT_ON)
+      {
+        delay_ms(400);
+        displayRGB(RED);
+        
+        if(caliData_p == 0) PLUS_MINUS = 0;
+        
+        if(!PLUS_MINUS) 
+        { 
+            caliData_p++;
+            if(caliData_p > 99)  caliData_p = 99;
+
+        }
+        else 
+        {
+            caliData_p--;
+            if(caliData_p == 0)  PLUS_MINUS = 0;
+        }
+        
+        specialModeDisp();
+      }
+                     
+      else if(SW_RIGHT_ON)
+      {
+        delay_ms(400);
+        displayRGB(BLUE);
+        
+        if(caliData_p == 0) PLUS_MINUS = 1;
+                   
+        if(PLUS_MINUS) 
+        { 
+          caliData_p++;
+           if(caliData_p > 99)  caliData_p = 99;
+           
+        }
+        if(!PLUS_MINUS)
+        {
+          caliData_p--;
+          
+           if(caliData_p == 0)  PLUS_MINUS = 1;
+        }
+       
+        specialModeDisp();
+        
+       }
+}
+
+
+void caliDone()
+{
+  
+  int16_t value = caliData_p;
+  
+  if(!PLUS_MINUS) value = -1 * caliData_p;
+  
+  else value = caliData_p;
+    
+  IWonTask->Set_AdjValue(value);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  
+  
+  
+  LCD_clear();
+  
+  displayNumber(0,1);
+  displayNumber(0,2);
+  displayNumber(0,3);
+  
+  
+  memNumberDisplay(memNumber_p);
+  memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p-1], tempUnit_p));
+  measureModeSet(measureMode_p);
+  buzzerCMD(buzzerState_p);
+  tempUnitSet(tempUnit_p);
+  
+    LCD->X8  = 1;  // Display "LOG"  
+  
+   if(measureMode_p) displayRGB(BLUE);
+   else displayRGB(GREEN);
+  
+}
+
+
 
 void keyScan()
 {
@@ -255,16 +378,35 @@ void keyScan()
         
 	while(SW_LEFT_ON)
 	{
+          
 		delayCount++;
 		delay_ms(15);
-		if(delayCount == 40)// LONG_PRESS 
+                
+                if(delayCount == 350)
+                {
+                    Beep();
+                    delay_ms(40);
+
+                    displayRGB(CLEAR);
+                    LCD_clear();
+
+                    while(!SW_PWR_ON)
+                    {
+                      specialMode();
+                    }
+                    
+                     caliDone();
+                }
+                
+                
+		if(delayCount == 60 && !SW_RIGHT_ON)// LONG_PRESS 
 		{
-			Beep();
-			measureModeTask(); // measure mode Set
+                    Beep();
+                    measureModeTask(); // measure mode Set
 		}
 	}
 
-	if(delayCount < 40) // SHORT_PRESS 
+	if(delayCount < 60) // SHORT_PRESS 
 	{
 		Beep();
 		tempLogDataTask(); // memory Data
@@ -278,20 +420,40 @@ void keyScan()
 
 	delay_ms(15);
 	int delayCount = 0;   
-	
+        
+
 	while(SW_RIGHT_ON)
 	{
-	  delayCount++;
-	  delay_ms(15);
-	  
-	  if(delayCount == 40)// LONG_PRESS 
-	  {  
-		Beep();
-		tempUnitTask(); // temp Unit set
-	  }
+          
+		delayCount++;
+		delay_ms(15);
+                
+                if(delayCount == 350)
+                {
+                    Beep();
+                    delay_ms(40);
+
+                    displayRGB(CLEAR);
+                    LCD_clear();
+
+                    while(!SW_PWR_ON)
+                    {
+                      specialMode();
+                    }
+                    
+                    caliDone();            
+                }
+                
+                
+		if(delayCount == 60 && !SW_LEFT_ON)// LONG_PRESS 
+                {  
+                      Beep();
+                      tempUnitTask(); // temp Unit set
+                }
 	}
+          
 	
-	  if(delayCount < 40) // SHORT_PRESS 
+	  if(delayCount < 60) // SHORT_PRESS 
 	  {
 		buzzerStateTask(); // buzzer On / Off
 		Beep();
@@ -342,9 +504,6 @@ void BeepMode(int mode)
  
 }
 
-
-
-
 void saveTemp()
 {
       memNumber_p = 32;
@@ -355,6 +514,20 @@ void saveTemp()
       
       memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p-1], tempUnit_p));
 }
+
+
+int16_t getCaliValue()
+{
+  
+  int16_t value = caliData_p;
+  
+  if(!PLUS_MINUS) value = -1 * caliData_p;
+    
+  return value;
+  
+  
+}
+
 
 /*********************************************/
 /*****************  MAIN  ********************/
@@ -368,16 +541,25 @@ int main( void )
   EEPROM_init();  
   LCD_Display_init();
   
+
+    
    if(measureMode_p) displayRGB(BLUE);
    else displayRGB(GREEN);
   
   IWonTask = new IWON_TEMP_TASK(10);	// 온도를 10개 합산해서 평균낸다.
 
-  //읽어서...
-  IWonTask->Set_AdjValue(0);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+
+  int16_t value = caliData_p;
+  
+  if(!PLUS_MINUS) value = -1 * caliData_p;
+  
+  else value = caliData_p;
+  
+    
+  IWonTask->Set_AdjValue(value);	// <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
   
 
-  
+
   Beep();
   
   BOOL Measuring = false;
@@ -453,6 +635,7 @@ int main( void )
                           
 			  	// 인체 측정
 				TEMP = IWonTask->Get_BDY_TEMP();
+                               // TEMP += getCaliValue();
                                 
 				if(TEMP<334) {                  // LOW  Less Than 33.4 C
                                   
@@ -567,12 +750,17 @@ int main( void )
 		  }
 	  }
         }
+
   }
+  
+  LCD_clear();
   
   GPIO_LOW(GPIOD, GPIO_Pin_7);
    
    
 }
+
+
 
 
 /*********************************************/

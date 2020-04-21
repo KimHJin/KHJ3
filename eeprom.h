@@ -8,6 +8,8 @@
 
 #define __EEPROM ((EEROM_TypeDef *) EEPROM_base)
 
+#define PLUS_MINUS    __EEPROM->plusminus
+#define caliData_p    __EEPROM->caliData
 #define TEMP          __EEPROM->measureTemp
 #define memNumber_p   __EEPROM->memNumber
 #define measureMode_p __EEPROM->measureMode
@@ -22,8 +24,12 @@ typedef struct {
   int8_t tempUnit;
   
   int16_t memTempData[32];
-  
   int16_t measureTemp;
+  
+  int16_t trash;
+  
+  int8_t plusminus;
+  int16_t caliData;
   
 }EEROM_TypeDef;
 
