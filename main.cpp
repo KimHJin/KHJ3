@@ -422,6 +422,9 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
+
+	GPIO_LOW(GPIOD, GPIO_Pin_7);
+
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
@@ -614,6 +617,8 @@ int main(void)
 
 				if (measureMode_p)
 					displayRGB(BLUE);
+
+tempValueDisplay(IWonTask->Get_AMB_TEMP());
 
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();

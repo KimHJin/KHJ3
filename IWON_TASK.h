@@ -18,7 +18,8 @@
 #define DEFINED_VDDREF 3300
 #define DEFINED_VDD 3300
 #define DEFINED_R1 100000
-#define DEFINED_R2 200000
+//#define DEFINED_R2 200000
+#define DEFINED_R2 300000
 
 #define GPIO_HIGH(a, b) a->ODR |= b
 #define GPIO_LOW(a, b) a->ODR &= ~b
