@@ -19,7 +19,7 @@ IWON_TEMP_VAVG::IWON_TEMP_VAVG() {
 	Init();	
 }
 
-IWON_TEMP_VAVG::IWON_TEMP_VAVG(INT8 sumNum) {   // Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+IWON_TEMP_VAVG::IWON_TEMP_VAVG(INT8 sumNum) {   // í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 	num = sumNum;
 	pos = 0;
 	erc = 0;
@@ -39,7 +39,7 @@ IWON_TEMP_VAVG::IWON_TEMP_VAVG(INT8 sumNum, INT8 OC) {
 }
 
 
-// ¼Ò¸êÀÚ
+// ì†Œë©¸ìž
 IWON_TEMP_VAVG::~IWON_TEMP_VAVG(VOID) {
 	free(val);
 }

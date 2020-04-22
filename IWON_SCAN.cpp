@@ -9,8 +9,8 @@
 
 #include "IWON_SCAN.h"
 
-// ¼¾¼­ ½á¹Ì½ºÅÍ Æ¯Á¤ (¼Ò¼öÁ¡ ¿¬»êÀ» À§ÇØ¼­ 1000 ¹è¼ö ÇÑ °ÍÀÌ´Ù.)
-// ¹üÀ§ ¹Ù²î¸é Çì´õ ÆÄÀÏÀÇ NTC_MIN, NTC_MAX Àû¿ëÇØ¾ß ÇÔ
+// ì„¼ì„œ ì¨ë¯¸ìŠ¤í„° íŠ¹ì • (ì†Œìˆ˜ì  ì—°ì‚°ì„ ìœ„í•´ì„œ 1000 ë°°ìˆ˜ í•œ ê²ƒì´ë‹¤.)
+// ë²”ìœ„ ë°”ë€Œë©´ í—¤ë” íŒŒì¼ì˜ NTC_MIN, NTC_MAX ì ìš©í•´ì•¼ í•¨
 const static INT32 NTC_TBL[] = {
     4251000, // -40
     3962000, // -39
@@ -180,8 +180,8 @@ const static INT32 NTC_TBL[] = {
     2561    // 125
 };
 
-// 28.1 ~ 41.5 (»ç¹°¿Âµµ ±âÁØ)
-// 33.4 ~ 42.5 (Ã¼¿Â ±âÁØ)
+// 28.1 ~ 41.5 (ì‚¬ë¬¼ì˜¨ë„ ê¸°ì¤€)
+// 33.4 ~ 42.5 (ì²´ì˜¨ ê¸°ì¤€)
 const static INT8 TB_TBL[] = {
     53,53,53,53,53,53,53,52,51,50,50,50,50,50,50,50,50,50,49,48,
     48,47,47,47,46,46,46,46,46,46,46,46,46,45,45,45,44,43,43,42,
@@ -196,13 +196,13 @@ const static INT8 TB_TBL[] = {
 
   
 
-// »ý¼ºÀÚ
+// ìƒì„±ìž
 IWON_TEMP_SCAN::IWON_TEMP_SCAN() {
 	TADJ0 = DEFINED_TADJ0;
 	VADJ1 = DEFINED_VADJ1;
 	VADJ2 = DEFINED_VADJ2;
 
-	TSUMN = DEFINED_TSUMN; // ¿Âµµ Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+	TSUMN = DEFINED_TSUMN; // ì˜¨ë„ í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 	TSUMC = 0;
 	TSUMB = NULL;
 
@@ -213,7 +213,7 @@ IWON_TEMP_SCAN::IWON_TEMP_SCAN(INT8 tsumn) {
 	VADJ1 = DEFINED_VADJ1;
 	VADJ2 = DEFINED_VADJ2;
 
-	TSUMN = tsumn;        // ¿Âµµ Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+	TSUMN = tsumn;        // ì˜¨ë„ í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 	TSUMC = 0;
 	TSUMB = NULL;
 
@@ -222,21 +222,21 @@ IWON_TEMP_SCAN::IWON_TEMP_SCAN(INT8 tsumn) {
 
 
 
-// ¼Ò¸êÀÚ
+// ì†Œë©¸ìž
 IWON_TEMP_SCAN::~IWON_TEMP_SCAN() {
 	if(TSUMB!=NULL) free(TSUMB);
 }
 
 
 
-// ¿Âµµ Æò±Õ°ª ±¸ÇÏ´Â ¸µ ¸Þ¸ð¸®¸¦ »ý¼ºÇÑ´Ù.
+// ì˜¨ë„ í‰ê· ê°’ êµ¬í•˜ëŠ” ë§ ë©”ëª¨ë¦¬ë¥¼ ìƒì„±í•œë‹¤.
 VOID IWON_TEMP_SCAN::InitTSUMB(VOID) {
 	if(TSUMB!=NULL) free(TSUMB);
 	TSUMB = (INT16 *)malloc(sizeof(INT16) * TSUMN);  
 }
 
 
-// TOBJ ¸¦ ÀÌ °ª¸¸Å­ »©ÁØ´Ù.
+// TOBJ ë¥¼ ì´ ê°’ë§Œí¼ ë¹¼ì¤€ë‹¤.
 VOID IWON_TEMP_SCAN::SetTADJ0(INT16 tadj0) {
 	TADJ0 = tadj0;
 }
@@ -244,7 +244,7 @@ INT16 IWON_TEMP_SCAN::GetTADJ0(VOID) {
 	return TADJ0;
 }
   
-// delta °ª º¯°æ
+// delta ê°’ ë³€ê²½
 VOID IWON_TEMP_SCAN::SetVADJ1(INT16 vadj1) {
 	VADJ1 = vadj1;
 }
@@ -252,7 +252,7 @@ INT16 IWON_TEMP_SCAN::GetVADJ1(VOID) {
 	return VADJ1;
 }
   
-// shaft v °ª
+// shaft v ê°’
 VOID IWON_TEMP_SCAN::SetVADJ2(INT16 vadj2) {
 	VADJ2 = vadj2;
 }
@@ -266,9 +266,9 @@ INT16 IWON_TEMP_SCAN::GetVADJ2(VOID) {
 
 
 //-----------------------------------------------------------------------------
-// NTC ±âÁØ Å×ÀÌºí ÀÎµ¦½º ³Ñ¹ö¸¦ Ã£´Â´Ù.
-// ÀÔ·Â : MRES = ¼¾¼­ÀÇ ½á¹Ì½ºÅÍ ÀúÇ× °ª
-// Ãâ·Â : MRES °¡ À§Ä¡ÇÏ´Â NTC Å×ÀÌºí ÀÎµ¦½º À§Ä¡
+// NTC ê¸°ì¤€ í…Œì´ë¸” ì¸ë±ìŠ¤ ë„˜ë²„ë¥¼ ì°¾ëŠ”ë‹¤.
+// ìž…ë ¥ : MRES = ì„¼ì„œì˜ ì¨ë¯¸ìŠ¤í„° ì €í•­ ê°’
+// ì¶œë ¥ : MRES ê°€ ìœ„ì¹˜í•˜ëŠ” NTC í…Œì´ë¸” ì¸ë±ìŠ¤ ìœ„ì¹˜
 //-----------------------------------------------------------------------------
 INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES) {
     INT16 index = -1;
@@ -281,12 +281,12 @@ INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES) {
     return -1;
 }
 
-// NTC ±âÁØ ÀÎµ¦½º ¹øÈ£È­ ½ÇÃøµÈ °ªÀ» ÀÌ¿ëÇØ¼­ ÇØ´ç ±¸°£³»ÀÇ º¸Á¤ À§Ä¡ÀÇ ÆÛ¼¾Æ®¸¦ °è»êÇÑ´Ù.
-// ±× ÀÌÀ¯´Â ½ÇÁ¦ ÃøÁ¤µÈ ¿Âµµ°ªÀÇ ÀúÇ×°ªÀÇ ÀÎµ¦½º´Â ÇØ´ç NTC ±¸°£ÀÇ 1µµ ºÐÇØ´ÉÀÌ±â ¶§¹®¿¡
-// ±× »çÀÌÀÇ Á¤È®ÇÑ ¿Âµµ¸¦ °è»êÇÏ±â À§ÇØ¼­ ÃøÁ¤µÈ °ªÀÌ ÇØ´ç ±¸°£ÀÇ ¾î´À À§Ä¡¿¡ ÀÖ´ÂÁö ¾Ë¾Æ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
-// ÀÔ·Â : MRES ¼¾¼­ÀÇ ½á¹Ì½ºÅÍ ÀúÇ× °ª
-//       MRES ÀÇ index ÇØ´ç NTC ÀÎµ¦½º À§Ä¡ °ª
-// Ãâ·Â : ÇØ´ç NTC ±¸°£ÀÇ ÀÔ·ÂµÈ MRES ÀÇ À§Ä¡ ÆÛ¼¾Æ® °ª
+// NTC ê¸°ì¤€ ì¸ë±ìŠ¤ ë²ˆí˜¸í™” ì‹¤ì¸¡ëœ ê°’ì„ ì´ìš©í•´ì„œ í•´ë‹¹ êµ¬ê°„ë‚´ì˜ ë³´ì • ìœ„ì¹˜ì˜ í¼ì„¼íŠ¸ë¥¼ ê³„ì‚°í•œë‹¤.
+// ê·¸ ì´ìœ ëŠ” ì‹¤ì œ ì¸¡ì •ëœ ì˜¨ë„ê°’ì˜ ì €í•­ê°’ì˜ ì¸ë±ìŠ¤ëŠ” í•´ë‹¹ NTC êµ¬ê°„ì˜ 1ë„ ë¶„í•´ëŠ¥ì´ê¸° ë•Œë¬¸ì—
+// ê·¸ ì‚¬ì´ì˜ ì •í™•í•œ ì˜¨ë„ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ì„œ ì¸¡ì •ëœ ê°’ì´ í•´ë‹¹ êµ¬ê°„ì˜ ì–´ëŠ ìœ„ì¹˜ì— ìžˆëŠ”ì§€ ì•Œì•„ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+// ìž…ë ¥ : MRES ì„¼ì„œì˜ ì¨ë¯¸ìŠ¤í„° ì €í•­ ê°’
+//       MRES ì˜ index í•´ë‹¹ NTC ì¸ë±ìŠ¤ ìœ„ì¹˜ ê°’
+// ì¶œë ¥ : í•´ë‹¹ NTC êµ¬ê°„ì˜ ìž…ë ¥ëœ MRES ì˜ ìœ„ì¹˜ í¼ì„¼íŠ¸ ê°’
 INT16 IWON_TEMP_SCAN::GetNTCValueRatio(INT32 MRES, INT16 index) {
     INT32 NTCRL = NTC_TBL[index];
     INT32 NTCRH = NTC_TBL[index-1];
@@ -299,9 +299,9 @@ INT16 IWON_TEMP_SCAN::GetNTCValueRatio(INT32 MRES, INT16 index) {
 }
 
 
-// »ç¹° ¿Âµµ¸¦ ÀÎÃ¼ ¿Âµµ·Î º¯È¯
-// ÀÔ·Â : T_OBJ ´Â ÃøÁ¤µÈ »ç¹° ¿Âµµ¸¦ 10 ¹è¼öÇÑ Á¤¼öÀÌ´Ù.
-// Ãâ·Â : -1 = LO
+// ì‚¬ë¬¼ ì˜¨ë„ë¥¼ ì¸ì²´ ì˜¨ë„ë¡œ ë³€í™˜
+// ìž…ë ¥ : T_OBJ ëŠ” ì¸¡ì •ëœ ì‚¬ë¬¼ ì˜¨ë„ë¥¼ 10 ë°°ìˆ˜í•œ ì •ìˆ˜ì´ë‹¤.
+// ì¶œë ¥ : -1 = LO
 //       -2 = HI
 INT8 IWON_TEMP_SCAN::GetTBLValue(INT16 T_OBJ) {
     if(T_OBJ < TB_MIN) return -1;

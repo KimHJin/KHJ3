@@ -13,10 +13,10 @@
 IWON_TEMP_TASK::IWON_TEMP_TASK() : IWON_TEMP_SCAN() {
 	Init();
 }
-IWON_TEMP_TASK::IWON_TEMP_TASK(INT8 tsumn) : IWON_TEMP_SCAN(tsumn) {   // ¿Âµµ Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+IWON_TEMP_TASK::IWON_TEMP_TASK(INT8 tsumn) : IWON_TEMP_SCAN(tsumn) {   // ì˜¨ë„ í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 	Init();  
 }
-  // ¼Ò¸êÀÚ
+  // ì†Œë©¸ì
 IWON_TEMP_TASK::~IWON_TEMP_TASK() {
 	delete VrefintAvg;
 	delete VrefvddAvg;
@@ -36,15 +36,16 @@ VOID IWON_TEMP_TASK::Init(VOID) {
 	adc1volt = 0;
 	adc2value = 0;
 	adc2volt = 0;
-
-	VDDREF = DEFINED_VDDREF;	// ¼³°è»óÀÇ VDD Àü¿ø 3.3V
-	VDD = DEFINED_VDD;			// ÃøÁ¤ÇÏ¿© º¸Á¤µÈ VDD Àü¿ø
-	VCAL = 0;					// ¼³°è»óÀÇ VDD Àü¿ø¿¡ ´ëÇÑ ÃøÁ¤µÈ ADC ¿É¼Â
+	
+	
+	VDDREF = DEFINED_VDDREF;	// ì„¤ê³„ìƒì˜ VDD ì „ì› 3.3V
+	VDD = DEFINED_VDD;			// ì¸¡ì •í•˜ì—¬ ë³´ì •ëœ VDD ì „ì›
+	VCAL = 0;					// ì„¤ê³„ìƒì˜ VDD ì „ì›ì— ëŒ€í•œ ì¸¡ì •ëœ ADC ì˜µì…‹
 	V0 = 0;
 	R0 = 0;
 	R1 = DEFINED_R1;	// 100K
 	R2 = DEFINED_R2;	// 200K
-	R3 = 0;        		// ÃøÁ¤µÈ ½á¹Ì½ºÅÍ ÀúÇ×°ª  
+	R3 = 0;        		// ì¸¡ì •ëœ ì¨ë¯¸ìŠ¤í„° ì €í•­ê°’  
 			
 	Vrefint = 0;
 	Vrefvdd = 0;
@@ -75,26 +76,18 @@ VOID IWON_TEMP_TASK::Init(VOID) {
 	TTtime = startTime;
 	MGtime = startTime;
 	
-<<<<<<< HEAD
-        VrefintAvg = new IWON_TEMP_VAVG(5, 2);
+    VrefintAvg = new IWON_TEMP_VAVG(5, 2);
 	VrefvddAvg = new IWON_TEMP_VAVG(5, 2);
 	VrefbatAvg = new IWON_TEMP_VAVG(5, 2);
 	VrefntcAvg = new IWON_TEMP_VAVG(10, 5);
 	VreftpcAvg = new IWON_TEMP_VAVG(15);	
-=======
-	VrefintAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefvddAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefbatAvg = new IWON_TEMP_VAVG(5, 5);
-	VrefntcAvg = new IWON_TEMP_VAVG(2);
-	VreftpcAvg = new IWON_TEMP_VAVG(2);	
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 	
   	Init_Clock();
 	Init_TIM4();
 	Init_ADC();	
 	
 	powerDown_msec = 0;
-        count = 0;
+    count = 0;
 }
 
 
@@ -184,12 +177,12 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
 		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);				
 
-		// V0 ´Â ½á¹Ì½ºÅÍ¿¡ °É¸®´Â Àü¾Ğ 
-		// R0 ´Â ½á¹Ì½ºÅÍ¿Í º´·Ä·Î ¿¬°áµÈ ÀúÇ×°ú º´·Ä ÇÕ°è ÀúÇ× °ª
+		// V0 ëŠ” ì¨ë¯¸ìŠ¤í„°ì— ê±¸ë¦¬ëŠ” ì „ì•• 
+		// R0 ëŠ” ì¨ë¯¸ìŠ¤í„°ì™€ ë³‘ë ¬ë¡œ ì—°ê²°ëœ ì €í•­ê³¼ ë³‘ë ¬ í•©ê³„ ì €í•­ ê°’
 		V0 = VrefntcmV;
 		R0 = ((DWORD)V0 * (DWORD)R1) / (VDD - V0);
 	
-		// R3 ´Â ½á¹Ì½ºÅÍ ÀúÇ× °ª
+		// R3 ëŠ” ì¨ë¯¸ìŠ¤í„° ì €í•­ ê°’
 		R3 = ((R2/100 * R0/100) * 100) / (R2 - R0);
 	
 		
@@ -212,52 +205,31 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 			
 			// constants for the thermopile calculation
 			const float k = 0.004313f; 
-<<<<<<< HEAD
-			//const float k = 0.004313f + 0.0095; 	// °ªÀ» ³ôÀÌ¸é ÃøÁ¤¿Âµµ°¡ ³»·Á°£´Ù. 0.0001 ´ç 0.7~0.8µµ (´Ü, ³ôÀº ¿ÂµµÂÊÀÌ ¸¹ÀÌ ¶³¾îÁø´Ù)
+			//const float k = 0.004313f + 0.0095; 	// ê°’ì„ ë†’ì´ë©´ ì¸¡ì •ì˜¨ë„ê°€ ë‚´ë ¤ê°„ë‹¤. 0.0001 ë‹¹ 0.7~0.8ë„ (ë‹¨, ë†’ì€ ì˜¨ë„ìª½ì´ ë§ì´ ë–¨ì–´ì§„ë‹¤)
 
-			// °ªÀ» Å°¿ì¸é TOBJ ¿Âµµ°¡ ¿Ã¶ó°£´Ù.
+			// ê°’ì„ í‚¤ìš°ë©´ TOBJ ì˜¨ë„ê°€ ì˜¬ë¼ê°„ë‹¤.
 			float delta = 2.468f + 0.150f + (float)VADJ1 / 1000.f;
 
 			
 			//AMB_TEMP = 280;
-=======
-			//const float k = 0.004313f + 0.0002; 	// °ªÀ» ³ôÀÌ¸é ÃøÁ¤¿Âµµ°¡ ³»·Á°£´Ù. 0.0001 ´ç 0.7~0.8µµ
-			// °ªÀ» Å°¿ì¸é TOBJ ¿Âµµ°¡ ¿Ã¶ó°£´Ù.
-			float delta = 2.468f + 0.150f + (float)VADJ1 / 1000.f;
-
-			
-			AMB_TEMP = 280;
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 			
 			float ambtemp = (float)AMB_TEMP / 10.f;
-			//float reftemp = 23.f;       // °ªÀ» ³·Ãß¸é ¿Âµµ°¡ ¿Ã¶ó°£´Ù.
-			//reftemp += 32.0f - ambtemp; // Áï, ÀÌ°ªÀ» ³ôÀÌ¸é ¿Âµµ°¡ ¿Ã¶ó°£´Ù.
-<<<<<<< HEAD
+			//float reftemp = 23.f;       // ê°’ì„ ë‚®ì¶”ë©´ ì˜¨ë„ê°€ ì˜¬ë¼ê°„ë‹¤.
+			//reftemp += 32.0f - ambtemp; // ì¦‰, ì´ê°’ì„ ë†’ì´ë©´ ì˜¨ë„ê°€ ì˜¬ë¼ê°„ë‹¤.
 			float reftemp = 25.f ;
 			//reftemp = ambtemp;
-=======
-			float reftemp = 23.f;
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 
-			// °ªÀ» ³ôÀÌ¸é TOBJ ¿Âµµ°¡ ³»·Á°£´Ù.
-			// °ªÀ» ³ôÀÌ¸é ³·Àº ÂÊÀÇ ¿ÂµµÂ÷°¡ ³ôÀºÂÊÀÇ ¿ÂµµÂ÷ °¨¼Ò·®º¸´Ù ¸¹ÀÌ °¨¼ÒÇÑ´Ù.
+			// ê°’ì„ ë†’ì´ë©´ TOBJ ì˜¨ë„ê°€ ë‚´ë ¤ê°„ë‹¤.
+			// ê°’ì„ ë†’ì´ë©´ ë‚®ì€ ìª½ì˜ ì˜¨ë„ì°¨ê°€ ë†’ì€ìª½ì˜ ì˜¨ë„ì°¨ ê°ì†ŒëŸ‰ë³´ë‹¤ ë§ì´ ê°ì†Œí•œë‹¤.
 			float shiftv = 0.81f + (float)VADJ2 / 100.f;
 			float comp = k * (pow(ambtemp,4.f-delta)-pow(reftemp,4.f-delta));  // equivalent thermopile V for amb temp
 
-<<<<<<< HEAD
 			//VreftpcmV = 2250;	// 72.0 oC
-=======
-			VreftpcmV = 2250;	// 72.0 oC
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 			//VreftpcmV = 2185;	// 70.0 oC
 			//VreftpcmV = 2100;	// 68.0 oC
 			//VreftpcmV = 1950;	// 62.2 oC
 
-<<<<<<< HEAD
 			//VreftpcmV = 1071;	// 30.8 oC
-=======
-			VreftpcmV = 1071;	// 30.8 oC
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 			
 			
 			float v2 = (float)VreftpcmV / 1000.f + comp - shiftv;
@@ -273,11 +245,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval) {	// MGInterval = Me
 			}			
 			OBJ_TEMP = AddTSUMB(T_OBJ);
 			//printf("BB=%d\r\n", BB);
-<<<<<<< HEAD
 			//OBJ_TEMP = T_OBJ;
-=======
-			OBJ_TEMP = T_OBJ;
->>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 			
 			
 			INT8 TBL = GetTBLValue(OBJ_TEMP);

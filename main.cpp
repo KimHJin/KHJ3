@@ -14,7 +14,7 @@
 
 #include "IWON_TASK.h"
 
-// ¾ÆÀÌ¿ø ¿Âµµ°è Å×½ºÅ© Å¬·¡½º
+// ì•„ì´ì› ì˜¨ë„ê³„ í…ŒìŠ¤í¬ í´ëž˜ìŠ¤
 IWON_TEMP_TASK *IWonTask = NULL;
 
 
@@ -30,7 +30,7 @@ int count = 0;
 
 /************************************************************************/
 /**
-  * 1 msec ¸¶´Ù È£ÃâµÇ´Â ÀÎÅÍ·´Æ®ÀÌ¹Ç·Î ÀÀ¿ëÇØ¼­ »ç¿ëÇØµµ ÁÁ´Ù.
+  * 1 msec ë§ˆë‹¤ í˜¸ì¶œë˜ëŠ” ì¸í„°ëŸ½íŠ¸ì´ë¯€ë¡œ ì‘ìš©í•´ì„œ ì‚¬ìš©í•´ë„ ì¢‹ë‹¤.
   */
 INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler,25) {
   
@@ -38,7 +38,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler,25) {
         if(yellowFlag) IWonTask->YellowDisp();
 		
 	//
-	// ÇÊ¿äÇÑ °æ¿ì ¿©±â¿¡ ÄÚµå¸¦ ³Ö¾î¼­ »ç¿ëÇÏ¼¼¿ä.
+	// í•„ìš”í•œ ê²½ìš° ì—¬ê¸°ì— ì½”ë“œë¥¼ ë„£ì–´ì„œ ì‚¬ìš©í•˜ì„¸ìš”.
 	//       
         
     
@@ -366,7 +366,7 @@ void caliDone()
   
   else value = caliData_p;
     
-  IWonTask->Set_AdjValue(value);	// <= ÀÌ °ªÀ» ÀúÀåÇÏ°í ÀÐ¾î¼­ ¿©±â¿¡ Àû¿ë ÇÏ¼¼¿ä.
+  IWonTask->Set_AdjValue(value);	// <= ì´ ê°’ì„ ì €ìž¥í•˜ê³  ì½ì–´ì„œ ì—¬ê¸°ì— ì ìš© í•˜ì„¸ìš”.
   
   
   
@@ -584,13 +584,13 @@ int main( void )
    if(measureMode_p) displayRGB(BLUE);
    else displayRGB(GREEN);
   
-  IWonTask = new IWON_TEMP_TASK(10);	// ¿Âµµ¸¦ 10°³ ÇÕ»êÇØ¼­ Æò±Õ³½´Ù.
+  IWonTask = new IWON_TEMP_TASK(10);	// ì˜¨ë„ë¥¼ 10ê°œ í•©ì‚°í•´ì„œ í‰ê· ë‚¸ë‹¤.
 
   int16_t value = caliData_p;
   if(!PLUS_MINUS) value = -1 * caliData_p;
     else value = caliData_p;
      
-  IWonTask->Set_AdjValue(value);	// <= ÀÌ °ªÀ» ÀúÀåÇÏ°í ÀÐ¾î¼­ ¿©±â¿¡ Àû¿ë ÇÏ¼¼¿ä.
+  IWonTask->Set_AdjValue(value);	// <= ì´ ê°’ì„ ì €ìž¥í•˜ê³  ì½ì–´ì„œ ì—¬ê¸°ì— ì ìš© í•˜ì„¸ìš”.
   
 
 
@@ -604,7 +604,7 @@ int main( void )
   }
   if(true) {
 	  INT32 AMB = IWonTask->Get_AMB_TEMP();		 
-	  if(AMB < 0 || 500 < AMB) { // »ç¿ë È¯°æÀÇ ¿Âµµ°¡ 0 µµ º¸´Ù ³·°í 50 µµ º¸´Ù ³ôÀ¸¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+	  if(AMB < 0 || 500 < AMB) { // ì‚¬ìš© í™˜ê²½ì˜ ì˜¨ë„ê°€ 0 ë„ ë³´ë‹¤ ë‚®ê³  50 ë„ ë³´ë‹¤ ë†’ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
 		systemError();
 	  }                   
   }
@@ -638,7 +638,7 @@ int main( void )
                         
                         if(measureMode_p) displayRGB(BLUE);
                         											
-			MeasredTemp = -100;	// ¿ÂµµÃøÁ¤ÇÏ¶ó´Â °ª
+			MeasredTemp = -100;	// ì˜¨ë„ì¸¡ì •í•˜ë¼ëŠ” ê°’
 			IWonTask->Clear_AVG();
 		}
 	}
@@ -647,17 +647,17 @@ int main( void )
 	}
 	
 	if(IWonTask->Task()) {
-	  if(Measured==false && Measuring==false && MeasredTemp==-100) {	// ¿Âµµ ÃøÁ¤ ½ÃÀÛ
+	  if(Measured==false && Measuring==false && MeasredTemp==-100) {	// ì˜¨ë„ ì¸¡ì • ì‹œìž‘
 		Measuring = true;
 		Measured = false;
 		MeasredCount1 = 0;
 		MeasredCount2 = 0;
 	  } 
 	  else
-	  if(Measuring) {	// ¿Âµµ ÃøÁ¤
+	  if(Measuring) {	// ì˜¨ë„ ì¸¡ì •
 
                   INT32 AMB = IWonTask->Get_AMB_TEMP();         
-                  if(AMB < 0 || 500 < AMB) { // »ç¿ë È¯°æÀÇ ¿Âµµ°¡ 0 µµ º¸´Ù ³·°í 50 µµ º¸´Ù ³ôÀ¸¸é ¿¡·¯¸¦ ¹ß»ýÇÑ´Ù.
+                  if(AMB < 0 || 500 < AMB) { // ì‚¬ìš© í™˜ê²½ì˜ ì˜¨ë„ê°€ 0 ë„ ë³´ë‹¤ ë‚®ê³  50 ë„ ë³´ë‹¤ ë†’ìœ¼ë©´ ì—ëŸ¬ë¥¼ ë°œìƒí•œë‹¤.
                     systemError();
                     
                     MeasredTemp = 0;
@@ -670,7 +670,7 @@ int main( void )
 		  else if(AMB>0) {
 			if(measureMode_p==1) {
                           
-			  	// ÀÎÃ¼ ÃøÁ¤
+			  	// ì¸ì²´ ì¸¡ì •
 				TEMP = IWonTask->Get_BDY_TEMP();
                                // TEMP += getCaliValue();
                                 
@@ -752,7 +752,7 @@ int main( void )
 				}
                                 
 			} else {			  
-			  	// »ç¹° ÃøÁ¤
+			  	// ì‚¬ë¬¼ ì¸¡ì •
 				TEMP = IWonTask->Get_OBJ_TEMP();
 				
                                 if(MeasredCount1>0 && (TEMP-MeasredTemp>3 || TEMP-MeasredTemp<-3)) {

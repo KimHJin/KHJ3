@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<userOverrides>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_SCAN.cpp</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_TASK.cpp</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_VAVG.cpp</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\lcd_drive.c</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\main.cpp</path>
+    <encoding>UTF-8</encoding>
+  </override>
+</userOverrides>
+
+
