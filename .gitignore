@@ -8,7 +8,10 @@
 *.ewt
 
 *.o
+<<<<<<< HEAD
 **/Debug/
+=======
+>>>>>>> ff18c00defa751dc11e04118f6845c74d59592fa
 
 # IAR Debugger files
 *.ewd
