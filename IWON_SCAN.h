@@ -19,45 +19,42 @@
 #include <math.h>
 #include <stdbool.h>
 
-
 #ifndef IWON_TEMP_SCAN_H
 #define IWON_TEMP_SCAN_H
 
-
-#define CHAR            char
-#define VOID            void
-#define CONST           const
-#define BOOL            bool
+#define CHAR char
+#define VOID void
+#define CONST const
+#define BOOL bool
 #define LOCAL(type) static type
 #define WINAPI
 #define CALLBACK
-#define FALSE           0
-#define TRUE            1
+#define FALSE 0
+#define TRUE 1
 
-typedef signed char	INT8;
-typedef int			INT16;
-typedef long			INT32;
-typedef long			INT;
-typedef unsigned int		UINT;
-typedef unsigned char	BYTE;
-typedef unsigned short	WORD;
-typedef unsigned long	DWORD;
-typedef char *			LPSTR;
-typedef const char *	LPCSTR;
-typedef VOID *			LPVOID;
-typedef const VOID *	LPCVOID;
-typedef BYTE *			LPBYTE;
-typedef const BYTE *	LPCBYTE;
+typedef signed char INT8;
+typedef int INT16;
+typedef long INT32;
+typedef long INT;
+typedef unsigned int UINT;
+typedef unsigned char BYTE;
+typedef unsigned short WORD;
+typedef unsigned long DWORD;
+typedef char *LPSTR;
+typedef const char *LPCSTR;
+typedef VOID *LPVOID;
+typedef const VOID *LPCVOID;
+typedef BYTE *LPBYTE;
+typedef const BYTE *LPCBYTE;
 
-#define lstrlen         strlen
-#define lstrcpy         strcpy
-#define lstrcat         strcat
-#define lstrcmp         strcmp
-#define lstrcmpi        strcasecmp
+#define lstrlen strlen
+#define lstrcpy strcpy
+#define lstrcat strcat
+#define lstrcmp strcmp
+#define lstrcmpi strcasecmp
 
-
-#define CRLF		"\r\n"
-#define CRLFSP		"     \r\n"
+#define CRLF "\r\n"
+#define CRLFSP "     \r\n"
 
 #define DEFINED_TADJ0 0
 #define DEFINED_VADJ1 0
@@ -65,78 +62,73 @@ typedef const BYTE *	LPCBYTE;
 
 #define DEFINED_TSUMN 10
 
-
 #define NTC_MIN -40
 #define NTC_MAX 125
 
-// »ç¹°±âÁØ   (Ã¼¿Â °è»ê¿ë)
+// ì‚¬ë¬¼ê¸°ì¤€   (ì²´ì˜¨ ê³„ì‚°ìš©)
 #define TB_MIN 281
 #define TB_MAX 425
 
-
 //#define ADC_CONVERT_RATIO	806		/* (3300mV / 0xFFF) x 1000 */
-#define ADC_CONVERT_RATIO	804		/* (3287mV ~ 3300mV / 0xFFF) x 1000 */
+#define ADC_CONVERT_RATIO 804 /* (3287mV ~ 3300mV / 0xFFF) x 1000 */
 //#define ADC_CONVERT_RATIO	802		/* (3287mV / 0xFFF)	x 1000 */
 
+class IWON_TEMP_SCAN
+{
 
-class IWON_TEMP_SCAN {
-    
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	IWON_TEMP_SCAN();
-	IWON_TEMP_SCAN(INT8 tsumn);   // ¿Âµµ Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+	IWON_TEMP_SCAN(INT8 tsumn); // ì˜¨ë„ í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 
-	// ¼Ò¸êÀÚ
+	// ì†Œë©¸ì
 	~IWON_TEMP_SCAN();
 
-	// TOBJ ¸¦ ÀÌ °ª¸¸Å­ »©ÁØ´Ù.
+	// TOBJ ë¥¼ ì´ ê°’ë§Œí¼ ë¹¼ì¤€ë‹¤.
 	VOID SetTADJ0(INT16 tadj0);
 	INT16 GetTADJ0(VOID);
 
-	// delta °ª º¯°æ
+	// delta ê°’ ë³€ê²½
 	VOID SetVADJ1(INT16 vadj1);
 	INT16 GetVADJ1(void);
 
-	// shaft v °ª
+	// shaft v ê°’
 	VOID SetVADJ2(INT16 vadj2);
 	INT16 GetVADJ2(VOID);
-  
+
 protected:
 	INT16 TADJ0;
 	INT16 VADJ1;
-	INT16 VADJ2;      
+	INT16 VADJ2;
 
 	INT8 TSUMN;
 	INT8 TSUMC;
 	INT16 *TSUMB;
-		
 
 	VOID InitTSUMB(void);
 
 	//-----------------------------------------------------------------------------
-	// NTC ±âÁØ Å×ÀÌºí ÀÎµ¦½º ³Ñ¹ö¸¦ Ã£´Â´Ù.
-	// ÀÔ·Â : MRES = ¼¾¼­ÀÇ ½á¹Ì½ºÅÍ ÀúÇ× °ª
-	// Ãâ·Â : MRES °¡ À§Ä¡ÇÏ´Â NTC Å×ÀÌºí ÀÎµ¦½º À§Ä¡
+	// NTC ê¸°ì¤€ í…Œì´ë¸” ì¸ë±ìŠ¤ ë„˜ë²„ë¥¼ ì°¾ëŠ”ë‹¤.
+	// ì…ë ¥ : MRES = ì„¼ì„œì˜ ì¨ë¯¸ìŠ¤í„° ì €í•­ ê°’
+	// ì¶œë ¥ : MRES ê°€ ìœ„ì¹˜í•˜ëŠ” NTC í…Œì´ë¸” ì¸ë±ìŠ¤ ìœ„ì¹˜
 	//-----------------------------------------------------------------------------
 	INT16 GetNTCIndex(INT32 MRES);
 
-	// NTC ±âÁØ ÀÎµ¦½º ¹øÈ£È­ ½ÇÃøµÈ °ªÀ» ÀÌ¿ëÇØ¼­ ÇØ´ç ±¸°£³»ÀÇ º¸Á¤ À§Ä¡ÀÇ ÆÛ¼¾Æ®¸¦ °è»êÇÑ´Ù.
-	// ±× ÀÌÀ¯´Â ½ÇÁ¦ ÃøÁ¤µÈ ¿Âµµ°ªÀÇ ÀúÇ×°ªÀÇ ÀÎµ¦½º´Â ÇØ´ç NTC ±¸°£ÀÇ 1µµ ºĞÇØ´ÉÀÌ±â ¶§¹®¿¡
-	// ±× »çÀÌÀÇ Á¤È®ÇÑ ¿Âµµ¸¦ °è»êÇÏ±â À§ÇØ¼­ ÃøÁ¤µÈ °ªÀÌ ÇØ´ç ±¸°£ÀÇ ¾î´À À§Ä¡¿¡ ÀÖ´ÂÁö ¾Ë¾Æ¾ß ÇÏ±â ¶§¹®ÀÌ´Ù.
-	// ÀÔ·Â : MRES ¼¾¼­ÀÇ ½á¹Ì½ºÅÍ ÀúÇ× °ª
-	//       MRES ÀÇ index ÇØ´ç NTC ÀÎµ¦½º À§Ä¡ °ª
-	// Ãâ·Â : ÇØ´ç NTC ±¸°£ÀÇ ÀÔ·ÂµÈ MRES ÀÇ À§Ä¡ ÆÛ¼¾Æ® °ª
+	// NTC ê¸°ì¤€ ì¸ë±ìŠ¤ ë²ˆí˜¸í™” ì‹¤ì¸¡ëœ ê°’ì„ ì´ìš©í•´ì„œ í•´ë‹¹ êµ¬ê°„ë‚´ì˜ ë³´ì • ìœ„ì¹˜ì˜ í¼ì„¼íŠ¸ë¥¼ ê³„ì‚°í•œë‹¤.
+	// ê·¸ ì´ìœ ëŠ” ì‹¤ì œ ì¸¡ì •ëœ ì˜¨ë„ê°’ì˜ ì €í•­ê°’ì˜ ì¸ë±ìŠ¤ëŠ” í•´ë‹¹ NTC êµ¬ê°„ì˜ 1ë„ ë¶„í•´ëŠ¥ì´ê¸° ë•Œë¬¸ì—
+	// ê·¸ ì‚¬ì´ì˜ ì •í™•í•œ ì˜¨ë„ë¥¼ ê³„ì‚°í•˜ê¸° ìœ„í•´ì„œ ì¸¡ì •ëœ ê°’ì´ í•´ë‹¹ êµ¬ê°„ì˜ ì–´ëŠ ìœ„ì¹˜ì— ìˆëŠ”ì§€ ì•Œì•„ì•¼ í•˜ê¸° ë•Œë¬¸ì´ë‹¤.
+	// ì…ë ¥ : MRES ì„¼ì„œì˜ ì¨ë¯¸ìŠ¤í„° ì €í•­ ê°’
+	//       MRES ì˜ index í•´ë‹¹ NTC ì¸ë±ìŠ¤ ìœ„ì¹˜ ê°’
+	// ì¶œë ¥ : í•´ë‹¹ NTC êµ¬ê°„ì˜ ì…ë ¥ëœ MRES ì˜ ìœ„ì¹˜ í¼ì„¼íŠ¸ ê°’
 	INT16 GetNTCValueRatio(INT32 MRES, INT16 index);
 
-
-	// »ç¹° ¿Âµµ¸¦ ÀÎÃ¼ ¿Âµµ·Î º¯È¯
-	// ÀÔ·Â : T_OBJ ´Â ÃøÁ¤µÈ »ç¹° ¿Âµµ¸¦ 10 ¹è¼öÇÑ Á¤¼öÀÌ´Ù.
-	// Ãâ·Â : -1 = LO
+	// ì‚¬ë¬¼ ì˜¨ë„ë¥¼ ì¸ì²´ ì˜¨ë„ë¡œ ë³€í™˜
+	// ì…ë ¥ : T_OBJ ëŠ” ì¸¡ì •ëœ ì‚¬ë¬¼ ì˜¨ë„ë¥¼ 10 ë°°ìˆ˜í•œ ì •ìˆ˜ì´ë‹¤.
+	// ì¶œë ¥ : -1 = LO
 	//       -2 = HI
 	INT8 GetTBLValue(INT16 T_OBJ);
 
-
-	// Æò±Õ°ªÀ» ±¸ÇÏ´Â ¸µ ¸Ş¸ğ¸® °ü·Ã ÇÔ¼ö
+	// í‰ê· ê°’ì„ êµ¬í•˜ëŠ” ë§ ë©”ëª¨ë¦¬ ê´€ë ¨ í•¨ìˆ˜
 	VOID ClearTSUMB();
 	INT16 GetTSUMB();
 	INT16 AddTSUMB(INT16 B);

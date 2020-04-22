@@ -6,11 +6,23 @@
     <encoding>UTF-8</encoding>
   </override>
   <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_SCAN.h</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
     <path>Z:\LANG\MIDM_NON-CONTACT\IWON_TASK.cpp</path>
     <encoding>UTF-8</encoding>
   </override>
   <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_TASK.h</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
     <path>Z:\LANG\MIDM_NON-CONTACT\IWON_VAVG.cpp</path>
+    <encoding>UTF-8</encoding>
+  </override>
+  <override>
+    <path>Z:\LANG\MIDM_NON-CONTACT\IWON_VAVG.h</path>
     <encoding>UTF-8</encoding>
   </override>
   <override>

@@ -12,16 +12,16 @@
 #ifndef IWON_TEMP_VAVG_H
 #define IWON_TEMP_VAVG_H
 
+class IWON_TEMP_VAVG
+{
 
-class IWON_TEMP_VAVG {
-    
 public:
-	// »ý¼ºÀÚ
+	// ìƒì„±ìž
 	IWON_TEMP_VAVG();
-	IWON_TEMP_VAVG(INT8 sumNum);   // Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+	IWON_TEMP_VAVG(INT8 sumNum); // í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 	IWON_TEMP_VAVG(INT8 sumNum, INT8 OC);
 
-	// ¼Ò¸êÀÚ
+	// ì†Œë©¸ìž
 	~IWON_TEMP_VAVG();
 
 	VOID Init(VOID);
@@ -33,8 +33,8 @@ public:
 	INT32 AddCalc(INT32 v, INT32 cv);
 	BOOL IsOC(VOID);
 
-private:  	
-	INT32 *val;	
+private:
+	INT32 *val;
 	INT8 num;
 	INT8 pos;
 	INT8 erc;

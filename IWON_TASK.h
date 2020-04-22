@@ -13,7 +13,6 @@
 #ifndef IWON_TEMP_TASK_H
 #define IWON_TEMP_TASK_H
 
-
 #define DEFINED_adcVREFValue 1224
 
 #define DEFINED_VDDREF 3300
@@ -21,19 +20,19 @@
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
 
-#define GPIO_HIGH(a,b) 		a->ODR|=b
-#define GPIO_LOW(a,b)		a->ODR&=~b
-#define GPIO_TOGGLE(a,b) 	a->ODR^=b
+#define GPIO_HIGH(a, b) a->ODR |= b
+#define GPIO_LOW(a, b) a->ODR &= ~b
+#define GPIO_TOGGLE(a, b) a->ODR ^= b
 
+class IWON_TEMP_TASK : IWON_TEMP_SCAN
+{
 
-class IWON_TEMP_TASK : IWON_TEMP_SCAN{
-    
 public:
-	// »ı¼ºÀÚ
+	// ìƒì„±ì
 	IWON_TEMP_TASK();
-	IWON_TEMP_TASK(INT8 tsumn);   // ¿Âµµ Æò±Õ°ªÀ» ¸¸µé±â À§ÇÏ¿© ¸î°³ÀÇ ¹æÀ» ½á¾ßÇÒÁö °áÁ¤
+	IWON_TEMP_TASK(INT8 tsumn); // ì˜¨ë„ í‰ê· ê°’ì„ ë§Œë“¤ê¸° ìœ„í•˜ì—¬ ëª‡ê°œì˜ ë°©ì„ ì¨ì•¼í• ì§€ ê²°ì •
 
-	// ¼Ò¸êÀÚ
+	// ì†Œë©¸ì
 	~IWON_TEMP_TASK();
 
 	BOOL Task(UINT MGInterval, UINT TTInterval);
@@ -43,30 +42,30 @@ public:
 	INT16 Get_AMB_TEMP(VOID);
 	INT16 Get_OBJ_TEMP(VOID);
 	INT16 Get_BDY_TEMP(VOID);
-	
+
 	VOID Clear_AVG(VOID);
 	VOID Set_AdjValue(INT32 ADJV);
-	
+
 	BOOL NeedPowerDown(VOID);
 	VOID ClearPowerDown(VOID);
-        
-        VOID YellowDisp(VOID);
 
-private:  
+	VOID YellowDisp(VOID);
+
+private:
 	VOID Init(VOID);
 
 	VOID Init_Clock(VOID);
 	VOID Init_TIM4(VOID);
-	VOID Init_ADC(VOID);	
-	
+	VOID Init_ADC(VOID);
+
 	DWORD GetTimeStamp(VOID);
 	VOID SetTimeStamp(DWORD t);
 	DWORD GetTimeOutStartTime(VOID);
 	BOOL TimeOut(DWORD startTime, UINT delayTime);
-	
+
 	INT32 powerDown_msec;
 
-	UINT adcVREFValue;   // 1.224V
+	UINT adcVREFValue; // 1.224V
 	UINT adcVREFINTvalue;
 	UINT adcCalValue;
 
@@ -77,50 +76,50 @@ private:
 	UINT adc2value;
 	float adc2volt;
 
-	INT32 VDDREF;  // ¼³°è»óÀÇ VDD Àü¿ø 3.3V
-	INT32 VDD;     // ÃøÁ¤ÇÏ¿© º¸Á¤µÈ VDD Àü¿ø
-	INT32 VCAL;    // ¼³°è»óÀÇ VDD Àü¿ø¿¡ ´ëÇÑ ÃøÁ¤µÈ ADC ¿É¼Â
+	INT32 VDDREF; // ì„¤ê³„ìƒì˜ VDD ì „ì› 3.3V
+	INT32 VDD;		// ì¸¡ì •í•˜ì—¬ ë³´ì •ëœ VDD ì „ì›
+	INT32 VCAL;		// ì„¤ê³„ìƒì˜ VDD ì „ì›ì— ëŒ€í•œ ì¸¡ì •ëœ ADC ì˜µì…‹
 	INT32 V0;
 	DWORD R0;
-	DWORD R1;   // 100K
-	DWORD R2;   // 200K
-	DWORD R3;   // ÃøÁ¤µÈ ½á¹Ì½ºÅÍ ÀúÇ×°ª
-	
+	DWORD R1; // 100K
+	DWORD R2; // 200K
+	DWORD R3; // ì¸¡ì •ëœ ì¨ë¯¸ìŠ¤í„° ì €í•­ê°’
+
 	INT32 sumCount;
-	
+
 	DWORD timeStamp;
 	DWORD startTime;
-	
+
 	INT32 Vrefint;
 	INT32 Vrefvdd;
 	INT32 Vrefbat;
 	INT32 Vrefntc;
 	INT32 Vreftpc;
-	
+
 	DWORD TTtime;
 	DWORD MGtime;
 
 	INT8 tCC;
-	
+
 	IWON_TEMP_VAVG *VrefintAvg;
 	IWON_TEMP_VAVG *VrefvddAvg;
 	IWON_TEMP_VAVG *VrefbatAvg;
 	IWON_TEMP_VAVG *VrefntcAvg;
 	IWON_TEMP_VAVG *VreftpcAvg;
-	
+
 	INT32 VrefintmV;
 	INT32 VrefvddmV;
 	INT32 VrefbatmV;
 	INT32 VrefntcmV;
 	INT32 VreftpcmV;
-	
+
 	INT16 AMB_TEMP;
 	INT16 OBJ_TEMP;
 	INT16 BDY_TEMP;
-	
+
 	INT16 ADJ_VALUE;
-        
-        int count;
+
+	int count;
 };
 
 #endif
