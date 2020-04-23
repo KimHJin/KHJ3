@@ -176,7 +176,7 @@ VOID IWON_TEMP_TASK::Init_ADC(VOID)
 
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
-	return Task(250, 60);
+	return Task(250, 70);
 }
 
 BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
