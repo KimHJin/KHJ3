@@ -228,10 +228,10 @@ int16_t unitCalc(int16_t temp, int unit)
 
 void tempLogDataTask()
 {
-	memNumber_p++;
+	memNumber_p--;
 
-	if (memNumber_p > 32)
-		memNumber_p = 1;
+	if (memNumber_p < 0)
+		memNumber_p = 32;
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
@@ -270,23 +270,25 @@ void tempUnitTask()
 
 /*********************************************/
 
-void specialModeDisp()
+void specialModeDisp(int16_t value)
 {
-	int forthNumber = caliData_p % 10;
-	int thirdNumber = (caliData_p / 10) % 10;
-	int secondNumber = (caliData_p / 100) % 10;
+    int16_t temp = 0;
+  
+	if(value < 0) 
+		temp = -1 * value;
+	else 
+		temp = value;
 
-	NUMBER_CLEAR(1);
-
-	if (!PLUS_MINUS && caliData_p != 0)
-	{
-		NUMBER_CLEAR(1);
+	int secondNumber = temp % 10;
+	int firstNumber = temp / 10;
+	
+	if(value < 0) 
 		LCD->G1 = 1;
-	}
-	else
-		displayNumber(secondNumber, 1);
-	displayNumber(thirdNumber, 2);
-	displayNumber(forthNumber, 3);
+	else 
+		LCD->G1 = 0;
+	
+	displayNumber(firstNumber, 2);
+	displayNumber(secondNumber, 3);
 }
 
 void specialMode()
@@ -297,62 +299,32 @@ void specialMode()
 		delay_ms(400);
 		displayRGB(RED);
 
-		if (caliData_p == 0)
-			PLUS_MINUS = 0;
-
-		if (!PLUS_MINUS)
-		{
-			caliData_p++;
-			if (caliData_p > 99)
-				caliData_p = 99;
-		}
-		else
-		{
-			caliData_p--;
-			if (caliData_p <= 0)
-				PLUS_MINUS = 0;
-		}
-
-		specialModeDisp();
+		caliData_p--;
+		
+		if(caliData_p < -99)
+			caliData_p = -99;
+		  
+		specialModeDisp(caliData_p);
 	}
 
 	else if (SW_RIGHT_ON)
 	{
 		delay_ms(400);
 		displayRGB(BLUE);
+		
+		caliData_p++;
+		
+		if(caliData_p > 99) 
+	    	caliData_p = 99;
 
-		if (caliData_p == 0)
-			PLUS_MINUS = 1;
-
-		if (PLUS_MINUS)
-		{
-			caliData_p++;
-			if (caliData_p > 99)
-				caliData_p = 99;
-		}
-		if (!PLUS_MINUS)
-		{
-			caliData_p--;
-
-			if (caliData_p >= 0)
-				PLUS_MINUS = 1;
-		}
-
-		specialModeDisp();
+		specialModeDisp(caliData_p);
 	}
 }
 
 void caliDone()
 {
-
-	int16_t value = caliData_p;
-
-	if (!PLUS_MINUS)
-		value = -1 * caliData_p;
-	else
-		value = caliData_p;
-
-	IWonTask->Set_AdjValue(value); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+  
+	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
 	LCD_clear();
 
@@ -392,10 +364,13 @@ void keyScan()
 			if (delayCount == 350)
 			{
 				Beep();
-				delay_ms(40);
-
+				
 				displayRGB(CLEAR);
 				LCD_clear();
+				
+				specialModeDisp(caliData_p);
+				
+				while(SW_LEFT_ON || SW_RIGHT_ON);
 
 				while (!SW_PWR_ON)
 				{
@@ -403,6 +378,8 @@ void keyScan()
 				}
 
 				caliDone();
+				
+				delay_ms(500);
 			}
 
 			if (delayCount == 60 && !SW_RIGHT_ON) // LONG_PRESS
@@ -436,10 +413,13 @@ void keyScan()
 			if (delayCount == 350)
 			{
 				Beep();
-				delay_ms(40);
-
+				
 				displayRGB(CLEAR);
 				LCD_clear();
+				
+				specialModeDisp(caliData_p);
+				
+				while(SW_LEFT_ON || SW_RIGHT_ON);
 
 				while (!SW_PWR_ON)
 				{
@@ -447,6 +427,8 @@ void keyScan()
 				}
 
 				caliDone();
+				
+				delay_ms(500);
 			}
 
 			if (delayCount == 60 && !SW_LEFT_ON) // LONG_PRESS
@@ -482,24 +464,24 @@ void BeepMode(int mode)
 
 	if (mode == HIGH_FEVER)
 	{
-		Beep(1500);
-		delay_ms(30);
-		Beep(1500);
-		delay_ms(30);
-		Beep(1500);
+		Beep(800);
+		delay_ms(320);
+		Beep(800);
+		delay_ms(320);
+		Beep(800);
 	}
 
 	else if (mode == LIGHT_FEVER)
 	{
-		Beep(400);
-		delay_ms(30);
-		Beep(400);
-		delay_ms(30);
-		Beep(400);
+		Beep(600);
+		delay_ms(240);
+		Beep(600);
+		delay_ms(240);
+		Beep(600);
 	}
 	else if (mode == NORMAL)
 	{
-		Beep(400);
+		Beep(500);
 	}
 }
 
@@ -512,17 +494,6 @@ void saveTemp()
 	memNumberDisplay(memNumber_p);
 
 	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-}
-
-int16_t getCaliValue()
-{
-
-	int16_t value = caliData_p;
-
-	if (!PLUS_MINUS)
-		value = -1 * caliData_p;
-
-	return value;
 }
 
 void systemError(VOID)
@@ -559,17 +530,14 @@ int main(void)
 
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
 
-	int16_t value = caliData_p;
-	if (!PLUS_MINUS)
-		value = -1 * caliData_p;
-	else
-		value = caliData_p;
+	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
-	IWonTask->Set_AdjValue(value); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-
-	Beep();
-
+	//Beep();
+   
+	BeepMode(NORMAL); 
+	
 	delay_ms(100);
+	
 	for (int i = 0; i < 1000; i++)
 	{
 		IWonTask->Task();
@@ -590,12 +558,12 @@ int main(void)
 	INT8 MeasredCount1 = 0;
 	INT8 MeasredCount2 = 0;
 
-	while (SW_PWR_ON)
-		;
+	while (SW_PWR_ON);
 
+	
 	while (IWonTask->NeedPowerDown() == false)
 	{
-
+		
 		if (Measuring == false)
 		{
 			keyScan();
@@ -661,6 +629,7 @@ int main(void)
 						{ // LOW  Less Than 33.4 C
 
 							delay_ms(2000);
+							
 							MeasredTemp = TEMP;
 
 							Beep();
@@ -783,6 +752,8 @@ int main(void)
 	LCD_clear();
 
 	GPIO_LOW(GPIOD, GPIO_Pin_7);
+
+
 }
 
 /*********************************************/
