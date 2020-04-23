@@ -51,7 +51,7 @@ public:
 
 	VOID YellowDisp(VOID);
 
-private:
+public:
 	VOID Init(VOID);
 
 	VOID Init_Clock(VOID);

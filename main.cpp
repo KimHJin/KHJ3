@@ -399,6 +399,8 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
+		GPIO_LOW(GPIOD, GPIO_Pin_7);
+
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
@@ -511,6 +513,11 @@ void systemError(VOID)
 	delay_ms(40);
 }
 
+VOID display(UINT v)
+{
+	tempValueDisplay(v);
+}
+
 /*********************************************/
 /*****************  MAIN  ********************/
 /*********************************************/
@@ -537,7 +544,7 @@ int main(void)
    
 	BeepMode(NORMAL); 
 	
-	/*
+	/*	
 	delay_ms(4000);
 	BeepMode(HIGH_FEVER); 
 	delay_ms(4000);
@@ -549,10 +556,11 @@ int main(void)
 	{
 		IWonTask->Task();
 		delay_ms(30);
-	}
+	}    
 	if (true)
 	{
 		INT32 AMB = IWonTask->Get_AMB_TEMP();
+display(AMB);
 		if (AMB < 0 || 500 < AMB)
 		{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 			systemError();
