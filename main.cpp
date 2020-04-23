@@ -538,10 +538,10 @@ int main(void)
 	BeepMode(NORMAL); 
 	
 	delay_ms(100);
-	for (int i = 0; i < 60; i++)
+	for (int i = 0; i < 50; i++)
 	{
 		IWonTask->Task();
-		delay_ms(20);
+		delay_ms(30);
 	}
 	if (true)
 	{
@@ -557,6 +557,7 @@ int main(void)
 	INT16 MeasredTemp = -999;
 	INT8 MeasredCount1 = 0;
 	INT8 MeasredCount2 = 0;
+	INT8 RetryCount = 0;
 
 	while (SW_PWR_ON)
 		;
@@ -584,6 +585,7 @@ int main(void)
 
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
+				RetryCount = 0;
 			}
 		}
 		if (Measuring == false && Measured && SW_PWR_ON == false)
@@ -619,10 +621,25 @@ int main(void)
 				{
 					if (measureMode_p == 1)
 					{
-
 						// 인체 측정
 						TEMP = IWonTask->Get_BDY_TEMP();
 						// TEMP += getCaliValue();
+
+						//if(RetryCount<3) TEMP = 100;
+
+						if (TEMP != -2 && TEMP < 334)
+						{
+							RetryCount++;
+							if(RetryCount<5)
+							{
+								Measured = false;
+								Measuring = true;
+								MeasredTemp == -100;
+								IWonTask->Clear_AVG();
+								delay_ms(300);
+								continue;
+							}
+						}
 
 						if (TEMP != -2 && TEMP < 334)
 						{ // LOW  Less Than 33.4 C
