@@ -464,24 +464,24 @@ void BeepMode(int mode)
 
 	if (mode == HIGH_FEVER)
 	{
-		Beep(3000);
-		delay_ms(1500);
-		Beep(3000);
-		delay_ms(1500);
-		Beep(3000);
+		Beep(3900);
+		delay_ms(2000);
+		Beep(3900);
+		delay_ms(2000);
+		Beep(3900);
 	}
 
 	else if (mode == LIGHT_FEVER)
 	{
-		Beep(1600);
-		delay_ms(900);
-		Beep(1600);
-		delay_ms(900);
-		Beep(1600);
+		Beep(2000);
+		delay_ms(1100);
+		Beep(2000);
+		delay_ms(1100);
+		Beep(2000);
 	}
 	else if (mode == NORMAL)
 	{
-		Beep(2000);
+		Beep(2600);
 	}
 }
 
@@ -536,6 +536,13 @@ int main(void)
 	//Beep();
    
 	BeepMode(NORMAL); 
+	
+	/*
+	delay_ms(4000);
+	BeepMode(HIGH_FEVER); 
+	delay_ms(4000);
+	BeepMode(LIGHT_FEVER); 
+	*/
 	
 	delay_ms(100);
 	for (int i = 0; i < 50; i++)
@@ -634,7 +641,7 @@ int main(void)
 							{
 								Measured = false;
 								Measuring = true;
-								MeasredTemp == -100;
+								MeasredTemp = -100;
 								IWonTask->Clear_AVG();
 								delay_ms(300);
 								continue;
