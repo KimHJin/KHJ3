@@ -7,6 +7,8 @@
 // 2020/04/18 v1.0 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
+void delay_ms(int ms);
+
 #include "IWON_TASK.h"
 
 IWON_TEMP_TASK::IWON_TEMP_TASK() : IWON_TEMP_SCAN()
@@ -40,9 +42,9 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	adc2value = 0;
 	adc2volt = 0;
 
-	VDDREF = DEFINED_VDDREF; // 설계상의 VDD 전원 3.3V
-	VDD = DEFINED_VDD;			 // 측정하여 보정된 VDD 전원
-	VCAL = 0;								 // 설계상의 VDD 전원에 대한 측정된 ADC 옵셋
+	VDDREF = DEFINED_VDDREF;	// 설계상의 VDD 전원 3.3V
+	VDD = DEFINED_VDD;			// 측정하여 보정된 VDD 전원
+	VCAL = 0;					// 설계상의 VDD 전원에 대한 측정된 ADC 옵셋
 	V0 = 0;
 	R0 = 0;
 	R1 = DEFINED_R1; // 100K
@@ -76,9 +78,9 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	TTtime = startTime;
 	MGtime = startTime;
 
-	VrefintAvg = new IWON_TEMP_VAVG(5, 2);
-	VrefvddAvg = new IWON_TEMP_VAVG(5, 2);
-	VrefbatAvg = new IWON_TEMP_VAVG(5, 2);
+	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
+	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
+	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefntcAvg = new IWON_TEMP_VAVG(10);
 	VreftpcAvg = new IWON_TEMP_VAVG(15);
 
@@ -92,11 +94,11 @@ VOID IWON_TEMP_TASK::Init(VOID)
 
 VOID IWON_TEMP_TASK::Init_Clock(VOID)
 {
-	CLK_PeripheralClockConfig(CLK_Peripheral_ADC1, ENABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_TIM4, ENABLE);
+	CLK_PeripheralClockConfig(CLK_Peripheral_ADC1, ENABLE);
 
 	/* Select HSE as system clock source */
-	//CLK_SYSCLKSourceSwitchCmd(ENABLE);
+	CLK_SYSCLKSourceSwitchCmd(ENABLE);
 	//CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSE);
 	CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSI);
 	CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
@@ -193,14 +195,15 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		// V0 는 써미스터에 걸리는 전압
 		// R0 는 써미스터와 병렬로 연결된 저항과 병렬 합계 저항 값
 		V0 = VrefntcmV;
-		R0 = (V0 * R1) / (DWORD)(VDD - V0);
+		R0 = ((DWORD)V0 * (R1 / 100)) / (DWORD)(VDD - V0) * 100;
 
 		// R3 는 써미스터 저항 값
-		R3 = ((R2/100)*(R0/100)*100) / (R2 - R0);
+		R3 = ((R2/10)*(R0/10)*10) / (R2-R0);
 
-		printf("VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", VDD, V0, R0, R1, R2, R3);
+		//printf("CAL=%d, VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", adcCalValue, VDD, V0, R0, R1, R2, R3);
 		
-		INT32 MRES = R3 * 100;
+		INT32 MRES = R3 * 10;
+		//printf("MRES=%ld\r\n", MRES);
 		INT16 ntcIndex = GetNTCIndex(MRES);
 		if (ntcIndex == 0)
 		{
@@ -217,7 +220,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 + PR) / 10;
 			
-			printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
+			//printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
 
 			// constants for the thermopile calculation
 			const float k = 0.004313f;
@@ -286,16 +289,18 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 	}
 	else if (TimeOut(TTtime, TTInterval))
 	{
-
 		if (tCC == 0 && VrefintAvg->IsOC())
 			tCC++;
 		if (tCC == 0)
 		{
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, ENABLE); // REFINT
+			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); 		 // REFINT
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);			 // REFVDD
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);			 // BAT
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);			 // NTC
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);			 // TPC
+
+			delay_ms(1);
+			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, ENABLE);				// REFINT
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
@@ -308,14 +313,19 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		{
 			if (!VrefintAvg->IsOC())
 			{
+				//printf("VrefintAvg\r\n");
+		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
 			}
 
 			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, ENABLE);				// REFVDD
+			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
+
+			delay_ms(1);
+			ADC_ChannelCmd(ADC1, ADC_Channel_3, ENABLE);				// REFVDD
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
@@ -328,14 +338,35 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		{
 			if (!VrefvddAvg->IsOC())
 			{
+		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
+				//printf("VrefvddAvg VrefvddmV=%ld\r\n", VrefvddmV);
+				if(VrefvddmV>1600) {
+					// 전원 측정이 된 것이다.
+					if(VrefvddAvg->IsOC()) {
+						adcCalValue = (VDDREF - (VrefvddmV * 2)) / 2;
+						VrefintAvg->SetOC();
+					} else {
+						tCC = 0;
+						return FALSE;
+					}
+				} else {
+					tCC = 0;
+					MGtime = GetTimeOutStartTime();
+					TTtime = GetTimeOutStartTime();
+					return FALSE;
+				}
 			}
 
 			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, ENABLE);				// BAT
+			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
+
+			delay_ms(1);
+			ADC_ChannelCmd(ADC1, ADC_Channel_4, ENABLE);				// BAT
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
@@ -346,16 +377,22 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			tCC++;
 		if (tCC == 3)
 		{
-			if (!VrefbatAvg->IsOC())
+			if (VrefvddAvg->IsOC() && !VrefbatAvg->IsOC())
 			{
+				//printf("VrefbatAvg\r\n");
+		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				VrefbatAvg->SetOC();
 			}
 
 			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, ENABLE);				// NTC
+			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
+
+			delay_ms(1);
+			ADC_ChannelCmd(ADC1, ADC_Channel_5, ENABLE);				// NTC
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
@@ -366,15 +403,21 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			tCC++;
 		if (tCC == 4)
 		{
-			if (!VrefntcAvg->IsOC())
+			if (VrefvddAvg->IsOC() && !VrefntcAvg->IsOC())
 			{
+				//printf("VrefntcAvg\r\n");
+		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 				Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				VrefntcAvg->SetOC();
 			}
 
 			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
+			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
+			
+			delay_ms(1);
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, ENABLE);				// TPC
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
@@ -384,8 +427,10 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 
 		if (tCC == 5)
 		{
-			if (!VreftpcAvg->IsOC())
+			if (VrefntcAvg->IsOC() && !VreftpcAvg->IsOC())
 			{
+				//printf("VreftpcAvg\r\n");
+		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 				Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
 			}
 			tCC = 0;

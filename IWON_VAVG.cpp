@@ -116,3 +116,8 @@ BOOL IWON_TEMP_VAVG::IsOC(VOID)
 {
 	return (oc > 0 && oc < cc);
 }
+VOID IWON_TEMP_VAVG::SetOC(VOID)
+{
+	oc = 1;
+	cc = 2;
+}

@@ -32,6 +32,7 @@ public:
 	INT32 AddCalc(INT32 v);
 	INT32 AddCalc(INT32 v, INT32 cv);
 	BOOL IsOC(VOID);
+	VOID SetOC(VOID);
 
 private:
 	INT32 *val;
