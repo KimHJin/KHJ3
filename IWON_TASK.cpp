@@ -195,16 +195,10 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		V0 = VrefntcmV;
 		R0 = (V0 * R1) / (DWORD)(VDD - V0);
 
-		printf("VDD=%ld\r\n", VDD);
-		printf("V0=%ld\r\n", V0);
-		printf("R1=%ld\r\n", R1);
-		printf("R2=%ld\r\n", R2);
-		printf("R0=%ld\r\n", R0);
-
 		// R3 는 써미스터 저항 값
 		R3 = ((R2/100)*(R0/100)*100) / (R2 - R0);
 
-		printf("R3=%ld\r\n", R3);
+		printf("VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", VDD, V0, R0, R1, R2, R3);
 		
 		INT32 MRES = R3 * 100;
 		INT16 ntcIndex = GetNTCIndex(MRES);
@@ -223,7 +217,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 + PR) / 10;
 			
-			//printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
+			printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
 
 			// constants for the thermopile calculation
 			const float k = 0.004313f;
