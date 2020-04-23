@@ -382,14 +382,14 @@ void keyScan()
 				delay_ms(500);
 			}
 
-			if (delayCount == 60 && !SW_RIGHT_ON) // LONG_PRESS
+			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
 			{
 				Beep();
 				measureModeTask(); // measure mode Set
 			}
 		}
 
-		if (delayCount < 60) // SHORT_PRESS
+		if (delayCount < 100) // SHORT_PRESS
 		{
 			Beep();
 			tempLogDataTask(); // memory Data
@@ -431,14 +431,14 @@ void keyScan()
                 delay_ms(500);				
 			}
 
-			if (delayCount == 60 && !SW_LEFT_ON) // LONG_PRESS
+			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
 			{
 				Beep();
 				tempUnitTask(); // temp Unit set
 			}
 		}
 
-		if (delayCount < 60) // SHORT_PRESS
+		if (delayCount < 100) // SHORT_PRESS
 		{
 			buzzerStateTask(); // buzzer On / Off
 			Beep();
@@ -464,24 +464,24 @@ void BeepMode(int mode)
 
 	if (mode == HIGH_FEVER)
 	{
-		Beep(800);
-		delay_ms(320);
-		Beep(800);
-		delay_ms(320);
-		Beep(800);
+		Beep(3000);
+		delay_ms(1500);
+		Beep(3000);
+		delay_ms(1500);
+		Beep(3000);
 	}
 
 	else if (mode == LIGHT_FEVER)
 	{
-		Beep(600);
-		delay_ms(240);
-		Beep(600);
-		delay_ms(240);
-		Beep(600);
+		Beep(1600);
+		delay_ms(900);
+		Beep(1600);
+		delay_ms(900);
+		Beep(1600);
 	}
 	else if (mode == NORMAL)
 	{
-		Beep(400);
+		Beep(2000);
 	}
 }
 
@@ -537,12 +537,11 @@ int main(void)
    
 	BeepMode(NORMAL); 
 	
-
-	delay_ms(200);
-	for (int i = 0; i < 100; i++)
+	delay_ms(100);
+	for (int i = 0; i < 60; i++)
 	{
 		IWonTask->Task();
-		delay_ms(30);
+		delay_ms(20);
 	}
 	if (true)
 	{
