@@ -296,7 +296,7 @@ void specialModeDisp(int16_t value)
 void specialMode()
 {
 
-	if (SW_LEFT_ON)
+	if (SW_RIGHT_ON)
 	{
 		delay_ms(400);
 		displayRGB(RED);
@@ -306,9 +306,10 @@ void specialMode()
 		if(caliData_p > 99) 
 	    	caliData_p = 99;
 
+
 		specialModeDisp(caliData_p);
 	}
-	else if (SW_RIGHT_ON)
+	else if (SW_LEFT_ON)
 	{
 		delay_ms(400);
 		displayRGB(BLUE);
