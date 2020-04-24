@@ -53,6 +53,7 @@ public:
 	VOID ClearPowerDown(VOID);
 
 	VOID YellowDisp(VOID);
+	VOID lowBatteryDisp(VOID);
 private:
 	VOID Init(VOID);
 
@@ -121,7 +122,9 @@ private:
 
 	INT16 ADJ_VALUE;
 
-	int count;
+	int yellowDisp_Count;
+	int lowBattery_Count;
+	
 };
 
 #endif

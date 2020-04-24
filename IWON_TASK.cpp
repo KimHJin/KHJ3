@@ -86,7 +86,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	Init_ADC();
 
 	powerDown_msec = 0;
-	count = 0;
+	yellowDisp_Count = 0;
+    lowBattery_Count = 0;
 }
 
 VOID IWON_TEMP_TASK::Delay_10us(INT16 us)
@@ -501,8 +502,8 @@ VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 
 VOID IWON_TEMP_TASK::YellowDisp(VOID)
 {
-	count++;
-	if (count < 5)
+	yellowDisp_Count++;
+	if (yellowDisp_Count < 5)
 	{
 		GPIO_LOW(GPIOD, GPIO_Pin_4); //RED
 
@@ -514,6 +515,26 @@ VOID IWON_TEMP_TASK::YellowDisp(VOID)
 
 		GPIO_HIGH(GPIOD, GPIO_Pin_4); //RED
 
-		count = 0;
+		yellowDisp_Count = 0;
 	}
+}
+
+VOID IWON_TEMP_TASK::lowBatteryDisp(VOID)
+{
+  lowBattery_Count++;
+  
+  if(lowBattery_Count < 500)
+  {
+	LCD->X5 = 1;
+	
+  }
+  
+  else if(lowBattery_Count < 1000)
+  {
+	LCD->X5 = 0;
+  }
+  
+  else 
+	lowBattery_Count = 0;
+  
 }

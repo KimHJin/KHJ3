@@ -21,6 +21,7 @@ IWON_TEMP_TASK *IWonTask = NULL;
 
 int yellowFlag = 0;
 int count = 0;
+int lowBatteryFlag = 0;
 
 /************************************************************************/
 /**
@@ -31,6 +32,9 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 	IWonTask->Time();
 	if (yellowFlag)
 		IWonTask->YellowDisp();
+	
+	if(lowBatteryFlag)
+	    IWonTask->lowBatteryDisp();
 
 	//
 	// 필요한 경우 여기에 코드를 넣어서 사용하세요.
@@ -167,6 +171,15 @@ void displayError(void)
 	LCD->DP1 = 0;
 }
 
+void batteryDisplay_10per(void)
+{
+  lowBatteryFlag = 1;
+}
+
+void batteryDisplay_30per(void)
+{
+  LCD->X5 = 1;
+}
 /************************************************************************/
 
 void delay_10us(int us)
@@ -581,10 +594,16 @@ int main(void)
 
 	INT16 BATmV = IWonTask->Get_BAT_mV();
 
-	BATmV = 1700;	// 우선 강제로 배터리 mV 를 넣어서
+	//BATmV = 100;	// 우선 강제로 배터리 mV 를 넣어서
 	// 이곳에 배터리 표시 관련 코드
 
 	tempValueDisplay(BATmV/10);	// <= 배터리 관련코드 완성후 여기 주석 처리
+	
+	
+	if(BATmV <= 300)  // less than battery 10%
+		batteryDisplay_10per();
+    else if(BATmV <= 900) // less than battery 30%
+	    batteryDisplay_30per();
 
 
 	while (SW_PWR_ON)

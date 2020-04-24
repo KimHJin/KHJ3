@@ -7,13 +7,13 @@
 
 #define __EEPROM ((EEROM_TypeDef *)EEPROM_base)
 
-#define PLUS_MINUS __EEPROM->plusminus
-#define caliData_p __EEPROM->caliData
-#define TEMP __EEPROM->measureTemp
-#define memNumber_p __EEPROM->memNumber
-#define measureMode_p __EEPROM->measureMode
-#define buzzerState_p __EEPROM->buzzerState
-#define tempUnit_p __EEPROM->tempUnit
+#define PLUS_MINUS     __EEPROM->plusminus
+#define caliData_p     __EEPROM->caliData
+#define TEMP           __EEPROM->measureTemp
+#define memNumber_p    __EEPROM->memNumber
+#define measureMode_p  __EEPROM->measureMode
+#define buzzerState_p  __EEPROM->buzzerState
+#define tempUnit_p 	   __EEPROM->tempUnit
 
 typedef struct
 {
@@ -26,9 +26,6 @@ typedef struct
   int16_t memTempData[32];
   int16_t measureTemp;
 
-  int16_t trash;
-
-  int8_t plusminus;
   int16_t caliData;
 
 } EEROM_TypeDef;
