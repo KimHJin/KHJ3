@@ -577,6 +577,12 @@ void tempValueDisplay(int16_t value)
 	{
 		displayNumber(secondNumber, 1);
 	}
+	else
+	if (firstNumber == 0)
+	{
+		displayNumber(0, 1);
+	}
+	
 	displayNumber(thirdNumber, 2);
 	displayNumber(forthNumber, 3);
 	LCD->DP1 = 1;

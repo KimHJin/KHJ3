@@ -579,8 +579,18 @@ int main(void)
 	INT8 MeasredCount2 = 0;
 	INT8 RetryCount = 0;
 
+	INT16 BATmV = IWonTask->Get_BAT_mV();
+
+	BATmV = 1700;	// 우선 강제로 배터리 mV 를 넣어서
+	// 이곳에 배터리 표시 관련 코드
+
+	tempValueDisplay(BATmV/10);	// <= 배터리 관련코드 완성후 여기 주석 처리
+
+
 	while (SW_PWR_ON)
 		;
+
+	tempValueDisplay(0);
 
 	while (IWonTask->NeedPowerDown() == false)
 	{

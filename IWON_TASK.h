@@ -43,6 +43,8 @@ public:
 	INT16 Get_AMB_TEMP(VOID);
 	INT16 Get_OBJ_TEMP(VOID);
 	INT16 Get_BDY_TEMP(VOID);
+	
+	INT16 Get_BAT_mV(VOID);
 
 	VOID Clear_AVG(VOID);
 	VOID Set_AdjValue(INT32 ADJV);

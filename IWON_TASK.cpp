@@ -475,6 +475,10 @@ INT16 IWON_TEMP_TASK::Get_BDY_TEMP(VOID)
 {
 	return BDY_TEMP;
 }
+INT16 IWON_TEMP_TASK::Get_BAT_mV(VOID)
+{
+	return (INT16)(VrefbatmV*2);
+}
 
 VOID IWON_TEMP_TASK::Clear_AVG(VOID)
 {
