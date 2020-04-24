@@ -72,7 +72,7 @@ void LCD_Display_init()
 	TEMP = 0;
 
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 	measureModeSet(measureMode_p);
 	buzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
@@ -591,7 +591,7 @@ void memNumberDisplay(int number)
 	displayNumber(secondNum, 5);
 }
 
-void memTempDataDisplay(int memNumber, int tempData)
+void memTempDataDisplay(int tempData)
 {
 
 	int forthNumber = tempData % 10;

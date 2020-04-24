@@ -15,7 +15,6 @@
 
 #define DEFINED_adcVREFValue 1224
 
-#define DEFINED_VDDREF 3300
 #define DEFINED_VDD 3300
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
@@ -39,6 +38,8 @@ public:
 	BOOL Task(VOID);
 	VOID Time(VOID);
 
+	BOOL Was_Calc(VOID);
+
 	INT16 Get_AMB_TEMP(VOID);
 	INT16 Get_OBJ_TEMP(VOID);
 	INT16 Get_BDY_TEMP(VOID);
@@ -50,10 +51,12 @@ public:
 	VOID ClearPowerDown(VOID);
 
 	VOID YellowDisp(VOID);
-
 private:
 	VOID Init(VOID);
 
+	VOID Delay_10us(INT16 us);
+	VOID Delay_ms(INT16 ms);	
+	
 	VOID Init_Clock(VOID);
 	VOID Init_TIM4(VOID);
 	VOID Init_ADC(VOID);
@@ -76,9 +79,6 @@ private:
 	UINT adc2value;
 	float adc2volt;
 
-	INT32 VDDREF;	// 설계상의 VDD 전원 3.3V
-	INT32 VDD;		// 측정하여 보정된 VDD 전원
-	INT32 VCAL;		// 설계상의 VDD 전원에 대한 측정된 ADC 옵셋
 	INT32 V0;
 	DWORD R0;
 	DWORD R1; // 100K

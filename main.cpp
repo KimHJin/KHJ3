@@ -59,6 +59,12 @@ void LCD_clear()
 	}
 }
 
+void POWER_DOWN()
+{
+	LCD_clear();
+	GPIO_LOW(GPIOD, GPIO_Pin_7);
+}
+
 void displayRGB(int color)
 {
 	if (color == RED)
@@ -234,7 +240,7 @@ void tempLogDataTask()
 		memNumber_p = 32;
 
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 }
 
 
@@ -266,7 +272,7 @@ void tempUnitTask()
 	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0)
 		tempValueDisplay(unitCalc(TEMP, tempUnit_p));
 
-	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 }
 
 /*********************************************/
@@ -295,6 +301,7 @@ void specialModeDisp(int16_t value)
 
 void specialMode()
 {
+	IWonTask->ClearPowerDown();
 
 	if (SW_RIGHT_ON)
 	{
@@ -334,7 +341,7 @@ void caliDone()
 	displayNumber(0, 3);
 
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 	measureModeSet(measureMode_p);
 	buzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
@@ -449,10 +456,8 @@ void keyScan()
 
 void tempLogDataSave(int16_t saveData)
 {
-
 	for (int i = 0; i < 31; i++)
 	{
-
 		__EEPROM->memTempData[i] = __EEPROM->memTempData[i + 1];
 	}
 
@@ -461,27 +466,26 @@ void tempLogDataSave(int16_t saveData)
 
 void BeepMode(int mode)
 {
-
 	if (mode == HIGH_FEVER)
 	{
-		Beep(3900);
-		delay_ms(2000);
-		Beep(3900);
-		delay_ms(2000);
-		Beep(3900);
+		Beep(2600);
+		delay_ms(400);
+		Beep(2600);
+		delay_ms(400);
+		Beep(2600);
 	}
 
 	else if (mode == LIGHT_FEVER)
 	{
-		Beep(2000);
-		delay_ms(1100);
-		Beep(2000);
-		delay_ms(1100);
-		Beep(2000);
+		Beep(1100);
+		delay_ms(400);
+		Beep(1100);
+		delay_ms(400);
+		Beep(1100);
 	}
 	else if (mode == NORMAL)
 	{
-		Beep(2600);
+		Beep(1100);
 	}
 }
 
@@ -493,7 +497,7 @@ void saveTemp()
 
 	memNumberDisplay(memNumber_p);
 
-	memTempDataDisplay(memNumber_p, unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 }
 
 
@@ -533,26 +537,35 @@ int main(void)
 
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
-	//Beep();
-   
-	BeepMode(NORMAL); 
+	Beep();   
 	
 	/*
-	delay_ms(4000);
-	BeepMode(HIGH_FEVER); 
-	delay_ms(4000);
+	delay_ms(2000);	
+	BeepMode(NORMAL); 	
+	delay_ms(2000);
 	BeepMode(LIGHT_FEVER); 
+	delay_ms(2000);
+	BeepMode(HIGH_FEVER); 
+	delay_ms(2000);
 	*/
 	
-	delay_ms(100);
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 60; i++)
 	{
 		IWonTask->Task();
+		if(IWonTask->Was_Calc()) {
+			for (int i = 0; i < 12; i++)
+			{
+				IWonTask->Task();			  
+				delay_ms(70);
+			}
+			break;
+		}
 		delay_ms(30);
 	}
 	if (true)
 	{
-		INT32 AMB = IWonTask->Get_AMB_TEMP();
+		INT32 AMB = IWonTask->Get_AMB_TEMP();		
+		//tempValueDisplay(AMB);
 		if (AMB < 0 || 500 < AMB)
 		{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 			systemError();
@@ -771,9 +784,7 @@ int main(void)
 		}
 	}
 
-	LCD_clear();
-
-	GPIO_LOW(GPIOD, GPIO_Pin_7);
+	POWER_DOWN();
 }
 
 /*********************************************/

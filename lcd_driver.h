@@ -95,7 +95,7 @@ void LCD_Display_init();
 void tempValueDisplay(int16_t value);
 void displayNumber(int number, int position);
 void memNumberDisplay(int number);
-void memTempDataDisplay(int memNumber, int tempData);
+void memTempDataDisplay(int tempData);
 void buzzerCMD(int state);
 void measureModeSet(int mode);
 void tempUnitSet(int unit);

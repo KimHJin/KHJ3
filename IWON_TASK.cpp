@@ -42,9 +42,6 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	adc2value = 0;
 	adc2volt = 0;
 
-	VDDREF = DEFINED_VDDREF;	// 설계상의 VDD 전원 3.3V
-	VDD = DEFINED_VDD;			// 측정하여 보정된 VDD 전원
-	VCAL = 0;					// 설계상의 VDD 전원에 대한 측정된 ADC 옵셋
 	V0 = 0;
 	R0 = 0;
 	R1 = DEFINED_R1; // 100K
@@ -81,8 +78,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefntcAvg = new IWON_TEMP_VAVG(10);
-	VreftpcAvg = new IWON_TEMP_VAVG(15);
+	VrefntcAvg = new IWON_TEMP_VAVG(20);
+	VreftpcAvg = new IWON_TEMP_VAVG(20);
 
 	Init_Clock();
 	Init_TIM4();
@@ -90,6 +87,22 @@ VOID IWON_TEMP_TASK::Init(VOID)
 
 	powerDown_msec = 0;
 	count = 0;
+}
+
+VOID IWON_TEMP_TASK::Delay_10us(INT16 us)
+{
+	us *= 16;
+	for (INT16 i = 0; i < us; i++)
+	{
+		us = us;
+	}
+}
+VOID IWON_TEMP_TASK::Delay_ms(INT16 ms)
+{
+	for (INT16 i = 0; i < ms; i++)
+	{
+		Delay_10us(100);
+	}
 }
 
 VOID IWON_TEMP_TASK::Init_Clock(VOID)
@@ -174,11 +187,14 @@ VOID IWON_TEMP_TASK::Init_ADC(VOID)
 	ADC_Cmd(ADC1, ENABLE);
 }
 
+BOOL IWON_TEMP_TASK::Was_Calc(VOID) {
+	return VrefntcAvg->IsOC();
+}
+
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
 	return Task(250, 70);
 }
-
 BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 { // MGInterval = Measure (200), TTInteval = Take Interval (50)
 	if (TimeOut(MGtime, MGInterval))
@@ -190,12 +206,12 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + (ADJ_VALUE * 10);
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
-		printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
+		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
 
 		// V0 는 써미스터에 걸리는 전압
 		// R0 는 써미스터와 병렬로 연결된 저항과 병렬 합계 저항 값
 		V0 = VrefntcmV;
-		R0 = ((DWORD)V0 * (R1 / 100)) / (DWORD)(VDD - V0) * 100;
+		R0 = ((DWORD)V0 * (R1 / 100)) / (DWORD)(DEFINED_VDD - V0) * 100;
 
 		// R3 는 써미스터 저항 값
 		R3 = ((R2/10)*(R0/10)*10) / (R2-R0);
@@ -293,7 +309,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			tCC++;
 		if (tCC == 0)
 		{
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); 		 // REFINT
+			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); 	 // REFINT
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);			 // REFVDD
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);			 // BAT
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);			 // NTC
@@ -345,7 +361,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				if(VrefvddmV>1600) {
 					// 전원 측정이 된 것이다.
 					if(VrefvddAvg->IsOC()) {
-						adcCalValue = (VDDREF - (VrefvddmV * 2)) / 2;
+						adcCalValue = (DEFINED_VDD - (VrefvddmV * 2)) / 2;
 						VrefintAvg->SetOC();
 					} else {
 						tCC = 0;
@@ -406,8 +422,12 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (VrefvddAvg->IsOC() && !VrefntcAvg->IsOC())
 			{
 				//printf("VrefntcAvg\r\n");
-		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+		        for(int i=0;i<25;i++)
+				{
+			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
+					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+					ADC_SoftwareStartConv(ADC1);
+				}				
 				VrefntcAvg->SetOC();
 			}
 
