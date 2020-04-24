@@ -600,9 +600,9 @@ int main(void)
 	tempValueDisplay(BATmV/10);	// <= 배터리 관련코드 완성후 여기 주석 처리
 	
 	
-	if(BATmV <= 300)  // less than battery 10%
+	if(BATmV <= 1200)  // less than battery 10%  (1.2V, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
 		batteryDisplay_10per();
-    else if(BATmV <= 900) // less than battery 30%
+    else if(BATmV <= 1500) // less than battery 30% (약1.4V미만)
 	    batteryDisplay_30per();
 
 
