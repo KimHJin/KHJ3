@@ -419,6 +419,8 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
+	  POWER_DOWN();
+	  
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
@@ -613,7 +615,7 @@ int main(void)
 		// 초기에 전원버튼을 누르고 있으면 위의 배터리 값이 계속 표시된다.
 		while (SW_PWR_ON) 
 		{
-			if(DeviceTestModeWait>500)
+			if(DeviceTestModeWait>100)
 			{
 				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
 				if(DeviceTestModeValue==1) 
@@ -662,6 +664,11 @@ int main(void)
 				RetryCount = 0;
 
 				Beep();
+
+				if(SW_RIGHT_ON)	// 개발용
+				{
+					POWER_DOWN();
+				}
 			}
 		}
 		if (Measuring == false && Measured && SW_PWR_ON == false)
