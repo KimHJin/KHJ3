@@ -69,6 +69,7 @@ void POWER_DOWN()
 	GPIO_LOW(GPIOD, GPIO_Pin_7);
 }
 
+
 void displayRGB(int color)
 {
 	if (color == RED)
@@ -170,16 +171,6 @@ void displayError(void)
 
 	LCD->DP1 = 0;
 }
-
-void batteryDisplay_10per(void)
-{
-  lowBatteryFlag = 1;
-}
-
-void batteryDisplay_30per(void)
-{
-  LCD->X5 = 1;
-}
 /************************************************************************/
 
 void delay_10us(int us)
@@ -199,22 +190,6 @@ void delay_ms(int ms)
 }
 /************************************************************************/
 
-void Beep(int length)
-{
-	if (buzzerState_p)
-		for (int i = 0; i < length; i++)
-		{
-			GPIO_HIGH(GPIOD, GPIO_Pin_5);
-			delay_10us(20);
-			GPIO_LOW(GPIOD, GPIO_Pin_5);
-			delay_10us(20);
-		}
-}
-void Beep()
-{
-	Beep(500);
-}
-
 void GPIO_init()
 {
 	GPIO_Init(GPIOD, GPIO_Pin_4, GPIO_Mode_Out_PP_High_Fast); //RED
@@ -231,6 +206,83 @@ void GPIO_init()
 
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
+
+void Beep(int length)
+{
+	if (buzzerState_p)
+		for (int i = 0; i < length; i++)
+		{
+			GPIO_HIGH(GPIOD, GPIO_Pin_5);
+			delay_10us(20);
+			GPIO_LOW(GPIOD, GPIO_Pin_5);
+			delay_10us(20);
+		}
+}
+
+void Beep()
+{
+	Beep(500);
+}
+
+void BeepMode(int mode)
+{
+	if (mode == HIGH_FEVER)
+	{
+		Beep(2600);
+		delay_ms(400);
+		Beep(2600);
+		delay_ms(400);
+		Beep(2600);
+	}
+
+	else if (mode == LIGHT_FEVER)
+	{
+		Beep(1100);
+		delay_ms(400);
+		Beep(1100);
+		delay_ms(400);
+		Beep(1100);
+	}
+	else if (mode == NORMAL)
+	{
+		Beep(1100);
+	}
+}
+
+/******************************************/
+void lowBatteryDisplay_2v0(void)
+{
+	LCD_clear();
+
+	LCD->C1 = 1;// o
+	LCD->D1 = 1;
+	LCD->E1 = 1;
+	LCD->G1 = 1;
+
+	LCD->A2 = 1;// F
+	LCD->E2 = 1;
+	LCD->F2 = 1;
+	LCD->G2 = 1;
+
+	LCD->A3 = 1;// F
+	LCD->E3 = 1;
+	LCD->F3 = 1;
+	LCD->G3 = 1;
+
+	BeepMode(HIGH_FEVER);
+	POWER_DOWN();
+}
+
+void lowBatteryDisplay_2v2(void)
+{
+	lowBatteryFlag = 1;
+}
+
+void lowBatteryDisplay_2v4(void)
+{
+	LCD->X5 = 1;
+}
+/*******************************************/
 
 int16_t unitCalc(int16_t temp, int unit)
 {
@@ -365,6 +417,8 @@ void caliDone()
 		displayRGB(BLUE);
 	else
 		displayRGB(GREEN);
+	
+	BeepMode(NORMAL);
 }
 
 void keyScan()
@@ -384,10 +438,11 @@ void keyScan()
 
 			if (delayCount == 350)
 			{
-				Beep();
-
+				
 				displayRGB(CLEAR);
 				LCD_clear();
+				
+				Beep();
 
 				specialModeDisp(caliData_p);				
 				while(SW_LEFT_ON || SW_RIGHT_ON);
@@ -477,31 +532,6 @@ void tempLogDataSave(int16_t saveData)
 	__EEPROM->memTempData[31] = saveData;
 }
 
-void BeepMode(int mode)
-{
-	if (mode == HIGH_FEVER)
-	{
-		Beep(2600);
-		delay_ms(400);
-		Beep(2600);
-		delay_ms(400);
-		Beep(2600);
-	}
-
-	else if (mode == LIGHT_FEVER)
-	{
-		Beep(1100);
-		delay_ms(400);
-		Beep(1100);
-		delay_ms(400);
-		Beep(1100);
-	}
-	else if (mode == NORMAL)
-	{
-		Beep(1100);
-	}
-}
-
 void saveTemp()
 {
 	memNumber_p = 32;
@@ -581,13 +611,7 @@ int main(void)
 		delay_ms(30);
 	}
 
-	// 초기에 센서의 온도를 측정하게 된다.
-	INT32 AMB = IWonTask->Get_AMB_TEMP();		
-	if (AMB < 0 || 500 < AMB)
-	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-		systemError();
-	}
-
+	
 	BOOL Measuring = false;
 	BOOL Measured = false;
 	INT16 MeasredTemp = -999;
@@ -596,10 +620,21 @@ int main(void)
 	INT8 RetryCount = 0;
 
 	INT16 BATmV = IWonTask->Get_BAT_mV();
-	if(BATmV/100 <= 12)  // less than battery 10%  (1.2V 이하, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
-		batteryDisplay_10per();
-    else if(BATmV/100 <= 15) // less than battery 30% (1.5V 이하)
-	    batteryDisplay_30per();
+	
+	if(BATmV/100 <= 20)
+	    lowBatteryDisplay_2v0();
+	else if(BATmV/100 < 22)  // less than battery 10%  (1.2V 이하, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
+		lowBatteryDisplay_2v2();
+    else if(BATmV/100 < 24) // less than battery 30% (1.5V 이하)
+	    lowBatteryDisplay_2v4();
+	
+	
+	// 초기에 센서의 온도를 측정하게 된다.
+	INT32 AMB = IWonTask->Get_AMB_TEMP();		
+	if (AMB < 0 || 500 < AMB)
+	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+		systemError();
+	}
 
 
 	// 위의 변수에서 기기 테스트 값을 0 으로 한 경우와 1 로 한 경우 다르게 동작함.
