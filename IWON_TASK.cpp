@@ -202,13 +202,18 @@ VOID IWON_TEMP_TASK::DISABLE_ALL_ADC(VOID)
 	ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);			 // TPC
 }
 
+BOOL IWON_TEMP_TASK::IS_BODY_CC(VOID)
+{
+	return (VreftpcAvg->GetCC()>10);
+}
+
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
 	return Task(DEFINED_ADC_CALC, DEFINED_ADC_DELAY);
 }
 BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 { // MGInterval = Measure (200), TTInteval = Take Interval (50)
-	if (TimeOut(MGtime, MGInterval))
+	if (TimeOut(MGtime, MGInterval) && IS_BODY_CC())
 	{
 		VrefintmV = (INT32)(((INT32)Vrefint * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
@@ -312,7 +317,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		}
 
 		MGtime = GetTimeOutStartTime();
-		return TRUE;
+		return (TSUMC>=DEFINED_ADC_SUM_C);
 	}
 	else if (TimeOut(TTtime, TTInterval))
 	{
@@ -325,7 +330,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
-			return TRUE;
+			return FALSE;
 		}
 
 		if (tCC == 1 && VrefvddAvg->IsOC())
@@ -336,7 +341,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			{
 				//printf("VrefintAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
 			}
 
 			DISABLE_ALL_ADC();
@@ -344,7 +349,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
-			return TRUE;
+			return FALSE;
 		}
 
 		if (tCC == 2 && VrefbatAvg->IsOC())
@@ -354,13 +359,13 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (!VrefvddAvg->IsOC())
 			{
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
 				VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 				//printf("VrefvddAvg VrefvddmV=%ld\r\n", VrefvddmV);
 				if(VrefvddmV>1600) {
 					// 전원 측정이 된 것이다.
 					if(VrefvddAvg->IsOC()) {
-						adcCalValue = (DEFINED_VDD - (VrefvddmV * 2)) / 2;
+						adcCalValue = DEFINED_VDD / 2 - VrefvddmV;
 						VrefintAvg->SetOC();
 					} else {
 						tCC = 0;
@@ -379,7 +384,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
-			return TRUE;
+			return FALSE;
 		}
 
 		if (tCC == 3 && VrefntcAvg->IsOC())
@@ -390,7 +395,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			{
 				//printf("VrefbatAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
 				VrefbatAvg->SetOC();
 			}
 
@@ -399,7 +404,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
-			return TRUE;
+			return FALSE;
 		}
 
 		if (tCC == 4 && VreftpcAvg->IsOC())
@@ -409,10 +414,10 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (VrefvddAvg->IsOC() && !VrefntcAvg->IsOC())
 			{
 				//printf("VrefntcAvg\r\n");
-		        for(int i=0;i<50;i++)
+		        for(int i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
 					ADC_SoftwareStartConv(ADC1);
 					if(VrefntcAvg->IsOC()) break;
 				}				
@@ -424,7 +429,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
 			TTtime = GetTimeOutStartTime();
-			return TRUE;
+			return FALSE;
 		}
 
 		if (tCC == 5)
@@ -432,14 +437,19 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (VrefntcAvg->IsOC() && !VreftpcAvg->IsOC())
 			{
 				//printf("VreftpcAvg\r\n");
-		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
+		        for(int i=0;i<30;i++)
+				{
+			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
+					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
+					ADC_SoftwareStartConv(ADC1);
+					if(IS_BODY_CC()) break;
+				}				
 			}
-			tCC = 0;
+			// tCC = 0;
 		}
 
 		TTtime = GetTimeOutStartTime();
-		return TRUE;
+		return FALSE;
 	}
 
 	return FALSE;
@@ -460,6 +470,18 @@ INT16 IWON_TEMP_TASK::Get_BDY_TEMP(VOID)
 INT16 IWON_TEMP_TASK::Get_BAT_mV(VOID)
 {
 	return (INT16)(VrefbatmV*2);
+}
+INT16 IWON_TEMP_TASK::Get_NTC_mV(VOID)
+{
+	return (INT16)VrefntcmV;
+}
+INT16 IWON_TEMP_TASK::Get_TPC_mV(VOID)
+{
+	return (INT16)VreftpcmV;
+}
+UINT IWON_TEMP_TASK::Get_ADC_CAL(VOID)
+{
+	return adcCalValue;
 }
 
 VOID IWON_TEMP_TASK::Clear_AVG(VOID)
