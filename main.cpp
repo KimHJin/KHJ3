@@ -558,6 +558,19 @@ void systemError(VOID)
 	delay_ms(40);
 }
 
+void measuringDisp(void)
+{
+  NUMBER_CLEAR(1);
+  NUMBER_CLEAR(2);
+  NUMBER_CLEAR(3);
+ 
+  LCD->G1 = 1;
+  LCD->G2 = 1;
+  LCD->G3 = 1;
+  
+  LCD->DP1 = 0;
+}
+
 /*********************************************/
 /*****************  MAIN  ********************/
 /*********************************************/
@@ -577,7 +590,7 @@ int main(void)
 
 	if (measureMode_p)
 		displayRGB(BLUE);
-	else
+	else 
 		displayRGB(GREEN);
 
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
@@ -695,7 +708,8 @@ int main(void)
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				RetryCount = 0;
-
+				displayRGB(CLEAR);
+				measuringDisp();
 				Beep();
 			}
 		}

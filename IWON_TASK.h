@@ -19,8 +19,9 @@
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
 
-#define DEFINED_ADC_CALC 250
-#define DEFINED_ADC_DELAY 70
+#define DEFINED_ADC_CALC 50
+#define DEFINED_ADC_DELAY 20
+#define DEFINED_ADC_SUM_C 2
 
 #define GPIO_HIGH(a, b) a->ODR |= b
 #define GPIO_LOW(a, b) a->ODR &= ~b
@@ -48,6 +49,10 @@ public:
 	INT16 Get_BDY_TEMP(VOID);
 	
 	INT16 Get_BAT_mV(VOID);
+	INT16 Get_NTC_mV(VOID);
+	INT16 Get_TPC_mV(VOID);
+
+	UINT Get_ADC_CAL(VOID);
 
 	VOID Clear_AVG(VOID);
 	VOID Set_AdjValue(INT32 ADJV);
@@ -73,6 +78,8 @@ private:
 	VOID SetTimeStamp(DWORD t);
 	DWORD GetTimeOutStartTime(VOID);
 	BOOL TimeOut(DWORD startTime, UINT delayTime);
+
+	BOOL IS_BODY_CC(VOID);
 
 	INT32 powerDown_msec;
 
