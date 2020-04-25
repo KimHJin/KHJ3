@@ -474,6 +474,7 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
+	POWER_DOWN();	// 개발용
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
@@ -481,14 +482,13 @@ void keyScan()
 
 		while (SW_RIGHT_ON)
 		{
-
 			delayCount++;
 			delay_ms(15);
 
 			if (delayCount == 350)
 			{
 				Beep();
-
+	
 				displayRGB(CLEAR);
 				LCD_clear();
 
@@ -559,16 +559,18 @@ void systemError(VOID)
 }
 
 void measuringDisp(void)
-{
-  NUMBER_CLEAR(1);
-  NUMBER_CLEAR(2);
-  NUMBER_CLEAR(3);
- 
-  LCD->G1 = 1;
-  LCD->G2 = 1;
-  LCD->G3 = 1;
-  
-  LCD->DP1 = 0;
+{  
+  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
+	  
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+
+	LCD->G1 = 1;
+	LCD->G2 = 1;
+	LCD->G3 = 1;
+
+	LCD->DP1 = 0;
 }
 
 /*********************************************/
@@ -577,9 +579,8 @@ void measuringDisp(void)
 
 int main(void)
 {
-	BOOL DeviceTestMode = true;	// 테스트 가능 모드
-	INT8 DeviceTestModeValue = 1;	// 테스트 가능 모드를 위해서 있는 변수
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
+	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
 
 	GPIO_init();
 	EEPROM_init();
@@ -650,38 +651,58 @@ int main(void)
 	}
 
 
-	// 위의 변수에서 기기 테스트 값을 0 으로 한 경우와 1 로 한 경우 다르게 동작함.
-	if(DeviceTestMode==false)
+	// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
+	while (SW_PWR_ON) 
 	{
-		// 초기에 전원버튼을 누르고 있는것을 처리하기 위해서...
-		while (SW_PWR_ON){};
-	}
-	else
-	{
-		// 초기에 전원버튼을 누르고 있으면 위의 배터리 값이 계속 표시된다.
-		while (SW_PWR_ON) 
+		if(DeviceTestModeWait>100)
 		{
-			if(DeviceTestModeWait>500)
+			if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
+			{
+				if(DeviceTestModeValue==1) 
+				{
+					tempValueDisplay(DEFINED_FW_VER, false);		// <= 배터리 전압값 표시
+				}
+				DeviceTestModeValue++;
+			}
+			else	
+			if(SW_LEFT_ON)	// 전원 버튼과 왼쪽 버튼을 누르고 있으면 내부 값 표시
 			{
 				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
 				if(DeviceTestModeValue==1) 
 				{
+					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+				}
+				else
+				if(DeviceTestModeValue==150) 
+				{
 					tempValueDisplay(AMB);			// 센서 온도값 표시
 				}
 				else
-				if(DeviceTestModeValue==110) 
+				if(DeviceTestModeValue==300) 
 				{
-					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+					tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
+					//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
+				}
+				else
+				if(DeviceTestModeValue==450)	// - - - 표시
+				{
+					measuringDisp();
+				}
+				else
+				if(DeviceTestModeValue==550)
+				{
+					DeviceTestModeValue = 0;
 				}
 				DeviceTestModeValue++;
 			}
-			else
-			{
-				DeviceTestModeWait++;
-			}			
-			delay_ms(10);
-			IWonTask->ClearPowerDown();
 		}
+		else
+		{
+			DeviceTestModeWait++;
+		}
+
+		delay_ms(10);
+		IWonTask->ClearPowerDown();
 	}
 	
 	tempValueDisplay(0);
@@ -695,22 +716,14 @@ int main(void)
 
 		if (Measuring == false && Measured == false && MeasredTemp != -100 && SW_PWR_ON)
 		{
-
 			delay_ms(40);
 
 			if (SW_PWR_ON)
 			{
 				IWonTask->ClearPowerDown();
-
-				if (measureMode_p)
-					displayRGB(BLUE);
-
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				RetryCount = 0;
-				displayRGB(CLEAR);
-				measuringDisp();
-				Beep();
 			}
 		}
 		if (Measuring == false && Measured && SW_PWR_ON == false)
@@ -729,6 +742,12 @@ int main(void)
 			}
 			else if (Measuring)
 			{ // 온도 측정
+				if (measureMode_p)
+					displayRGB(BLUE);
+				displayRGB(CLEAR);
+				measuringDisp();
+				Beep();
+
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
@@ -743,6 +762,8 @@ int main(void)
 				}
 				else if (AMB > 0)
 				{
+					delay_ms(20);
+
 					if (measureMode_p == 1)
 					{
 						// 인체 측정
@@ -752,9 +773,9 @@ int main(void)
 						//if(RetryCount<3) TEMP = 100;
 
 						if (TEMP != -2 && TEMP < 334)
-						{
+						{ // LOW  Less Than 33.4 C
 							RetryCount++;
-							if(RetryCount<5)
+							if(RetryCount<2)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
 							{
 								Measured = false;
 								Measuring = true;
@@ -763,20 +784,11 @@ int main(void)
 								delay_ms(300);
 								continue;
 							}
-						}
 
-						if (TEMP != -2 && TEMP < 334)
-						{ // LOW  Less Than 33.4 C
-
-							delay_ms(2000);
 							MeasredTemp = TEMP;
-
 							Beep();
-
 							displayRGB(BLUE);
-
 							displayLOW();
-
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
@@ -784,17 +796,10 @@ int main(void)
 						}
 						else if (TEMP == -2 || TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
-
-							delay_ms(2000);
-
 							MeasredTemp = TEMP;
-
 							Beep();
-
 							displayRGB(BLUE);
-
 							displayHIGH();
-
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
@@ -804,7 +809,6 @@ int main(void)
 						{
 							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (TEMP - MeasredTemp > 2 || TEMP - MeasredTemp < -2))
 							{
-
 								MeasredTemp = TEMP;
 								MeasredCount1 = 1;
 							}
