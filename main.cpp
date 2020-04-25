@@ -762,8 +762,6 @@ int main(void)
 				}
 				else if (AMB > 0)
 				{
-					delay_ms(20);
-
 					if (measureMode_p == 1)
 					{
 						// 인체 측정
