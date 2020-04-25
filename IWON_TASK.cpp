@@ -78,8 +78,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefntcAvg = new IWON_TEMP_VAVG(20);
-	VreftpcAvg = new IWON_TEMP_VAVG(20);
+	VrefntcAvg = new IWON_TEMP_VAVG(10);
+	VreftpcAvg = new IWON_TEMP_VAVG(10);
 
 	Init_Clock();
 	Init_TIM4();
@@ -188,13 +188,23 @@ VOID IWON_TEMP_TASK::Init_ADC(VOID)
 	ADC_Cmd(ADC1, ENABLE);
 }
 
-BOOL IWON_TEMP_TASK::Was_Calc(VOID) {
+BOOL IWON_TEMP_TASK::Was_Calc(VOID) 
+{
 	return VrefntcAvg->IsOC();
+}
+
+VOID IWON_TEMP_TASK::DISABLE_ALL_ADC(VOID) 
+{
+	ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); 	 // REFINT
+	ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);			 // REFVDD
+	ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);			 // BAT
+	ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);			 // NTC
+	ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);			 // TPC
 }
 
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
-	return Task(250, 70);
+	return Task(DEFINED_ADC_CALC, DEFINED_ADC_DELAY);
 }
 BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 { // MGInterval = Measure (200), TTInteval = Take Interval (50)
@@ -310,13 +320,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			tCC++;
 		if (tCC == 0)
 		{
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); 	 // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);			 // REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);			 // BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);			 // NTC
-			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);			 // TPC
-
-			delay_ms(1);
+			DISABLE_ALL_ADC();
 			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, ENABLE);				// REFINT
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
@@ -335,13 +339,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
 			}
 
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
-			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
-
-			delay_ms(1);
+			DISABLE_ALL_ADC();
 			ADC_ChannelCmd(ADC1, ADC_Channel_3, ENABLE);				// REFVDD
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
@@ -376,13 +374,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				}
 			}
 
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
-			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
-
-			delay_ms(1);
+			DISABLE_ALL_ADC();
 			ADC_ChannelCmd(ADC1, ADC_Channel_4, ENABLE);				// BAT
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
@@ -402,13 +394,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				VrefbatAvg->SetOC();
 			}
 
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
-			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
-
-			delay_ms(1);
+			DISABLE_ALL_ADC();
 			ADC_ChannelCmd(ADC1, ADC_Channel_5, ENABLE);				// NTC
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;
@@ -423,22 +409,17 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (VrefvddAvg->IsOC() && !VrefntcAvg->IsOC())
 			{
 				//printf("VrefntcAvg\r\n");
-		        for(int i=0;i<25;i++)
+		        for(int i=0;i<50;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
 					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 500);
 					ADC_SoftwareStartConv(ADC1);
+					if(VrefntcAvg->IsOC()) break;
 				}				
 				VrefntcAvg->SetOC();
 			}
 
-			ADC_ChannelCmd(ADC1, ADC_Channel_Vrefint, DISABLE); // REFINT
-			ADC_ChannelCmd(ADC1, ADC_Channel_3, DISABLE);				// REFVDD
-			ADC_ChannelCmd(ADC1, ADC_Channel_4, DISABLE);				// BAT
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, DISABLE);				// NTC
-			ADC_ChannelCmd(ADC1, ADC_Channel_6, DISABLE);				// TPC
-			
-			delay_ms(1);
+			DISABLE_ALL_ADC();
 			ADC_ChannelCmd(ADC1, ADC_Channel_6, ENABLE);				// TPC
 			ADC_SoftwareStartConv(ADC1);
 			tCC++;

@@ -1,6 +1,8 @@
 #ifndef __LCD_DRIVER_H__
 #define __LCD_DRIVER_H__
 
+#include "IWON_SCAN.h"
+
 #include "stm8l15x.h"
 #include "stm8l15x_lcd.h"
 #include "eeprom.h"
@@ -92,7 +94,8 @@
 	setBitSegment(G, position);
 
 void LCD_Display_init();
-void tempValueDisplay(int16_t value);
+void tempValueDisplay(int16_t value, BOOL fillZero);	// fillZero 를 true 로 하면 00.0 같이 왼쪽에 맨 왼쪽 0 이 표시된다.
+void tempValueDisplay(int16_t value);					// 위의 fill 을 true 하여 동작
 void displayNumber(int number, int position);
 void memNumberDisplay(int number);
 void memTempDataDisplay(int tempData);

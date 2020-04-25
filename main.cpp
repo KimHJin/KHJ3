@@ -534,6 +534,10 @@ void systemError(VOID)
 
 int main(void)
 {
+	BOOL DeviceTestMode = true;	// 테스트 가능 모드
+	INT8 DeviceTestModeValue = 1;	// 테스트 가능 모드를 위해서 있는 변수
+	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
+
 	GPIO_init();
 	EEPROM_init();
 	LCD_Display_init();
@@ -562,27 +566,26 @@ int main(void)
 	delay_ms(2000);
 	*/
 	
-	for (int i = 0; i < 60; i++)
+	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
+	for (int i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
 		IWonTask->Task();
-		if(IWonTask->Was_Calc()) {
-			for (int i = 0; i < 12; i++)
+		if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
+			for (int i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task();			  
-				delay_ms(70);
+				delay_ms(DEFINED_ADC_DELAY);
 			}
-			break;
+			break;	// 빠져나가게 된다.
 		}
 		delay_ms(30);
 	}
-	if (true)
-	{
-		INT32 AMB = IWonTask->Get_AMB_TEMP();		
-		//tempValueDisplay(AMB);
-		if (AMB < 0 || 500 < AMB)
-		{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-			systemError();
-		}
+
+	// 초기에 센서의 온도를 측정하게 된다.
+	INT32 AMB = IWonTask->Get_AMB_TEMP();		
+	if (AMB < 0 || 500 < AMB)
+	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+		systemError();
 	}
 
 	BOOL Measuring = false;
@@ -593,22 +596,46 @@ int main(void)
 	INT8 RetryCount = 0;
 
 	INT16 BATmV = IWonTask->Get_BAT_mV();
-
-	//BATmV = 100;	// 우선 강제로 배터리 mV 를 넣어서
-	// 이곳에 배터리 표시 관련 코드
-
-	tempValueDisplay(BATmV/10);	// <= 배터리 관련코드 완성후 여기 주석 처리
-	
-	
-	if(BATmV <= 1200)  // less than battery 10%  (1.2V, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
+	if(BATmV/100 <= 12)  // less than battery 10%  (1.2V 이하, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
 		batteryDisplay_10per();
-    else if(BATmV <= 1500) // less than battery 30% (약1.4V미만)
+    else if(BATmV/100 <= 15) // less than battery 30% (1.5V 이하)
 	    batteryDisplay_30per();
 
 
-	while (SW_PWR_ON)
-		;
-
+	// 위의 변수에서 기기 테스트 값을 0 으로 한 경우와 1 로 한 경우 다르게 동작함.
+	if(DeviceTestMode==false)
+	{
+		// 초기에 전원버튼을 누르고 있는것을 처리하기 위해서...
+		while (SW_PWR_ON){};
+	}
+	else
+	{
+		// 초기에 전원버튼을 누르고 있으면 위의 배터리 값이 계속 표시된다.
+		while (SW_PWR_ON) 
+		{
+			if(DeviceTestModeWait>500)
+			{
+				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
+				if(DeviceTestModeValue==1) 
+				{
+					tempValueDisplay(AMB);			// 센서 온도값 표시
+				}
+				else
+				if(DeviceTestModeValue==110) 
+				{
+					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+				}
+				DeviceTestModeValue++;
+			}
+			else
+			{
+				DeviceTestModeWait++;
+			}			
+			delay_ms(10);
+			IWonTask->ClearPowerDown();
+		}
+	}
+	
 	tempValueDisplay(0);
 
 	while (IWonTask->NeedPowerDown() == false)
@@ -627,14 +654,14 @@ int main(void)
 			{
 				IWonTask->ClearPowerDown();
 
-				Beep();
-
 				if (measureMode_p)
 					displayRGB(BLUE);
 
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				RetryCount = 0;
+
+				Beep();
 			}
 		}
 		if (Measuring == false && Measured && SW_PWR_ON == false)
@@ -653,7 +680,6 @@ int main(void)
 			}
 			else if (Measuring)
 			{ // 온도 측정
-
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
@@ -727,7 +753,6 @@ int main(void)
 						}
 						else
 						{
-
 							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (TEMP - MeasredTemp > 2 || TEMP - MeasredTemp < -2))
 							{
 
@@ -743,10 +768,7 @@ int main(void)
 
 								if (MeasredCount1 > 20 || MeasredCount2 >= 50)
 								{
-
 									tempValueDisplay(unitCalc(TEMP, tempUnit_p)); // temp Display
-
-									saveTemp();
 
 									if (TEMP >= 381 && TEMP <= 425)
 									{ // HIGH FEVER
@@ -763,6 +785,8 @@ int main(void)
 										displayRGB(BLUE);
 										BeepMode(NORMAL);
 									}
+
+									saveTemp();
 
 									Measuring = false;
 									Measured = true;

@@ -521,7 +521,7 @@ void displayNumber(int number, int position)
 	}
 }
 
-void tempValueDisplay(int16_t value)
+void tempValueDisplay(int16_t value, BOOL fillZero)
 {
 	int forthNumber = value % 10;
 	int thirdNumber = (value / 10) % 10;
@@ -540,12 +540,23 @@ void tempValueDisplay(int16_t value)
 	else
 	if (firstNumber == 0)
 	{
-		displayNumber(0, 1);
+		if(fillZero)
+		{
+			displayNumber(0, 1);
+		}
+		else
+		{
+			NUMBER_CLEAR(1);
+		}		
 	}
 	
 	displayNumber(thirdNumber, 2);
 	displayNumber(forthNumber, 3);
 	LCD->DP1 = 1;
+}
+void tempValueDisplay(int16_t value)
+{
+	tempValueDisplay(value, true);
 }
 
 void memNumberDisplay(int number)

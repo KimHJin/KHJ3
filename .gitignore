@@ -9,6 +9,7 @@
 
 *.o
 **/Debug/
+**/Release/
 
 # IAR Debugger files
 *.ewd

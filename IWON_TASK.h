@@ -19,6 +19,9 @@
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
 
+#define DEFINED_ADC_CALC 250
+#define DEFINED_ADC_DELAY 70
+
 #define GPIO_HIGH(a, b) a->ODR |= b
 #define GPIO_LOW(a, b) a->ODR &= ~b
 #define GPIO_TOGGLE(a, b) a->ODR ^= b
@@ -63,6 +66,8 @@ private:
 	VOID Init_Clock(VOID);
 	VOID Init_TIM4(VOID);
 	VOID Init_ADC(VOID);
+
+	VOID DISABLE_ALL_ADC(VOID) ;
 
 	DWORD GetTimeStamp(VOID);
 	VOID SetTimeStamp(DWORD t);
