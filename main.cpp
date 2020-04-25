@@ -536,9 +536,9 @@ void systemError(VOID)
 
 int main(void)
 {
-	BOOL DeviceTestMode = true;	// 테스트 가능 모드
-	INT8 DeviceTestModeValue = 1;	// 테스트 가능 모드를 위해서 있는 변수
+	BOOL DeviceTestMode = true;		// 테스트 가능 모드
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
+	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
 
 	GPIO_init();
 	EEPROM_init();
@@ -620,12 +620,23 @@ int main(void)
 				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
 				if(DeviceTestModeValue==1) 
 				{
+					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+				}
+				else
+				if(DeviceTestModeValue==150) 
+				{
+					tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
+					//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
+				}
+				else
+				if(DeviceTestModeValue==300) 
+				{
 					tempValueDisplay(AMB);			// 센서 온도값 표시
 				}
 				else
-				if(DeviceTestModeValue==110) 
+				if(DeviceTestModeValue==500)
 				{
-					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+					DeviceTestModeValue = 0;
 				}
 				DeviceTestModeValue++;
 			}

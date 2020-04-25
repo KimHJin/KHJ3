@@ -121,3 +121,7 @@ VOID IWON_TEMP_VAVG::SetOC(VOID)
 	oc = 1;
 	cc = 2;
 }
+INT8 IWON_TEMP_VAVG::GetCC(VOID)
+{
+	return cc;
+}
