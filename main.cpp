@@ -664,11 +664,12 @@ int main(void)
 
 	INT16 BATmV = IWonTask->Get_BAT_mV();
 	
+	// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
 	if(BATmV/100 <= 20)
 	    lowBatteryDisplay_2v0();
-	else if(BATmV/100 < 22)  // less than battery 10%  (1.2V 이하, 테스트 결과 1.1V 에서는 전원이 켜지지도 않음)
+	else if(BATmV/100 < 22)
 		lowBatteryDisplay_2v2();
-    else if(BATmV/100 < 24) // less than battery 30% (1.5V 이하)
+    else if(BATmV/100 < 24)
 	    lowBatteryDisplay_2v4();
 	
 	
@@ -689,7 +690,7 @@ int main(void)
 			{
 				if(DeviceTestModeValue==1) 
 				{
-					tempValueDisplay(DEFINED_FW_VER, false);		// <= 배터리 전압값 표시
+					tempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
 				}
 				DeviceTestModeValue++;
 			}
@@ -704,7 +705,7 @@ int main(void)
 				else
 				if(DeviceTestModeValue==150) 
 				{
-					tempValueDisplay(AMB);			// 센서 온도값 표시
+					tempValueDisplay(AMB);					// 센서 온도값 표시
 				}
 				else
 				if(DeviceTestModeValue==300) 
