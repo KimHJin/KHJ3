@@ -866,11 +866,11 @@
         </option>
         <option>
           <name>GenStackSize</name>
-          <state>0x200</state>
+          <state>0x300</state>
         </option>
         <option>
           <name>GenHeapSize</name>
-          <state>0x200</state>
+          <state>0x300</state>
         </option>
         <option>
           <name>GeneralEnableMisra</name>

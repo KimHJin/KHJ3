@@ -268,6 +268,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			//reftemp += 32.0f - ambtemp; // 즉, 이값을 높이면 온도가 올라간다.
 			float reftemp = 25.f;
 			//reftemp = ambtemp;
+			INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
 
 			// 값을 높이면 TOBJ 온도가 내려간다.
 			// 값을 높이면 낮은 쪽의 온도차가 높은쪽의 온도차 감소량보다 많이 감소한다.
@@ -294,7 +295,8 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				if (BB > 15 || BB < -15)
 					ClearTSUMB();
 			}
-			OBJ_TEMP = AddTSUMB(T_OBJ);
+
+			OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
 			//printf("BB=%d\r\n", BB);
 			//OBJ_TEMP = T_OBJ;
 

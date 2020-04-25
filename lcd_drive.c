@@ -25,11 +25,12 @@ void LCD_Display_init()
 
 	LCD_Cmd(ENABLE);
 
-	displayNumber(0, 1);
-	displayNumber(0, 2);
-	displayNumber(0, 3);
-
-	TEMP = 0;
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+	//displayNumber(0, 1);
+	//displayNumber(0, 2);
+	//displayNumber(0, 3);
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));

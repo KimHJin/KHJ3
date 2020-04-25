@@ -22,6 +22,7 @@ IWON_TEMP_TASK *IWonTask = NULL;
 int yellowFlag = 0;
 int count = 0;
 int lowBatteryFlag = 0;
+INT8 lastMeasred = 0;
 
 /************************************************************************/
 /**
@@ -221,31 +222,30 @@ void Beep(int length)
 
 void Beep()
 {
-	Beep(500);
+	Beep(300);
 }
 
 void BeepMode(int mode)
 {
-	if (mode == HIGH_FEVER)
+	if (mode == HIGH_FEVER)	// 고열
 	{
-		Beep(2600);
+		Beep(2000);
 		delay_ms(400);
-		Beep(2600);
+		Beep(2000);
 		delay_ms(400);
-		Beep(2600);
+		Beep(2000);
 	}
-
-	else if (mode == LIGHT_FEVER)
+	else if (mode == LIGHT_FEVER)	// 미열
 	{
-		Beep(1100);
+		Beep(1000);
 		delay_ms(400);
-		Beep(1100);
+		Beep(1000);
 		delay_ms(400);
-		Beep(1100);
+		Beep(1000);
 	}
-	else if (mode == NORMAL)
+	else if (mode == NORMAL)	// 정상
 	{
-		Beep(1100);
+		Beep();
 	}
 }
 
@@ -328,17 +328,6 @@ void measureModeTask()
 		displayRGB(GREEN);
 }
 
-void tempUnitTask()
-{
-	tempUnit_p ^= 1;
-
-	tempUnitSet(tempUnit_p);
-
-	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0)
-		tempValueDisplay(unitCalc(TEMP, tempUnit_p));
-
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-}
 
 /*********************************************/
 
@@ -400,6 +389,7 @@ void caliDone()
     IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
 	LCD_clear();
+	BeepMode(NORMAL);
 
 	displayNumber(0, 1);
 	displayNumber(0, 2);
@@ -416,9 +406,29 @@ void caliDone()
 	if (measureMode_p)
 		displayRGB(BLUE);
 	else
-		displayRGB(GREEN);
-	
-	BeepMode(NORMAL);
+		displayRGB(GREEN);	
+}
+
+INT8 tempUnitTask(BOOL inv)
+{
+	INT8 r = 0;
+
+	if(inv)
+	{
+		tempUnit_p ^= 1;
+	}
+
+	tempUnitSet(tempUnit_p);
+	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0) 
+	{
+		if(lastMeasred==1)
+		{
+			tempValueDisplay(unitCalc(TEMP, tempUnit_p));
+			r = 1;
+		}
+	}
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));	
+	return r;
 }
 
 void keyScan()
@@ -474,7 +484,8 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
-	POWER_DOWN();	// 개발용
+		// POWER_DOWN();	// 개발용
+
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
@@ -509,7 +520,7 @@ void keyScan()
 			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
 			{
 				Beep();
-				tempUnitTask(); // temp Unit set
+				tempUnitTask(true); // temp Unit set
 			}
 		}
 
@@ -532,11 +543,15 @@ void tempLogDataSave(int16_t saveData)
 	__EEPROM->memTempData[31] = saveData;
 }
 
-void saveTemp()
+void saveTemp(INT16 temp)
 {
+	lastMeasred = 1;
+
+	TEMP = temp;
+
 	memNumber_p = 32;
 
-	tempLogDataSave(TEMP);
+	tempLogDataSave(temp);
 
 	memNumberDisplay(memNumber_p);
 
@@ -579,15 +594,15 @@ void measuringDisp(void)
 
 int main(void)
 {
+	INT16 MEASURED_TEMP = 0;
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
 	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
+
+	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
 
 	GPIO_init();
 	EEPROM_init();
 	LCD_Display_init();
-
-	if (caliData_p > 99 || caliData_p < -99)
-		caliData_p = 0;
 
 	if (measureMode_p)
 		displayRGB(BLUE);
@@ -596,10 +611,24 @@ int main(void)
 
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
 
+	if (caliData_p > 99 || caliData_p < -99)
+		caliData_p = 0;
+
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
-	Beep();   
-	
+	Beep();
+
+	// 가장 마지막 측정 값
+	if(TEMP>0 && TEMP<500) 
+	{
+		lastMeasred = 1;
+		if(tempUnitTask(false)==1)
+		{
+			delay_ms(1200);
+		}
+		lastMeasred = 0;
+	}
+
 	/*
 	delay_ms(2000);	
 	BeepMode(NORMAL); 	
@@ -654,7 +683,7 @@ int main(void)
 	// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
 	while (SW_PWR_ON) 
 	{
-		if(DeviceTestModeWait>100)
+		if(DeviceTestModeWait>500)
 		{
 			if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
 			{
@@ -716,13 +745,16 @@ int main(void)
 
 		if (Measuring == false && Measured == false && MeasredTemp != -100 && SW_PWR_ON)
 		{
-			delay_ms(40);
-
 			if (SW_PWR_ON)
 			{
 				IWonTask->ClearPowerDown();
 				MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
+				TEMP_AVG->Init();
+
+				for(INT8 i=0;i<100;i++)
+					IWonTask->Task();
+
 				RetryCount = 0;
 			}
 		}
@@ -739,15 +771,17 @@ int main(void)
 				Measured = false;
 				MeasredCount1 = 0;
 				MeasredCount2 = 0;
+
+				if (measureMode_p)
+					displayRGB(BLUE);
+				else 
+					displayRGB(GREEN);
+
+				measuringDisp();
+				Beep();
 			}
 			else if (Measuring)
 			{ // 온도 측정
-				if (measureMode_p)
-					displayRGB(BLUE);
-				displayRGB(CLEAR);
-				measuringDisp();
-				Beep();
-
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
@@ -765,15 +799,12 @@ int main(void)
 					if (measureMode_p == 1)
 					{
 						// 인체 측정
-						TEMP = IWonTask->Get_BDY_TEMP();
-						// TEMP += getCaliValue();
+						MEASURED_TEMP = IWonTask->Get_BDY_TEMP();
 
-						//if(RetryCount<3) TEMP = 100;
-
-						if (TEMP != -2 && TEMP < 334)
+						if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
 						{ // LOW  Less Than 33.4 C
 							RetryCount++;
-							if(RetryCount<2)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
+							if(RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
 							{
 								Measured = false;
 								Measuring = true;
@@ -783,21 +814,21 @@ int main(void)
 								continue;
 							}
 
-							MeasredTemp = TEMP;
-							Beep();
+							MeasredTemp = MEASURED_TEMP;
 							displayRGB(BLUE);
 							displayLOW();
+							Beep();
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
 							MeasredCount2 = 0;
 						}
-						else if (TEMP == -2 || TEMP > 425)
+						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
-							MeasredTemp = TEMP;
-							Beep();
+							MeasredTemp = MEASURED_TEMP;
 							displayRGB(BLUE);
 							displayHIGH();
+							Beep();
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
@@ -805,39 +836,40 @@ int main(void)
 						}
 						else
 						{
-							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (TEMP - MeasredTemp > 2 || TEMP - MeasredTemp < -2))
+							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
 							{
-								MeasredTemp = TEMP;
+								TEMP_AVG->Init();
+								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 								MeasredCount1 = 1;
 							}
 							else
 							{
-
-								MeasredTemp = TEMP;
+								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 								MeasredCount1++;
 								MeasredCount2++;
 
-								if (MeasredCount1 > 20 || MeasredCount2 >= 50)
+								if (MeasredCount1 > 10 || MeasredCount2 >= 20)
 								{
-									tempValueDisplay(unitCalc(TEMP, tempUnit_p)); // temp Display
-
-									if (TEMP >= 381 && TEMP <= 425)
+									if (MEASURED_TEMP >= 381 && MEASURED_TEMP <= 425)
 									{ // HIGH FEVER
 										displayRGB(RED);
+										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
 										BeepMode(HIGH_FEVER);
 									}
-									else if (TEMP >= 371 && TEMP <= 380)
+									else if (MEASURED_TEMP >= 371 && MEASURED_TEMP <= 380)
 									{ // LIGHT FEVER
 										displayRGB(YELLOW);
+										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
 										BeepMode(LIGHT_FEVER);
 									}
-									else if (TEMP >= 334 && TEMP <= 370)
+									else if (MEASURED_TEMP >= 334 && MEASURED_TEMP <= 370)
 									{ // NORMAL
 										displayRGB(BLUE);
+										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
 										BeepMode(NORMAL);
 									}
 
-									saveTemp();
+									saveTemp(MeasredTemp);
 
 									Measuring = false;
 									Measured = true;
@@ -850,31 +882,26 @@ int main(void)
 					else
 					{
 						// 사물 측정
-						TEMP = IWonTask->Get_OBJ_TEMP();
-
-						if (MeasredCount1 > 0 && (TEMP - MeasredTemp > 3 || TEMP - MeasredTemp < -3))
+						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
+						if (MeasredCount1 > 0 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
 						{
-
-							MeasredTemp = TEMP;
+							TEMP_AVG->Init();
+							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 							MeasredCount1 = 1;
 						}
 						else
 						{
-
-							MeasredTemp = TEMP;
+							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 							MeasredCount1++;
 							MeasredCount2++;
 
-							if (MeasredCount1 > 15 || MeasredCount2 > 25)
+							if (MeasredCount1 > 10 || MeasredCount2 > 20)
 							{
+								Beep();
 
+								tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p));
 								displayRGB(GREEN);
-
-								tempValueDisplay(unitCalc(TEMP, tempUnit_p));
-
-								saveTemp();
-
-								Beep(850);
+								saveTemp(MeasredTemp);
 
 								Measuring = false;
 								Measured = true;
