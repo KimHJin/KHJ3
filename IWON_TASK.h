@@ -4,7 +4,7 @@
 // For STM8L0
 //
 // 2020/04/18 I-WON SOLUTION CO LTD
-// 2020/04/18 v1.0 by KGY
+// 2020/04/18 v1.1 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "IWON_SCAN.h"
@@ -14,7 +14,7 @@
 #define IWON_TEMP_TASK_H
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
-#define DEFINED_FW_VER 10
+#define DEFINED_FW_VER 11
 
 #define DEFINED_adcVREFValue 1224
 

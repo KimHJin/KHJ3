@@ -253,6 +253,8 @@ void BeepMode(int mode)
 void lowBatteryDisplay_2v0(void)
 {
 	LCD_clear();
+	
+	lowBatteryFlag = 1;
 
 	LCD->C1 = 1;// o
 	LCD->D1 = 1;
@@ -269,7 +271,7 @@ void lowBatteryDisplay_2v0(void)
 	LCD->F3 = 1;
 	LCD->G3 = 1;
 
-	BeepMode(HIGH_FEVER);
+	BeepMode(LIGHT_FEVER);
 	POWER_DOWN();
 }
 
