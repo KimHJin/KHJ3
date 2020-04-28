@@ -436,28 +436,55 @@ INT8 tempUnitTask(BOOL inv)
 	return r;
 }
 
-void testMode(void)
+/********************************* TEST MODE *******************************************/
+void Buzzer_test(void)
 {
-  while(TEST_MODE_ON)
-  {
-	
-	 if(SW_LEFT_ON)
-	 {
-	   
-	   
-	   
-	 }
-	
-	 else if(SW_RIGHT_ON)
-	 {
-	   
-	   
-	   
-	   
-	 }
-  }
+	Beep();
+	delay_ms(200);
+	Beep();
+	delay_ms(200);
 }
 
+void LCD_test(void)
+{
+	for(int i=0; i<14; i++)
+	  LCD->RAM[i] = 0xFF;
+	
+	delay_ms(200);
+	
+	LCD_clear();
+	
+	delay_ms(200);
+}
+
+void BackLight_test(void)
+{
+	displayRGB(RED);
+	delay_ms(200);
+	displayRGB(GREEN);
+	delay_ms(200);
+	displayRGB(BLUE);
+	delay_ms(200);
+	displayRGB(CLEAR);
+}
+
+void testMode(void)
+{
+	while(TEST_MODE_ON)
+	{
+		if(SW_LEFT_ON)
+		{
+			Buzzer_test();
+			LCD_test();
+			BackLight_test();
+		}
+		else if(SW_RIGHT_ON)
+		{
+			POWER_DOWN(); 
+		}
+	}
+}
+/************************************************************************************/
 void keyScan()
 {
 	if (SW_LEFT_ON) // SW_LEFT
