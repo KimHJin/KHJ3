@@ -333,8 +333,32 @@ void measureModeTask()
 		displayRGB(GREEN);
 }
 
+INT8 tempUnitTask(BOOL inv)
+{
+	INT8 r = 0;
 
-/*********************************************/
+	if(inv)
+	{
+		tempUnit_p ^= 1;
+	}
+
+	tempUnitSet(tempUnit_p);
+	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0) 
+	{
+		if(lastMeasred==1)
+		{
+			tempValueDisplay(unitCalc(TEMP, tempUnit_p));
+			r = 1;
+		}
+	}
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));	
+	return r;
+}
+
+/*************************************************************************************/
+/*****************************   SPECIAL MODE   **************************************/
+/*************************************************************************************/
+
 
 void specialModeDisp(int16_t value)
 {
@@ -357,8 +381,32 @@ void specialModeDisp(int16_t value)
 	displayNumber(secondNumber, 3);
 }
 
+void caliDone(void)
+{
+    IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
-void specialMode()
+	LCD_clear();
+	BeepMode(NORMAL);
+
+	displayNumber(0, 1);
+	displayNumber(0, 2);
+	displayNumber(0, 3);
+
+	memNumberDisplay(memNumber_p);
+	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	measureModeSet(measureMode_p);
+	buzzerCMD(buzzerState_p);
+	tempUnitSet(tempUnit_p);
+
+	LCD->X8 = 1; // Display "LOG"
+
+	if (measureMode_p)
+		displayRGB(BLUE);
+	else
+		displayRGB(GREEN);	
+}
+
+void specialMode(void)
 {
 	IWonTask->ClearPowerDown();
 
@@ -389,54 +437,32 @@ void specialMode()
 	}
 }
 
-void caliDone()
+void specialModeTask(void)
 {
-    IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-
+	displayRGB(CLEAR);
 	LCD_clear();
-	BeepMode(NORMAL);
+	
+	specialModeDisp(caliData_p);
+	
+	while(SW_LEFT_ON || SW_RIGHT_ON);
 
-	displayNumber(0, 1);
-	displayNumber(0, 2);
-	displayNumber(0, 3);
-
-	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-	measureModeSet(measureMode_p);
-	buzzerCMD(buzzerState_p);
-	tempUnitSet(tempUnit_p);
-
-	LCD->X8 = 1; // Display "LOG"
-
-	if (measureMode_p)
-		displayRGB(BLUE);
-	else
-		displayRGB(GREEN);	
-}
-
-INT8 tempUnitTask(BOOL inv)
-{
-	INT8 r = 0;
-
-	if(inv)
+	while (!SW_PWR_ON)
 	{
-		tempUnit_p ^= 1;
+		specialMode();
 	}
 
-	tempUnitSet(tempUnit_p);
-	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0) 
-	{
-		if(lastMeasred==1)
-		{
-			tempValueDisplay(unitCalc(TEMP, tempUnit_p));
-			r = 1;
-		}
-	}
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));	
-	return r;
-}
+	caliDone();
 
+	delay_ms(500);
+}
+/*************************************************************************************/
+/*************************************************************************************/
+
+
+/***************************************************************************************/
 /********************************* TEST MODE *******************************************/
+/***************************************************************************************/
+
 void Buzzer_test(void)
 {
 	Beep();
@@ -484,7 +510,9 @@ void testMode(void)
 		}
 	}
 }
-/************************************************************************************/
+/***************************************************************************************/
+/***************************************************************************************/
+
 void keyScan()
 {
 	if (SW_LEFT_ON) // SW_LEFT
@@ -496,29 +524,13 @@ void keyScan()
 
 		while (SW_LEFT_ON)
 		{
-
 			delayCount++;
 			delay_ms(15);
 
 			if (delayCount == 350)
 			{
-				
-				displayRGB(CLEAR);
-				LCD_clear();
-				
-				Beep();
-
-				specialModeDisp(caliData_p);				
-				while(SW_LEFT_ON || SW_RIGHT_ON);
-
-				while (!SW_PWR_ON)
-				{
-					specialMode();
-				}
-
-				caliDone();
-
-				delay_ms(500);
+			    Beep();
+			    specialModeTask();
 			}
 
 			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
@@ -553,22 +565,7 @@ void keyScan()
 			if (delayCount == 350)
 			{
 				Beep();
-	
-				displayRGB(CLEAR);
-				LCD_clear();
-
-				specialModeDisp(caliData_p);
-				
-				while(SW_LEFT_ON || SW_RIGHT_ON);
-
-				while (!SW_PWR_ON)
-				{
-					specialMode();
-				}
-
-				caliDone();
-
-                delay_ms(500);				
+				specialModeTask();		
 			}
 
 			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
