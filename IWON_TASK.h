@@ -53,6 +53,7 @@ public:
 	INT16 Get_BDY_TEMP(VOID);
 	
 	INT16 Get_BAT_mV(VOID);
+	INT16 Get_VDD_mV(VOID);
 	INT16 Get_NTC_mV(VOID);
 	INT16 Get_TPC_mV(VOID);
 

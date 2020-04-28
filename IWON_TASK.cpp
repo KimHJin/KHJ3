@@ -473,6 +473,10 @@ INT16 IWON_TEMP_TASK::Get_BAT_mV(VOID)
 {
 	return (INT16)(VrefbatmV*2);
 }
+INT16 IWON_TEMP_TASK::Get_VDD_mV(VOID)
+{
+	return (INT16)(VrefvddmV*2);
+}
 INT16 IWON_TEMP_TASK::Get_NTC_mV(VOID)
 {
 	return (INT16)VrefntcmV;

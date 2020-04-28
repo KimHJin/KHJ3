@@ -23,9 +23,14 @@ IWON_TEMP_TASK *IWonTask = NULL;
 #define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
 
 int yellowFlag = 0;
-int count = 0;
+int testCount = 0;
 int lowBatteryFlag = 0;
+int testModeFlag = 0;
+int measure_test_flag = 0;
 INT8 lastMeasred = 0;
+
+INT16 BATmV = 0;
+INT16 VDDmV = 0;
 
 /************************************************************************/
 /**
@@ -463,53 +468,139 @@ void specialModeTask(void)
 /********************************* TEST MODE *******************************************/
 /***************************************************************************************/
 
-void Buzzer_test(void)
+void VDD_Test(void)
 {
-	Beep();
-	delay_ms(200);
-	Beep();
-	delay_ms(200);
+    displayRGB(CLEAR);
+	LCD_clear();
+    memTempDataDisplay(10);
+  	tempValueDisplay(VDDmV/100, false);
+
+	if(VDDmV >= 3000 && VDDmV <= 3300)
+	{
+		displayRGB(GREEN);
+	}
+	else 	
+	{
+		displayRGB(RED);
+	}	
+	
+	
 }
 
-void LCD_test(void)
+void BAT_Test(void)
 {
+  
+    displayRGB(CLEAR);
+	LCD_clear();
+    memTempDataDisplay(20);
+	tempValueDisplay(BATmV/100, false);
+
+	if(BATmV >= 2600 && BATmV <= 3000)
+	{
+		displayRGB(GREEN);
+	}
+	else 	
+	{
+		displayRGB(RED);
+	}
+	
+		
+}
+
+void LCD_Test(void)
+{
+    displayRGB(CLEAR);
+	LCD_clear();
+    memTempDataDisplay(30);
 	for(int i=0; i<14; i++)
 	  LCD->RAM[i] = 0xFF;
 	
-	delay_ms(200);
+	delay_ms(2000);
 	
 	LCD_clear();
 	
-	delay_ms(200);
+	delay_ms(2000);
+	
+		
 }
 
-void BackLight_test(void)
+void BackLight_Test(void)
 {
+  
+    LCD_clear();
+    memTempDataDisplay(40);
 	displayRGB(RED);
-	delay_ms(200);
+	delay_ms(1500);
 	displayRGB(GREEN);
-	delay_ms(200);
+	delay_ms(1500);
 	displayRGB(BLUE);
-	delay_ms(200);
+	delay_ms(1500);
 	displayRGB(CLEAR);
 }
 
-void testMode(void)
+void MEAS_Test(void)
 {
-	while(TEST_MODE_ON)
+  measure_test_flag = 1;
+   LCD_clear();
+  	memTempDataDisplay(50);
+}
+
+void testMode(void)
+{	
+  
+    IWonTask->ClearPowerDown();
+	if(SW_LEFT_ON)
 	{
-		if(SW_LEFT_ON)
+	    Beep();
+	    delay_ms(500);
+	   
+		testCount--;
+		
+		if(testCount < 0) 
+			testCount = 0;
+		
+		switch(testCount)
 		{
-			Buzzer_test();
-			LCD_test();
-			BackLight_test();
-		}
-		else if(SW_RIGHT_ON)
+			case 0: Beep(); testCount++; break;
+
+			case 1: VDD_Test(); break;
+
+			case 2: BAT_Test(); break;
+
+			case 3: LCD_Test(); break;
+
+			case 4: BackLight_Test(); break;
+
+			case 5: MEAS_Test(); break;
+
+			case 6: POWER_DOWN(); 
+		}	
+	}
+	else if(SW_RIGHT_ON)
+	{
+	    Beep();
+	    delay_ms(500);
+		testCount++;
+		
+		switch(testCount)
 		{
-			POWER_DOWN(); 
+			case 0: Beep(); testCount++; break;
+
+			case 1: VDD_Test(); break;
+
+			case 2: BAT_Test(); break;
+
+			case 3: LCD_Test(); break;
+
+			case 4: BackLight_Test(); break;
+
+			case 5: MEAS_Test(); break;
+
+			case 6: POWER_DOWN(); 
 		}
 	}
 }
+
 /***************************************************************************************/
 /***************************************************************************************/
 
@@ -527,20 +618,28 @@ void keyScan()
 			delayCount++;
 			delay_ms(15);
 
-			if (delayCount == 350)
+			
+			if(SW_LEFT_ON && SW_RIGHT_ON && SW_PWR_ON)
+		    {
+			   testModeFlag = 1;
+			   LCD_clear();
+			   displayRGB(CLEAR);
+			}
+			
+			if (delayCount == 350 && !testModeFlag)
 			{
 			    Beep();
 			    specialModeTask();
 			}
 
-			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
+			if (delayCount == 100 && !SW_RIGHT_ON && !testModeFlag) // LONG_PRESS
 			{
 				Beep();
 				measureModeTask(); // measure mode Set
 			}
 		}
 
-		if (delayCount < 100) // SHORT_PRESS
+		if (delayCount < 100 && !testModeFlag) // SHORT_PRESS
 		{
 			Beep();
 			tempLogDataTask(); // memory Data
@@ -562,20 +661,26 @@ void keyScan()
 			delayCount++;
 			delay_ms(15);
 
+			if(SW_LEFT_ON && SW_RIGHT_ON && SW_PWR_ON)
+			{
+				testModeFlag = 1;
+				LCD_clear();
+				displayRGB(CLEAR);
+			}	
 			if (delayCount == 350)
 			{
 				Beep();
 				specialModeTask();		
 			}
 
-			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
+			if (delayCount == 100 && !SW_LEFT_ON && !testModeFlag) // LONG_PRESS
 			{
 				Beep();
 				tempUnitTask(true); // temp Unit set
 			}
 		}
 
-		if (delayCount < 100) // SHORT_PRESS
+		if (delayCount < 100 && !testModeFlag) // SHORT_PRESS
 		{
 			buzzerStateTask(); // buzzer On / Off
 			Beep();
@@ -680,7 +785,7 @@ int main(void)
 		lastMeasred = 0;
 	}
 
-	
+/*	
 	delay_ms(2000);	
 	BeepMode(NORMAL); 	
 	delay_ms(2000);
@@ -688,7 +793,7 @@ int main(void)
 	delay_ms(2000);
 	BeepMode(HIGH_FEVER); 
 	delay_ms(2000);
-	
+*/
 	
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (int i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
@@ -713,7 +818,8 @@ int main(void)
 	INT8 MeasredCount2 = 0;
 	INT8 RetryCount = 0;
 
-	INT16 BATmV = IWonTask->Get_BAT_mV();
+	BATmV = IWonTask->Get_BAT_mV();
+	VDDmV = IWonTask->Get_VDD_mV();
 	
 	// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
 	if(BATmV/100 <= 20)
@@ -792,12 +898,16 @@ int main(void)
 	{
 		if (Measuring == false)
 		{
-			keyScan();
+		  	if(testModeFlag || TEST_MODE_ON)
+				testMode();
+			
+			else 
+				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && SW_PWR_ON)
+		if (Measuring == false && Measured == false && MeasredTemp != -100 && (SW_PWR_ON || measure_test_flag))
 		{
-			if (SW_PWR_ON)
+			if (SW_PWR_ON || measure_test_flag)
 			{
 				IWonTask->ClearPowerDown();
 				MeasredTemp = -100; // 온도측정하라는 값
@@ -807,6 +917,7 @@ int main(void)
 				for(INT8 i=0;i<100;i++)
 					IWonTask->Task();
 
+				measure_test_flag = 0;
 				RetryCount = 0;
 			}
 		}
