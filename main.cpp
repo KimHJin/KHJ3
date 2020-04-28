@@ -5,6 +5,7 @@
 //
 // 2020/04/18 I-WON SOLUTION CO LTD
 // 2020/04/18 v1.0 by KGY & KHJ
+// 2020/04/27 v1.1 by KHJ
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stm8l15x.h"
@@ -15,9 +16,11 @@
 // 아이원 온도계 테스크 클래스
 IWON_TEMP_TASK *IWonTask = NULL;
 
-#define SW_PWR_ON !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
-#define SW_LEFT_ON !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
-#define SW_RIGHT_ON !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
+#define SW_PWR_ON    !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
+#define SW_LEFT_ON   !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
+#define SW_RIGHT_ON  !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
+
+#define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
 
 int yellowFlag = 0;
 int count = 0;
@@ -204,6 +207,8 @@ void GPIO_init()
 	GPIO_Init(GPIOD, GPIO_Pin_5, GPIO_Mode_Out_PP_Low_Fast); //BUZZER
 
 	GPIO_Init(GPIOD, GPIO_Pin_7, GPIO_Mode_Out_PP_High_Fast); //PWR_STATE
+	
+	GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_In_FL_No_IT); // TEST_MODE
 
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
@@ -237,8 +242,6 @@ void BeepMode(int mode)
 	}
 	else if (mode == LIGHT_FEVER)	// 미열
 	{
-		Beep(1000);
-		delay_ms(400);
 		Beep(1000);
 		delay_ms(400);
 		Beep(1000);
@@ -431,6 +434,28 @@ INT8 tempUnitTask(BOOL inv)
 	}
 	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));	
 	return r;
+}
+
+void testMode(void)
+{
+  while(TEST_MODE_ON)
+  {
+	
+	 if(SW_LEFT_ON)
+	 {
+	   
+	   
+	   
+	 }
+	
+	 else if(SW_RIGHT_ON)
+	 {
+	   
+	   
+	   
+	   
+	 }
+  }
 }
 
 void keyScan()
@@ -631,7 +656,7 @@ int main(void)
 		lastMeasred = 0;
 	}
 
-	/*
+	
 	delay_ms(2000);	
 	BeepMode(NORMAL); 	
 	delay_ms(2000);
@@ -639,7 +664,7 @@ int main(void)
 	delay_ms(2000);
 	BeepMode(HIGH_FEVER); 
 	delay_ms(2000);
-	*/
+	
 	
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (int i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
