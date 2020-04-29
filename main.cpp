@@ -101,7 +101,7 @@ void testMode(INT16 VDDmV, INT16 BATmV)
 		  break;
 
 		case 5: 	// 온도 측정 테스트
-		  MEAS_Test();
+		  if(nowAction!=0) MEAS_Test();
 		  break;
 
 		default: 	// 파워다운 테스트
@@ -420,9 +420,9 @@ int main(void)
 				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag))
+		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
 		{
-			if (SW_PWR_ON || IWonFunc->Measure_test_flag)
+			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
 			{
 				IWonTask->ClearPowerDown();
 				MeasredTemp = -100; // 온도측정하라는 값
