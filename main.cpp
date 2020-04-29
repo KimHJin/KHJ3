@@ -12,25 +12,16 @@
 #include "lcd_driver.h"
 
 #include "IWON_TASK.h"
+#include "IWON_TEST.h"
 
 // 아이원 온도계 테스크 클래스
 IWON_TEMP_TASK *IWonTask = NULL;
+IWON_TEMP_TEST *IWonTest = NULL;
 
-#define SW_PWR_ON    !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
-#define SW_LEFT_ON   !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
-#define SW_RIGHT_ON  !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
-
-#define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
-
-int yellowFlag = 0;
-int testCount = 0;
-int lowBatteryFlag = 0;
-int testModeFlag = 0;
-int measure_test_flag = 0;
+INT8 yellowFlag = 0;
+INT8 lowBatteryFlag = 0;
+INT8 measure_test_flag = 0;
 INT8 lastMeasred = 0;
-
-INT16 BATmV = 0;
-INT16 VDDmV = 0;
 
 /************************************************************************/
 /**
@@ -54,19 +45,9 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 }
 /************************************************************************/
 
-#define HIGH_FEVER 1
-#define LIGHT_FEVER 2
-#define NORMAL 3
-
-#define RED 1
-#define GREEN 2
-#define BLUE 3
-#define YELLOW 4
-#define CLEAR 5
-
 void LCD_clear()
 {
-	for (int i = 0; i < 14; i++)
+	for (INT8 i = 0; i < 14; i++)
 	{
 		LCD->RAM[i] = 0;
 	}
@@ -142,7 +123,6 @@ void displayLOW(void)
 
 void displayHIGH(void)
 {
-
 	LCD->X9 = 0;
 	LCD->DP1 = 0;
 	NUMBER_CLEAR(1);
@@ -182,21 +162,23 @@ void displayError(void)
 }
 /************************************************************************/
 
-void delay_10us(int us)
+void delay_10us(INT16 us)
 {
 	us *= 16;
-	for (int i = 0; i < us; i++)
+	for (INT16 i = 0; i < us; i++)
 	{
 		us = us;
 	}
 }
-void delay_ms(int ms)
+void delay_ms(INT16 ms)
 {
-	for (int i = 0; i < ms; i++)
+	for (INT16 i = 0; i < ms; i++)
 	{
 		delay_10us(100);
 	}
 }
+
+
 /************************************************************************/
 
 void GPIO_init()
@@ -218,10 +200,10 @@ void GPIO_init()
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
 
-void Beep(int length)
+void Beep(INT16 length)
 {
 	if (buzzerState_p)
-		for (int i = 0; i < length; i++)
+		for (INT16 i = 0; i < length; i++)
 		{
 			GPIO_HIGH(GPIOD, GPIO_Pin_5);
 			delay_10us(20);
@@ -235,7 +217,7 @@ void Beep()
 	Beep(300);
 }
 
-void BeepMode(int mode)
+void BeepMode(INT16 mode)
 {
 	if (mode == HIGH_FEVER)	// 고열
 	{
@@ -257,12 +239,10 @@ void BeepMode(int mode)
 	}
 }
 
-/******************************************/
-void lowBatteryDisplay_2v0(void)
+void displayOFF(void)
 {
+	displayRGB(CLEAR);
 	LCD_clear();
-	
-	lowBatteryFlag = 1;
 
 	LCD->C1 = 1;// o
 	LCD->D1 = 1;
@@ -278,6 +258,14 @@ void lowBatteryDisplay_2v0(void)
 	LCD->E3 = 1;
 	LCD->F3 = 1;
 	LCD->G3 = 1;
+}
+
+/******************************************/
+void lowBatteryDisplay_2v0(void)
+{
+	lowBatteryFlag = 1;
+
+	displayOFF();
 
 	BeepMode(LIGHT_FEVER);
 	POWER_DOWN();
@@ -468,136 +456,68 @@ void specialModeTask(void)
 /********************************* TEST MODE *******************************************/
 /***************************************************************************************/
 
-void VDD_Test(void)
-{
-    displayRGB(CLEAR);
-	LCD_clear();
-    memTempDataDisplay(10);
-  	tempValueDisplay(VDDmV/100, false);
-
-	if(VDDmV >= 3000 && VDDmV <= 3300)
-	{
-		displayRGB(GREEN);
-	}
-	else 	
-	{
-		displayRGB(RED);
-	}	
-	
-	
-}
-
-void BAT_Test(void)
-{
-  
-    displayRGB(CLEAR);
-	LCD_clear();
-    memTempDataDisplay(20);
-	tempValueDisplay(BATmV/100, false);
-
-	if(BATmV >= 2600 && BATmV <= 3000)
-	{
-		displayRGB(GREEN);
-	}
-	else 	
-	{
-		displayRGB(RED);
-	}
-	
-		
-}
-
-void LCD_Test(void)
-{
-    displayRGB(CLEAR);
-	LCD_clear();
-    memTempDataDisplay(30);
-	for(int i=0; i<14; i++)
-	  LCD->RAM[i] = 0xFF;
-	
-	delay_ms(2000);
-	
-	LCD_clear();
-	
-	delay_ms(2000);
-	
-		
-}
-
-void BackLight_Test(void)
-{
-  
-    LCD_clear();
-    memTempDataDisplay(40);
-	displayRGB(RED);
-	delay_ms(1500);
-	displayRGB(GREEN);
-	delay_ms(1500);
-	displayRGB(BLUE);
-	delay_ms(1500);
-	displayRGB(CLEAR);
-}
-
 void MEAS_Test(void)
 {
-  measure_test_flag = 1;
-   LCD_clear();
-  	memTempDataDisplay(50);
+	measure_test_flag = 1;
+	LCD_clear();
+	memTempDataDisplay(50);
 }
 
 void testMode(void)
 {	
-  
     IWonTask->ClearPowerDown();
+	
+	INT8 nowAction = 0;
+	
 	if(SW_LEFT_ON)
 	{
 	    Beep();
-	    delay_ms(500);
-	   
-		testCount--;
-		
-		if(testCount < 0) 
-			testCount = 0;
-		
-		switch(testCount)
-		{
-			case 0: Beep(); testCount++; break;
-
-			case 1: VDD_Test(); break;
-
-			case 2: BAT_Test(); break;
-
-			case 3: LCD_Test(); break;
-
-			case 4: BackLight_Test(); break;
-
-			case 5: MEAS_Test(); break;
-
-			case 6: POWER_DOWN(); 
-		}	
-	}
-	else if(SW_RIGHT_ON)
+	    delay_ms(500);	   
+		IWonTest->DecTestCount();
+		nowAction = 1;
+		while(SW_LEFT_ON);
+	}	
+	else 
+	if(SW_RIGHT_ON)
 	{
 	    Beep();
 	    delay_ms(500);
-		testCount++;
-		
-		switch(testCount)
-		{
-			case 0: Beep(); testCount++; break;
+		IWonTest->IncTestCount();		
+		nowAction = 2;
+		while(SW_RIGHT_ON);
+	}
+	
+	switch(IWonTest->GetTestCount())
+	{
+		case 0: 	// 부저 테스트
+		  Beep(); 
+		  IWonTest->IncTestCount();
+		  delay_ms(500);		  
+		  nowAction = 2;
+		case 1: 	// 전원 테스트
+		  if(nowAction!=0) VDD_Test(); 
+		  break;
 
-			case 1: VDD_Test(); break;
+		case 2: 	// 배터리 전압 테스트
+		  if(nowAction!=0) BAT_Test(); 
+		  break;
 
-			case 2: BAT_Test(); break;
+		case 3: 
+		  if(nowAction!=0) LCD_Test(); 
+		  break;
 
-			case 3: LCD_Test(); break;
+		case 4: 	// 백라이트 테스트
+		  if(nowAction!=0) BackLight_Test(); 
+		  break;
 
-			case 4: BackLight_Test(); break;
+		case 5: 	// 온도 측정 테스트
+		  MEAS_Test();
+		  break;
 
-			case 5: MEAS_Test(); break;
-
-			case 6: POWER_DOWN(); 
-		}
+		default: 	// 파워다운 테스트
+			displayOFF();
+			delay_ms(1000);
+			POWER_DOWN();				
 	}
 }
 
@@ -617,29 +537,21 @@ void keyScan()
 		{
 			delayCount++;
 			delay_ms(15);
-
 			
-			if(SW_LEFT_ON && SW_RIGHT_ON && SW_PWR_ON)
-		    {
-			   testModeFlag = 1;
-			   LCD_clear();
-			   displayRGB(CLEAR);
-			}
-			
-			if (delayCount == 350 && !testModeFlag)
+			if (delayCount == 350)
 			{
 			    Beep();
 			    specialModeTask();
 			}
 
-			if (delayCount == 100 && !SW_RIGHT_ON && !testModeFlag) // LONG_PRESS
+			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
 			{
 				Beep();
 				measureModeTask(); // measure mode Set
 			}
 		}
 
-		if (delayCount < 100 && !testModeFlag) // SHORT_PRESS
+		if (delayCount < 100) // SHORT_PRESS
 		{
 			Beep();
 			tempLogDataTask(); // memory Data
@@ -654,33 +566,27 @@ void keyScan()
 		IWonTask->ClearPowerDown();
 
 		delay_ms(15);
-		int delayCount = 0;
+		INT16 delayCount = 0;
 
 		while (SW_RIGHT_ON)
 		{
 			delayCount++;
 			delay_ms(15);
-
-			if(SW_LEFT_ON && SW_RIGHT_ON && SW_PWR_ON)
-			{
-				testModeFlag = 1;
-				LCD_clear();
-				displayRGB(CLEAR);
-			}	
+			
 			if (delayCount == 350)
 			{
 				Beep();
 				specialModeTask();		
 			}
 
-			if (delayCount == 100 && !SW_LEFT_ON && !testModeFlag) // LONG_PRESS
+			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
 			{
 				Beep();
 				tempUnitTask(true); // temp Unit set
 			}
 		}
 
-		if (delayCount < 100 && !testModeFlag) // SHORT_PRESS
+		if (delayCount < 100) // SHORT_PRESS
 		{
 			buzzerStateTask(); // buzzer On / Off
 			Beep();
@@ -691,7 +597,7 @@ void keyScan()
 
 void tempLogDataSave(int16_t saveData)
 {
-	for (int i = 0; i < 31; i++)
+	for (INT8 i = 0; i < 31; i++)
 	{
 		__EEPROM->memTempData[i] = __EEPROM->memTempData[i + 1];
 	}
@@ -750,6 +656,9 @@ void measuringDisp(void)
 
 int main(void)
 {
+  	INT16 BATmV = 0;
+	INT16 VDDmV = 0;
+
 	INT16 MEASURED_TEMP = 0;
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
 	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
@@ -796,11 +705,11 @@ int main(void)
 */
 	
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
-	for (int i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
+	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
 		IWonTask->Task();
 		if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
-			for (int i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+			for (BYTE i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task();			  
 				delay_ms(DEFINED_ADC_DELAY);
@@ -843,6 +752,19 @@ int main(void)
 	{
 		if(DeviceTestModeWait>500)
 		{
+		  	if(SW_LEFT_ON && SW_RIGHT_ON)  // Test Mode 진입
+			{
+				if(DeviceTestModeValue == 1)
+				{
+					IWonTest = new IWON_TEMP_TEST();
+					IWonTest->SetTestModeFlag(1);					
+					LCD_clear();
+					displayRGB(CLEAR);
+					break;
+				}
+				DeviceTestModeValue++;
+			}
+		    else 
 			if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
 			{
 				if(DeviceTestModeValue==1) 
@@ -896,16 +818,17 @@ int main(void)
 
 	while (IWonTask->NeedPowerDown() == false)
 	{
+		INT8 testModeFlag = (IWonTest==NULL) ? 0 : IWonTest->GetTestModeFlag();
+		
 		if (Measuring == false)
 		{
-		  	if(testModeFlag || TEST_MODE_ON)
-				testMode();
-			
+		  	if(testModeFlag==1) // Test Mode
+				testMode();			
 			else 
 				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && (SW_PWR_ON || measure_test_flag))
+		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || measure_test_flag))
 		{
 			if (SW_PWR_ON || measure_test_flag)
 			{
@@ -1077,7 +1000,8 @@ int main(void)
 			}
 		}
 	}
-
+	
+    displayOFF();
 	POWER_DOWN();
 }
 

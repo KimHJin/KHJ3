@@ -1578,6 +1578,9 @@
     <name>$PROJ_DIR$\IWON_TASK.cpp</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\IWON_TEST.cpp</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\IWON_VAVG.cpp</name>
   </file>
   <file>
