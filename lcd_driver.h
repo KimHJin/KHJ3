@@ -2,6 +2,7 @@
 #define __LCD_DRIVER_H__
 
 #include "IWON_SCAN.h"
+#include "IWON_FUNC.h"
 
 #include "stm8l15x.h"
 #include "stm8l15x_lcd.h"
@@ -93,7 +94,7 @@
 	setBitSegment(F, position); \
 	setBitSegment(G, position);
 
-void LCD_Display_init();
+void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc);
 void tempValueDisplay(int16_t value, BOOL fillZero);	// fillZero 를 true 로 하면 00.0 같이 왼쪽에 맨 왼쪽 0 이 표시된다.
 void tempValueDisplay(int16_t value);					// 위의 fill 을 true 하여 동작
 void displayNumber(int number, int position);
@@ -102,5 +103,6 @@ void memTempDataDisplay(int tempData);
 void buzzerCMD(int state);
 void measureModeSet(int mode);
 void tempUnitSet(int unit);
+
 
 #endif

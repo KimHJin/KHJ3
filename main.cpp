@@ -17,11 +17,7 @@
 // 아이원 온도계 테스크 클래스
 IWON_TEMP_TASK *IWonTask = NULL;
 IWON_TEMP_TEST *IWonTest = NULL;
-
-INT8 yellowFlag = 0;
-INT8 lowBatteryFlag = 0;
-INT8 measure_test_flag = 0;
-INT8 lastMeasred = 0;
+IWON_TEMP_FUNC *IWonFunc = NULL;
 
 /************************************************************************/
 /**
@@ -30,10 +26,10 @@ INT8 lastMeasred = 0;
 INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 {
 	IWonTask->Time();
-	if (yellowFlag)
+	if (IWonFunc->YellowFlag)
 		IWonTask->YellowDisp();
 	
-	if(lowBatteryFlag)
+	if(IWonFunc->LowBatteryFlag)
 	    IWonTask->lowBatteryDisp();
 
 	//
@@ -45,412 +41,6 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 }
 /************************************************************************/
 
-void LCD_clear()
-{
-	for (INT8 i = 0; i < 14; i++)
-	{
-		LCD->RAM[i] = 0;
-	}
-}
-
-void POWER_DOWN()
-{
-	LCD_clear();
-	GPIO_LOW(GPIOD, GPIO_Pin_7);
-}
-
-
-void displayRGB(int color)
-{
-	if (color == RED)
-	{
-		GPIO_LOW(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		yellowFlag = 0;
-	}
-
-	else if (color == GREEN)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_LOW(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		yellowFlag = 0;
-	}
-
-	else if (color == BLUE)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_LOW(GPIOB, GPIO_Pin_7);
-		yellowFlag = 0;
-	}
-
-	else if (color == YELLOW)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		yellowFlag = 1;
-	}
-
-	else if (color == CLEAR)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		yellowFlag = 0;
-	}
-}
-
-void displayLOW(void)
-{
-	LCD->X9 = 0;
-	LCD->DP1 = 0;
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->F1 = 1; // L
-	LCD->E1 = 1;
-	LCD->D1 = 1;
-
-	LCD->C2 = 1; // O
-	LCD->D2 = 1;
-	LCD->E2 = 1;
-	LCD->G2 = 1;
-}
-
-void displayHIGH(void)
-{
-	LCD->X9 = 0;
-	LCD->DP1 = 0;
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->F1 = 1; // H
-	LCD->E1 = 1;
-	LCD->G1 = 1;
-	LCD->G1 = 1;
-	LCD->B1 = 1;
-	LCD->C1 = 1;
-
-	LCD->F2 = 1; // I
-	LCD->E2 = 1;
-}
-
-void displayError(void)
-{
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->A1 = 1; // E
-	LCD->D1 = 1;
-	LCD->E1 = 1;
-	LCD->F1 = 1;
-	LCD->G1 = 1;
-
-	LCD->G2 = 1; //r
-	LCD->E2 = 1;
-
-	LCD->G3 = 1; //r
-	LCD->E3 = 1;
-
-	LCD->DP1 = 0;
-}
-/************************************************************************/
-
-void delay_10us(INT16 us)
-{
-	us *= 16;
-	for (INT16 i = 0; i < us; i++)
-	{
-		us = us;
-	}
-}
-void delay_ms(INT16 ms)
-{
-	for (INT16 i = 0; i < ms; i++)
-	{
-		delay_10us(100);
-	}
-}
-
-
-/************************************************************************/
-
-void GPIO_init()
-{
-	GPIO_Init(GPIOD, GPIO_Pin_4, GPIO_Mode_Out_PP_High_Fast); //RED
-	GPIO_Init(GPIOF, GPIO_Pin_0, GPIO_Mode_Out_PP_High_Fast); //GREEN
-	GPIO_Init(GPIOB, GPIO_Pin_7, GPIO_Mode_Out_PP_High_Fast); //BLUE
-
-	GPIO_Init(GPIOC, GPIO_Pin_5, GPIO_Mode_In_FL_No_IT); //SW_PWR
-	GPIO_Init(GPIOE, GPIO_Pin_6, GPIO_Mode_In_FL_No_IT); //SW_LEFT
-	GPIO_Init(GPIOE, GPIO_Pin_7, GPIO_Mode_In_FL_No_IT); //SW_RIGHT
-
-	GPIO_Init(GPIOD, GPIO_Pin_5, GPIO_Mode_Out_PP_Low_Fast); //BUZZER
-
-	GPIO_Init(GPIOD, GPIO_Pin_7, GPIO_Mode_Out_PP_High_Fast); //PWR_STATE
-	
-	GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_In_FL_No_IT); // TEST_MODE
-
-	GPIO_HIGH(GPIOD, GPIO_Pin_7);
-}
-
-void Beep(INT16 length)
-{
-	if (buzzerState_p)
-		for (INT16 i = 0; i < length; i++)
-		{
-			GPIO_HIGH(GPIOD, GPIO_Pin_5);
-			delay_10us(20);
-			GPIO_LOW(GPIOD, GPIO_Pin_5);
-			delay_10us(20);
-		}
-}
-
-void Beep()
-{
-	Beep(300);
-}
-
-void BeepMode(INT16 mode)
-{
-	if (mode == HIGH_FEVER)	// 고열
-	{
-		Beep(2000);
-		delay_ms(400);
-		Beep(2000);
-		delay_ms(400);
-		Beep(2000);
-	}
-	else if (mode == LIGHT_FEVER)	// 미열
-	{
-		Beep(1000);
-		delay_ms(400);
-		Beep(1000);
-	}
-	else if (mode == NORMAL)	// 정상
-	{
-		Beep();
-	}
-}
-
-void displayOFF(void)
-{
-	displayRGB(CLEAR);
-	LCD_clear();
-
-	LCD->C1 = 1;// o
-	LCD->D1 = 1;
-	LCD->E1 = 1;
-	LCD->G1 = 1;
-
-	LCD->A2 = 1;// F
-	LCD->E2 = 1;
-	LCD->F2 = 1;
-	LCD->G2 = 1;
-
-	LCD->A3 = 1;// F
-	LCD->E3 = 1;
-	LCD->F3 = 1;
-	LCD->G3 = 1;
-}
-
-/******************************************/
-void lowBatteryDisplay_2v0(void)
-{
-	lowBatteryFlag = 1;
-
-	displayOFF();
-
-	BeepMode(LIGHT_FEVER);
-	POWER_DOWN();
-}
-
-void lowBatteryDisplay_2v2(void)
-{
-	lowBatteryFlag = 1;
-}
-
-void lowBatteryDisplay_2v4(void)
-{
-	LCD->X5 = 1;
-}
-/*******************************************/
-
-int16_t unitCalc(int16_t temp, int unit)
-{
-	int16_t value = temp;
-	if (!unit)
-	{
-		value = (int16_t)((((float)temp / 10) * 1.8 + 32) * 10);
-	}
-
-	return value;
-}
-
-/*********************************************/
-
-void tempLogDataTask()
-{
-	memNumber_p--;
-
-	if (memNumber_p < 0)
-		memNumber_p = 32;
-
-	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-}
-
-
-void buzzerStateTask()
-{
-	buzzerState_p ^= 1;
-
-	buzzerCMD(buzzerState_p);
-}
-
-void measureModeTask()
-{
-	measureMode_p ^= 1;
-
-	measureModeSet(measureMode_p);
-
-	if (measureMode_p)
-		displayRGB(BLUE);
-	else
-		displayRGB(GREEN);
-}
-
-INT8 tempUnitTask(BOOL inv)
-{
-	INT8 r = 0;
-
-	if(inv)
-	{
-		tempUnit_p ^= 1;
-	}
-
-	tempUnitSet(tempUnit_p);
-	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0) 
-	{
-		if(lastMeasred==1)
-		{
-			tempValueDisplay(unitCalc(TEMP, tempUnit_p));
-			r = 1;
-		}
-	}
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));	
-	return r;
-}
-
-/*************************************************************************************/
-/*****************************   SPECIAL MODE   **************************************/
-/*************************************************************************************/
-
-
-void specialModeDisp(int16_t value)
-{
-    int16_t temp = 0;
-  
-	if(value < 0) 
-		temp = -1 * value;
-	else 
-		temp = value;
-
-	int secondNumber = temp % 10;
-	int firstNumber = temp / 10;
-	
-	if(value < 0) 
-		LCD->G1 = 1;
-	else 
-		LCD->G1 = 0;
-	
-	displayNumber(firstNumber, 2);
-	displayNumber(secondNumber, 3);
-}
-
-void caliDone(void)
-{
-    IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-
-	LCD_clear();
-	BeepMode(NORMAL);
-
-	displayNumber(0, 1);
-	displayNumber(0, 2);
-	displayNumber(0, 3);
-
-	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-	measureModeSet(measureMode_p);
-	buzzerCMD(buzzerState_p);
-	tempUnitSet(tempUnit_p);
-
-	LCD->X8 = 1; // Display "LOG"
-
-	if (measureMode_p)
-		displayRGB(BLUE);
-	else
-		displayRGB(GREEN);	
-}
-
-void specialMode(void)
-{
-	IWonTask->ClearPowerDown();
-
-	if (SW_RIGHT_ON)
-	{
-		delay_ms(400);
-		displayRGB(RED);
-		
-		caliData_p++;
-		
-		if(caliData_p > 99) 
-	    	caliData_p = 99;
-
-
-		specialModeDisp(caliData_p);
-	}
-	else if (SW_LEFT_ON)
-	{
-		delay_ms(400);
-		displayRGB(BLUE);
-
-		caliData_p--;
-		
-		if(caliData_p < -99)
-			caliData_p = -99;
-		  
-		specialModeDisp(caliData_p);
-	}
-}
-
-void specialModeTask(void)
-{
-	displayRGB(CLEAR);
-	LCD_clear();
-	
-	specialModeDisp(caliData_p);
-	
-	while(SW_LEFT_ON || SW_RIGHT_ON);
-
-	while (!SW_PWR_ON)
-	{
-		specialMode();
-	}
-
-	caliDone();
-
-	delay_ms(500);
-}
-/*************************************************************************************/
-/*************************************************************************************/
-
 
 /***************************************************************************************/
 /********************************* TEST MODE *******************************************/
@@ -458,12 +48,12 @@ void specialModeTask(void)
 
 void MEAS_Test(void)
 {
-	measure_test_flag = 1;
-	LCD_clear();
+	IWonFunc->Measure_test_flag = 1;
+	IWonFunc->LCD_clear();
 	memTempDataDisplay(50);
 }
 
-void testMode(void)
+void testMode(INT16 VDDmV, INT16 BATmV)
 {	
     IWonTask->ClearPowerDown();
 	
@@ -471,8 +61,8 @@ void testMode(void)
 	
 	if(SW_LEFT_ON)
 	{
-	    Beep();
-	    delay_ms(500);	   
+	    IWonFunc->Beep();
+	    IWonFunc->Delay_ms(500);	   
 		IWonTest->DecTestCount();
 		nowAction = 1;
 		while(SW_LEFT_ON);
@@ -480,8 +70,8 @@ void testMode(void)
 	else 
 	if(SW_RIGHT_ON)
 	{
-	    Beep();
-	    delay_ms(500);
+	    IWonFunc->Beep();
+	    IWonFunc->Delay_ms(500);
 		IWonTest->IncTestCount();		
 		nowAction = 2;
 		while(SW_RIGHT_ON);
@@ -490,24 +80,24 @@ void testMode(void)
 	switch(IWonTest->GetTestCount())
 	{
 		case 0: 	// 부저 테스트
-		  Beep(); 
+		  IWonFunc->Beep(); 
 		  IWonTest->IncTestCount();
-		  delay_ms(500);		  
+		  IWonFunc->Delay_ms(500);		  
 		  nowAction = 2;
 		case 1: 	// 전원 테스트
-		  if(nowAction!=0) VDD_Test(); 
+		  if(nowAction!=0) IWonTest->VDD_Test(VDDmV); 
 		  break;
 
 		case 2: 	// 배터리 전압 테스트
-		  if(nowAction!=0) BAT_Test(); 
+		  if(nowAction!=0) IWonTest->BAT_Test(BATmV); 
 		  break;
 
 		case 3: 
-		  if(nowAction!=0) LCD_Test(); 
+		  if(nowAction!=0) IWonTest->LCD_Test(); 
 		  break;
 
 		case 4: 	// 백라이트 테스트
-		  if(nowAction!=0) BackLight_Test(); 
+		  if(nowAction!=0) IWonTest->BackLight_Test(); 
 		  break;
 
 		case 5: 	// 온도 측정 테스트
@@ -515,9 +105,10 @@ void testMode(void)
 		  break;
 
 		default: 	// 파워다운 테스트
-			displayOFF();
-			delay_ms(1000);
-			POWER_DOWN();				
+			IWonFunc->DisplayOFF();
+			IWonFunc->Delay_ms(1000);
+			IWonFunc->POWER_DOWN();	
+			break;			
 	}
 }
 
@@ -530,33 +121,33 @@ void keyScan()
 	{
 		IWonTask->ClearPowerDown();
 
-		delay_ms(15);
+		IWonFunc->Delay_ms(15);
 		int delayCount = 0;
 
 		while (SW_LEFT_ON)
 		{
 			delayCount++;
-			delay_ms(15);
+			IWonFunc->Delay_ms(15);
 			
 			if (delayCount == 350)
 			{
-			    Beep();
-			    specialModeTask();
+			    IWonFunc->Beep();
+			    IWonFunc->SpecialModeTask(IWonTask);
 			}
 
 			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
 			{
-				Beep();
-				measureModeTask(); // measure mode Set
+				IWonFunc->Beep();
+				IWonFunc->MeasureModeTask(); // measure mode Set
 			}
 		}
 
 		if (delayCount < 100) // SHORT_PRESS
 		{
-			Beep();
-			tempLogDataTask(); // memory Data
+			IWonFunc->Beep();
+			IWonFunc->TempLogDataTask(); // memory Data
 		}
-		delay_ms(10);
+		IWonFunc->Delay_ms(10);
 	}
 
 	if (SW_RIGHT_ON) // SW_RIGHT
@@ -565,33 +156,33 @@ void keyScan()
 
 		IWonTask->ClearPowerDown();
 
-		delay_ms(15);
+		IWonFunc->Delay_ms(15);
 		INT16 delayCount = 0;
 
 		while (SW_RIGHT_ON)
 		{
 			delayCount++;
-			delay_ms(15);
+			IWonFunc->Delay_ms(15);
 			
 			if (delayCount == 350)
 			{
-				Beep();
-				specialModeTask();		
+				IWonFunc->Beep();
+				IWonFunc->SpecialModeTask(IWonTask);		
 			}
 
 			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
 			{
-				Beep();
-				tempUnitTask(true); // temp Unit set
+				IWonFunc->Beep();
+				IWonFunc->TempUnitTask(true); // temp Unit set
 			}
 		}
 
 		if (delayCount < 100) // SHORT_PRESS
 		{
-			buzzerStateTask(); // buzzer On / Off
-			Beep();
+			IWonFunc->BuzzerStateTask(); // buzzer On / Off
+			IWonFunc->Beep();
 		}
-		delay_ms(10);
+		IWonFunc->Delay_ms(10);
 	}
 }
 
@@ -607,7 +198,7 @@ void tempLogDataSave(int16_t saveData)
 
 void saveTemp(INT16 temp)
 {
-	lastMeasred = 1;
+	IWonFunc->LastMeasred = 1;
 
 	TEMP = temp;
 
@@ -617,22 +208,22 @@ void saveTemp(INT16 temp)
 
 	memNumberDisplay(memNumber_p);
 
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(IWonFunc->UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 }
 
 
 void systemError(VOID)
 {
-	displayRGB(RED);
-	displayError();
+	IWonFunc->DisplayRGB(RED);
+	IWonFunc->DisplayError();
 
-	delay_ms(50);
-	Beep(1000);
-	delay_ms(40);
-	Beep(1000);
-	delay_ms(40);
-	Beep(1000);
-	delay_ms(40);
+	IWonFunc->Delay_ms(50);
+	IWonFunc->Beep(1000);
+	IWonFunc->Delay_ms(40);
+	IWonFunc->Beep(1000);
+	IWonFunc->Delay_ms(40);
+	IWonFunc->Beep(1000);
+	IWonFunc->Delay_ms(40);
 }
 
 void measuringDisp(void)
@@ -663,35 +254,36 @@ int main(void)
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
 	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
 
+	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
+	IWonFunc = new IWON_TEMP_FUNC();
+	
 	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
-
-	GPIO_init();
+	
+	IWonTask->GPIO_init();
 	EEPROM_init();
-	LCD_Display_init();
+	LCD_Display_init(IWonFunc);
 
 	if (measureMode_p)
-		displayRGB(BLUE);
+		IWonFunc->DisplayRGB(BLUE);
 	else 
-		displayRGB(GREEN);
-
-	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
+		IWonFunc->DisplayRGB(GREEN);
 
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
 
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
-	Beep();
+	IWonFunc->Beep();
 
 	// 가장 마지막 측정 값
 	if(TEMP>0 && TEMP<500) 
 	{
-		lastMeasred = 1;
-		if(tempUnitTask(false)==1)
+		IWonFunc->LastMeasred = 1;
+		if(IWonFunc->TempUnitTask(false)==1)
 		{
-			delay_ms(1200);
+			IWonFunc->Delay_ms(1200);
 		}
-		lastMeasred = 0;
+		IWonFunc->LastMeasred = 0;
 	}
 
 /*	
@@ -712,11 +304,11 @@ int main(void)
 			for (BYTE i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task();			  
-				delay_ms(DEFINED_ADC_DELAY);
+				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 			}
 			break;	// 빠져나가게 된다.
 		}
-		delay_ms(30);
+		IWonFunc->Delay_ms(30);
 	}
 
 	
@@ -732,11 +324,11 @@ int main(void)
 	
 	// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
 	if(BATmV/100 <= 20)
-	    lowBatteryDisplay_2v0();
+	    IWonFunc->LowBatteryDisplay_2v0();
 	else if(BATmV/100 < 22)
-		lowBatteryDisplay_2v2();
+		IWonFunc->LowBatteryDisplay_2v2();
     else if(BATmV/100 < 24)
-	    lowBatteryDisplay_2v4();
+	    IWonFunc->LowBatteryDisplay_2v4();
 	
 	
 	// 초기에 센서의 온도를 측정하게 된다.
@@ -756,10 +348,10 @@ int main(void)
 			{
 				if(DeviceTestModeValue == 1)
 				{
-					IWonTest = new IWON_TEMP_TEST();
+					IWonTest = new IWON_TEMP_TEST(IWonFunc, IWonTask);
 					IWonTest->SetTestModeFlag(1);					
-					LCD_clear();
-					displayRGB(CLEAR);
+					IWonFunc->LCD_clear();
+					IWonFunc->DisplayRGB(CLEAR);
 					break;
 				}
 				DeviceTestModeValue++;
@@ -810,7 +402,7 @@ int main(void)
 			DeviceTestModeWait++;
 		}
 
-		delay_ms(10);
+		IWonFunc->Delay_ms(10);
 		IWonTask->ClearPowerDown();
 	}
 	
@@ -823,14 +415,14 @@ int main(void)
 		if (Measuring == false)
 		{
 		  	if(testModeFlag==1) // Test Mode
-				testMode();			
+				testMode(VDDmV, BATmV);			
 			else 
 				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || measure_test_flag))
+		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag))
 		{
-			if (SW_PWR_ON || measure_test_flag)
+			if (SW_PWR_ON || IWonFunc->Measure_test_flag)
 			{
 				IWonTask->ClearPowerDown();
 				MeasredTemp = -100; // 온도측정하라는 값
@@ -840,7 +432,7 @@ int main(void)
 				for(INT8 i=0;i<100;i++)
 					IWonTask->Task();
 
-				measure_test_flag = 0;
+				IWonFunc->Measure_test_flag = 0;
 				RetryCount = 0;
 			}
 		}
@@ -859,12 +451,12 @@ int main(void)
 				MeasredCount2 = 0;
 
 				if (measureMode_p)
-					displayRGB(BLUE);
+					IWonFunc->DisplayRGB(BLUE);
 				else 
-					displayRGB(GREEN);
+					IWonFunc->DisplayRGB(GREEN);
 
 				measuringDisp();
-				Beep();
+				IWonFunc->Beep();
 			}
 			else if (Measuring)
 			{ // 온도 측정
@@ -896,14 +488,14 @@ int main(void)
 								Measuring = true;
 								MeasredTemp = -100;
 								IWonTask->Clear_AVG();
-								delay_ms(300);
+								IWonFunc->Delay_ms(300);
 								continue;
 							}
 
 							MeasredTemp = MEASURED_TEMP;
-							displayRGB(BLUE);
-							displayLOW();
-							Beep();
+							IWonFunc->DisplayRGB(BLUE);
+							IWonFunc->DisplayLOW();
+							IWonFunc->Beep();
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
@@ -912,9 +504,9 @@ int main(void)
 						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
 							MeasredTemp = MEASURED_TEMP;
-							displayRGB(BLUE);
-							displayHIGH();
-							Beep();
+							IWonFunc->DisplayRGB(BLUE);
+							IWonFunc->DisplayHIGH();
+							IWonFunc->Beep();
 							Measuring = false;
 							Measured = true;
 							MeasredCount1 = 0;
@@ -938,21 +530,21 @@ int main(void)
 								{
 									if (MEASURED_TEMP >= 381 && MEASURED_TEMP <= 425)
 									{ // HIGH FEVER
-										displayRGB(RED);
-										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										BeepMode(HIGH_FEVER);
+										IWonFunc->DisplayRGB(RED);
+										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										IWonFunc->BeepMode(HIGH_FEVER);
 									}
 									else if (MEASURED_TEMP >= 371 && MEASURED_TEMP <= 380)
 									{ // LIGHT FEVER
-										displayRGB(YELLOW);
-										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										BeepMode(LIGHT_FEVER);
+										IWonFunc->DisplayRGB(YELLOW);
+										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										IWonFunc->BeepMode(LIGHT_FEVER);
 									}
 									else if (MEASURED_TEMP >= 334 && MEASURED_TEMP <= 370)
 									{ // NORMAL
-										displayRGB(BLUE);
-										tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										BeepMode(NORMAL);
+										IWonFunc->DisplayRGB(BLUE);
+										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										IWonFunc->BeepMode(NORMAL);
 									}
 
 									saveTemp(MeasredTemp);
@@ -983,10 +575,10 @@ int main(void)
 
 							if (MeasredCount1 > 10 || MeasredCount2 > 20)
 							{
-								Beep();
+								IWonFunc->Beep();
 
-								tempValueDisplay(unitCalc(MeasredTemp, tempUnit_p));
-								displayRGB(GREEN);
+								tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p));
+								IWonFunc->DisplayRGB(GREEN);
 								saveTemp(MeasredTemp);
 
 								Measuring = false;
@@ -1001,8 +593,9 @@ int main(void)
 		}
 	}
 	
-    displayOFF();
-	POWER_DOWN();
+    IWonFunc->DisplayOFF();
+	IWonFunc->Delay_ms(500);
+	IWonFunc->POWER_DOWN();
 }
 
 /*********************************************/

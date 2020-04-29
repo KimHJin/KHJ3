@@ -1,8 +1,7 @@
 #include "lcd_driver.h"
 
-int16_t unitCalc(int16_t temp, int unit);
 
-void LCD_Display_init()
+void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 {
 	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_LCD, ENABLE);
@@ -33,7 +32,7 @@ void LCD_Display_init()
 	//displayNumber(0, 3);
 
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(unitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(IWonFunc->UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 	measureModeSet(measureMode_p);
 	buzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);

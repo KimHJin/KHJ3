@@ -27,10 +27,6 @@
 #define DEFINED_ADC_DELAY 20
 #define DEFINED_ADC_SUM_C 2
 
-#define GPIO_HIGH(a, b) a->ODR |= b
-#define GPIO_LOW(a, b) a->ODR &= ~b
-#define GPIO_TOGGLE(a, b) a->ODR ^= b
-
 class IWON_TEMP_TASK : IWON_TEMP_SCAN
 {
 
@@ -67,6 +63,8 @@ public:
 
 	VOID YellowDisp(VOID);
 	VOID lowBatteryDisp(VOID);
+	
+	VOID GPIO_init(VOID);
 private:
 	VOID Init(VOID);
 
