@@ -84,7 +84,10 @@ VOID IWON_TEMP_FUNC::LCD_clear(VOID)
 VOID IWON_TEMP_FUNC::POWER_DOWN(VOID)
 {
 	LCD_clear();
-	GPIO_LOW(GPIOD, GPIO_Pin_7);
+	while(1)	// 무조건 무한루프 돌면서 파워를 끈다.
+	{
+		GPIO_LOW(GPIOD, GPIO_Pin_7);
+	}
 }
 
 
@@ -190,6 +193,7 @@ VOID IWON_TEMP_FUNC::DisplayError(VOID)
 }
 
 
+// LCD 에 oFF 표시
 VOID IWON_TEMP_FUNC::DisplayOFF(VOID)
 {
 	DisplayRGB(CLEAR);

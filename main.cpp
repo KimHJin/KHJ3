@@ -107,10 +107,7 @@ void testMode(INT16 VDDmV, INT16 BATmV)
 		default: 	// 파워다운 테스트
 			IWonFunc->DisplayOFF();
 			IWonFunc->Delay_ms(1000);
-			while(1)
-			{
-				IWonFunc->POWER_DOWN();	
-			}
+			IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 			break;			
 	}
 }
@@ -597,12 +594,8 @@ int main(void)
 	} //while
 	
     IWonFunc->DisplayOFF();
-	IWonFunc->Delay_ms(500);
-   
-	while(1)
-	{
-		IWonFunc->POWER_DOWN();
-	}
+	IWonFunc->Delay_ms(1000);
+	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 }
 
 /*********************************************/
