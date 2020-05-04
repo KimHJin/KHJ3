@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "IWON_FUNC.h"
-
+#include "eeprom.h"
 
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
@@ -435,11 +435,13 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 		  
 		SpecialModeDisp(caliData_p);
 	}
+	
 }
 
 VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 {
-	DisplayRGB(CLEAR);
+	INT16 Count = 0;
+    DisplayRGB(CLEAR);
 	LCD_clear();
 	
 	SpecialModeDisp(caliData_p);
@@ -450,9 +452,21 @@ VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 	{
 		SpecialMode(IWonTask);
 	}
-
+		
 	CaliDone(IWonTask);
+	
+	while(SW_PWR_ON)
+	{
+		Count++;
+		Delay_ms(15);
 
+		if(Count == 350)
+		{
+			ALLCLEAR();
+			POWER_DOWN();
+		}
+	}
+	
 	Delay_ms(500);
 }
 
@@ -492,7 +506,7 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	else 
 	if(temp > 850) // 사물 온도 모드에서 85도 초과
 	{
-		DisplayHIGH();  
+		DisplayHIGH();
 	}
 	else 
 	{
@@ -552,5 +566,21 @@ VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
 	LCD->G3 = 1;
 
 	LCD->DP1 = 0;
+}
+
+VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
+{
+	caliData_p     = 0;   
+	TEMP           = 0;   
+	memNumber_p    = 0;  
+	measureMode_p  = 0;
+	buzzerState_p  = 1;
+	tempUnit_p 	   = 1;
+	AutoCaliFlag_p = 0;
+
+	for(INT8 i=0; i<32; i++)
+	{
+		memTemp_p(i) = 0;
+	}
 }
 

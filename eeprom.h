@@ -8,7 +8,6 @@
 
 #define __EEPROM ((EEROM_TypeDef *)EEPROM_base)
 
-#define PLUS_MINUS     __EEPROM->plusminus
 #define caliData_p     __EEPROM->caliData
 #define TEMP           __EEPROM->measureTemp
 #define memNumber_p    __EEPROM->memNumber
@@ -16,10 +15,10 @@
 #define buzzerState_p  __EEPROM->buzzerState
 #define tempUnit_p 	   __EEPROM->tempUnit
 #define memTemp_p(num) __EEPROM->memTempData[num]
+#define AutoCaliFlag_p __EEPROM->AutoCaliFlag
 
 typedef struct
 {
-
   INT8 memNumber;
   INT8 measureMode;
   INT8 buzzerState;
@@ -28,7 +27,9 @@ typedef struct
   INT16 memTempData[32];
   INT16 measureTemp;
 
-  INT16 caliData;
+  INT8 caliData;
+  
+  INT8 AutoCaliFlag;
 
 } EEROM_TypeDef;
 
