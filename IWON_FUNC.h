@@ -163,6 +163,8 @@ public:
 
 	VOID SystemError(VOID);
 	VOID MeasuringDisp(VOID);
+	
+	VOID ALLCLEAR(VOID);
 
 private:   
 	VOID Init(VOID);
