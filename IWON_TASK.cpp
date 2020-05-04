@@ -306,13 +306,19 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (BB != -999)
 			{
 				BB = BB - T_OBJ;
-				if (BB > 15 || BB < -15)
+				if (ABS(BB) > 15)
+				{
 					ClearTSUMB();
+				}
 			}
 
-			OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
-			//printf("BB=%d\r\n", BB);
-			//OBJ_TEMP = T_OBJ;
+			// TODO : - 값 고민 대상, 연산 속도 무지 느림.
+			if(T_OBJ-AMBADJ < 0) {
+				OBJ_TEMP = AddTSUMB(0);
+			} else {
+				OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
+			}
+
 
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
 			if (TBL == -1)
