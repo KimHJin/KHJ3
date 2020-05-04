@@ -250,6 +250,13 @@ int main(void)
   	INT16 BATmV = 0;
 	INT16 VDDmV = 0;
 
+	BOOL Measuring = false;
+	BOOL Measured = false;
+
+	INT8 MeasredCount1 = 0;
+	INT8 MeasredCount2 = 0;
+	INT8 RetryCount = 0;
+	
 	INT16 MEASURED_TEMP = 0;
 	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
 	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
@@ -312,13 +319,6 @@ int main(void)
 	}
 
 	
-	BOOL Measuring = false;
-	BOOL Measured = false;
-	INT16 MeasredTemp = -999;
-	INT8 MeasredCount1 = 0;
-	INT8 MeasredCount2 = 0;
-	INT8 RetryCount = 0;
-
 	BATmV = IWonTask->Get_BAT_mV();
 	VDDmV = IWonTask->Get_VDD_mV();
 	
@@ -420,12 +420,12 @@ int main(void)
 				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
+		if (Measuring == false && Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
 		{
 			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
 			{
 				IWonTask->ClearPowerDown();
-				MeasredTemp = -100; // 온도측정하라는 값
+				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				TEMP_AVG->Init();
 
@@ -443,7 +443,7 @@ int main(void)
 
 		if (IWonTask->Task())
 		{
-			if (Measured == false && Measuring == false && MeasredTemp == -100)
+			if (Measured == false && Measuring == false && IWonTask->MeasredTemp == -100)
 			{ // 온도 측정 시작
 				Measuring = true;
 				Measured = false;
@@ -465,7 +465,7 @@ int main(void)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 					systemError();
 
-					MeasredTemp = 0;
+					IWonTask->MeasredTemp = 0;
 
 					Measuring = false;
 					Measured = true;
@@ -486,13 +486,13 @@ int main(void)
 							{
 								Measured = false;
 								Measuring = true;
-								MeasredTemp = -100;
+								IWonTask->MeasredTemp = -100;
 								IWonTask->Clear_AVG();
 								IWonFunc->Delay_ms(300);
 								continue;
 							}
 
-							MeasredTemp = MEASURED_TEMP;
+							IWonTask->MeasredTemp = MEASURED_TEMP;
 							IWonFunc->DisplayRGB(BLUE);
 							IWonFunc->DisplayLOW();
 							IWonFunc->Beep();
@@ -503,7 +503,7 @@ int main(void)
 						}
 						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
-							MeasredTemp = MEASURED_TEMP;
+							IWonTask->MeasredTemp = MEASURED_TEMP;
 							IWonFunc->DisplayRGB(BLUE);
 							IWonFunc->DisplayHIGH();
 							IWonFunc->Beep();
@@ -514,40 +514,40 @@ int main(void)
 						}
 						else
 						{
-							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
+							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
 							{
 								TEMP_AVG->Init();
-								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 								MeasredCount1 = 1;
 							}
 							else
 							{
-								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 								MeasredCount1++;
 								MeasredCount2++;
 
 								if (MeasredCount1 > 10 || MeasredCount2 >= 20)
 								{
-									if (MEASURED_TEMP >= 381 && MEASURED_TEMP <= 425)
+									if (IWonTask->MeasredTemp >= 381 && IWonTask->MeasredTemp <= 425)
 									{ // HIGH FEVER
 										IWonFunc->DisplayRGB(RED);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										tempValueDisplay(IWonFunc->UnitCalc(IWonTask->MeasredTemp, tempUnit_p)); // temp Display
 										IWonFunc->BeepMode(HIGH_FEVER);
 									}
-									else if (MEASURED_TEMP >= 371 && MEASURED_TEMP <= 380)
+									else if (IWonTask->MeasredTemp >= 371 && IWonTask->MeasredTemp <= 380)
 									{ // LIGHT FEVER
 										IWonFunc->DisplayRGB(YELLOW);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										tempValueDisplay(IWonFunc->UnitCalc(IWonTask->MeasredTemp, tempUnit_p)); // temp Display
 										IWonFunc->BeepMode(LIGHT_FEVER);
 									}
-									else if (MEASURED_TEMP >= 334 && MEASURED_TEMP <= 370)
+									else if (IWonTask->MeasredTemp >= 334 && IWonTask->MeasredTemp <= 370)
 									{ // NORMAL
 										IWonFunc->DisplayRGB(BLUE);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
+										tempValueDisplay(IWonFunc->UnitCalc(IWonTask->MeasredTemp, tempUnit_p)); // temp Display
 										IWonFunc->BeepMode(NORMAL);
 									}
 
-									saveTemp(MeasredTemp);
+									saveTemp(IWonTask->MeasredTemp);
 
 									Measuring = false;
 									Measured = true;
@@ -561,15 +561,15 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						if (MeasredCount1 > 0 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
+						if (MeasredCount1 > 0 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
 						{
 							TEMP_AVG->Init();
-							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 							MeasredCount1 = 1;
 						}
 						else
 						{
-							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
 							MeasredCount1++;
 							MeasredCount2++;
 
@@ -577,9 +577,9 @@ int main(void)
 							{
 								IWonFunc->Beep();
 
-								tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p));
+								tempValueDisplay(IWonFunc->UnitCalc(IWonTask->MeasredTemp, tempUnit_p));
 								IWonFunc->DisplayRGB(GREEN);
-								saveTemp(MeasredTemp);
+								saveTemp(IWonTask->MeasredTemp);
 
 								Measuring = false;
 								Measured = true;

@@ -65,6 +65,9 @@ public:
 	VOID lowBatteryDisp(VOID);
 	
 	VOID GPIO_init(VOID);
+	
+	INT16 MeasredTemp;
+	
 private:
 	VOID Init(VOID);
 

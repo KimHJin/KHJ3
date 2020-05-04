@@ -31,6 +31,8 @@ IWON_TEMP_TASK::~IWON_TEMP_TASK()
 
 VOID IWON_TEMP_TASK::Init(VOID)
 {
+	MeasredTemp = -999;
+  
 	adcVREFValue = DEFINED_adcVREFValue; // 1.224V
 	adcVREFINTvalue = 0;
 	adcCalValue = 0;
