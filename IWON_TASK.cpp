@@ -31,6 +31,20 @@ IWON_TEMP_TASK::~IWON_TEMP_TASK()
 
 VOID IWON_TEMP_TASK::Init(VOID)
 {
+  	BATmV = 0;
+	VDDmV = 0;
+
+	DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
+	DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
+
+	Measuring = false;
+	Measured = false;
+	MeasredTemp = -999;
+	MeasredCount1 = 0;
+	MeasredCount2 = 0;
+	RetryCount = 0;
+
+
 	adcVREFValue = DEFINED_adcVREFValue; // 1.224V
 	adcVREFINTvalue = 0;
 	adcCalValue = 0;

@@ -65,6 +65,21 @@ public:
 	VOID lowBatteryDisp(VOID);
 	
 	VOID GPIO_init(VOID);
+
+
+  	INT16 BATmV;
+	INT16 VDDmV;
+
+	INT16 DeviceTestModeWait;	// 테스트 가능 모드를 위해서 있는 변수
+	INT16 DeviceTestModeValue;	// 테스트 가능 모드를 위해서 있는 변수
+
+	BOOL Measuring;
+	BOOL Measured;
+	INT16 MeasredTemp;
+	INT8 MeasredCount1;
+	INT8 MeasredCount2;
+	INT8 RetryCount;
+
 private:
 	VOID Init(VOID);
 

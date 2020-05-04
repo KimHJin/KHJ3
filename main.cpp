@@ -51,7 +51,7 @@ void MEAS_Test(void)
 	memTempDataDisplay(50);
 }
 
-void testMode(INT16 VDDmV, INT16 BATmV)
+void testMode()
 {	
     IWonTask->ClearPowerDown();
 	
@@ -83,11 +83,11 @@ void testMode(INT16 VDDmV, INT16 BATmV)
 		  IWonFunc->Delay_ms(500);		  
 		  nowAction = 2;
 		case 1: 	// 전원 테스트
-		  if(nowAction!=0) IWonTest->VDD_Test(VDDmV); 
+		  if(nowAction!=0) IWonTest->VDD_Test(IWonTask->VDDmV); 
 		  break;
 
 		case 2: 	// 배터리 전압 테스트
-		  if(nowAction!=0) IWonTest->BAT_Test(BATmV); 
+		  if(nowAction!=0) IWonTest->BAT_Test(IWonTask->BATmV); 
 		  break;
 
 		case 3: 
@@ -187,14 +187,7 @@ void keyScan()
 /*********************************************/
 
 int main(void)
-{
-  	INT16 BATmV = 0;
-	INT16 VDDmV = 0;
-
-	INT16 MEASURED_TEMP = 0;
-	INT16 DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
-	INT16 DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
-
+{		
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
 	IWonFunc = new IWON_TEMP_FUNC();
 	
@@ -252,24 +245,16 @@ int main(void)
 		}
 		IWonFunc->Delay_ms(30);
 	}
-
 	
-	BOOL Measuring = false;
-	BOOL Measured = false;
-	INT16 MeasredTemp = -999;
-	INT8 MeasredCount1 = 0;
-	INT8 MeasredCount2 = 0;
-	INT8 RetryCount = 0;
-
-	BATmV = IWonTask->Get_BAT_mV();
-	VDDmV = IWonTask->Get_VDD_mV();
+	IWonTask->BATmV = IWonTask->Get_BAT_mV();
+	IWonTask->VDDmV = IWonTask->Get_VDD_mV();
 	
 	// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
-	if(BATmV/100 <= 20)
+	if(IWonTask->BATmV/100 <= 20)
 	    IWonFunc->LowBatteryDisplay_2v0();
-	else if(BATmV/100 < 22)
+	else if(IWonTask->BATmV/100 < 22)
 		IWonFunc->LowBatteryDisplay_2v2();
-    else if(BATmV/100 < 24)
+    else if(IWonTask->BATmV/100 < 24)
 	    IWonFunc->LowBatteryDisplay_2v4();
 	
 	
@@ -284,11 +269,11 @@ int main(void)
 	// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
 	while (SW_PWR_ON) 
 	{
-		if(DeviceTestModeWait>500)
+		if(IWonTask->DeviceTestModeWait>500)
 		{
 		  	if(SW_LEFT_ON && SW_RIGHT_ON)  // Test Mode 진입
 			{
-				if(DeviceTestModeValue == 1)
+				if(IWonTask->DeviceTestModeValue == 1)
 				{
 					IWonTest = new IWON_TEMP_TEST(IWonFunc, IWonTask);
 					IWonTest->SetTestModeFlag(1);					
@@ -296,78 +281,80 @@ int main(void)
 					IWonFunc->DisplayRGB(CLEAR);
 					break;
 				}
-				DeviceTestModeValue++;
+				IWonTask->DeviceTestModeValue++;
 			}
 		    else 
 			if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
 			{
-				if(DeviceTestModeValue==1) 
+				if(IWonTask->DeviceTestModeValue==1) 
 				{
 					tempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
 				}
-				DeviceTestModeValue++;
+				IWonTask->DeviceTestModeValue++;
 			}
 			else	
 			if(SW_LEFT_ON)	// 전원 버튼과 왼쪽 버튼을 누르고 있으면 내부 값 표시
 			{
 				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
-				if(DeviceTestModeValue==1) 
+				if(IWonTask->DeviceTestModeValue==1) 
 				{
-					tempValueDisplay(BATmV/100, false);		// <= 배터리 전압값 표시
+					tempValueDisplay(IWonTask->BATmV/100, false);		// <= 배터리 전압값 표시
 				}
 				else
-				if(DeviceTestModeValue==150) 
+				if(IWonTask->DeviceTestModeValue==150) 
 				{
 					tempValueDisplay(AMB);					// 센서 온도값 표시
 				}
 				else
-				if(DeviceTestModeValue==300) 
+				if(IWonTask->DeviceTestModeValue==300) 
 				{
 					tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
 					//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
 				}
 				else
-				if(DeviceTestModeValue==450)	// - - - 표시
+				if(IWonTask->DeviceTestModeValue==450)	// - - - 표시
 				{
 					IWonFunc->MeasuringDisp();
 				}
 				else
-				if(DeviceTestModeValue==550)
+				if(IWonTask->DeviceTestModeValue==550)
 				{
-					DeviceTestModeValue = 0;
+					IWonTask->DeviceTestModeValue = 0;
 				}
-				DeviceTestModeValue++;
+				IWonTask->DeviceTestModeValue++;
 			}
 		}
 		else
 		{
-			DeviceTestModeWait++;
+			IWonTask->DeviceTestModeWait++;
 		}
 
 		IWonFunc->Delay_ms(10);
 		IWonTask->ClearPowerDown();
 	}
 	
-	// tempValueDisplay(-50);
+	tempValueDisplay(0);
 
 	while (IWonTask->NeedPowerDown() == false)
 	{
+		INT16 MEASURED_TEMP = 0;
+	  
 		INT8 testModeFlag = (IWonTest==NULL) ? 0 : IWonTest->GetTestModeFlag();
 		
-		if (Measuring == false)
+		if (IWonTask->Measuring == false)
 		{
 		  	if(testModeFlag==1) // Test Mode
-				testMode(VDDmV, BATmV);			
+				testMode();			
 			else 
 				keyScan();
 		}
 
-		if (Measuring == false && Measured == false && MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
 		{
 			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
 			{
 				IWonTask->ClearPowerDown();
-				MeasredTemp = -100; // 온도측정하라는 값
+				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				TEMP_AVG->Init();
 
@@ -375,22 +362,22 @@ int main(void)
 					IWonTask->Task();
 
 				IWonFunc->Measure_test_flag = 0;
-				RetryCount = 0;
+				IWonTask->RetryCount = 0;
 			}
 		}
-		if (Measuring == false && Measured && SW_PWR_ON == false)
+		if (IWonTask->Measuring == false && IWonTask->Measured && SW_PWR_ON == false)
 		{
-			Measured = false;
+			IWonTask->Measured = false;
 		}
 
 		if (IWonTask->Task())
 		{
-			if (Measured == false && Measuring == false && MeasredTemp == -100)
+			if (IWonTask->Measured == false && IWonTask->Measuring == false && IWonTask->MeasredTemp == -100)
 			{ // 온도 측정 시작
-				Measuring = true;
-				Measured = false;
-				MeasredCount1 = 0;
-				MeasredCount2 = 0;
+				IWonTask->Measuring = true;
+				IWonTask->Measured = false;
+				IWonTask->MeasredCount1 = 0;
+				IWonTask->MeasredCount2 = 0;
 
 				if (measureMode_p)
 					IWonFunc->DisplayRGB(BLUE);
@@ -400,19 +387,19 @@ int main(void)
 				IWonFunc->MeasuringDisp();
 				IWonFunc->Beep();
 			}
-			else if (Measuring)
+			else if (IWonTask->Measuring)
 			{ // 온도 측정
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 					IWonFunc->SystemError();
 
-					MeasredTemp = 0;
+					IWonTask->MeasredTemp = 0;
 
-					Measuring = false;
-					Measured = true;
-					MeasredCount1 = 0;
-					MeasredCount2 = 0;
+					IWonTask->Measuring = false;
+					IWonTask->Measured = true;
+					IWonTask->MeasredCount1 = 0;
+					IWonTask->MeasredCount2 = 0;
 				}
 				else if (AMB > 0)
 				{
@@ -423,59 +410,59 @@ int main(void)
 
 						if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
 						{ // LOW  Less Than 33.4 C
-							RetryCount++;
-							if(RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
+							IWonTask->RetryCount++;
+							if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
 							{
-								Measured = false;
-								Measuring = true;
-								MeasredTemp = -100;
+								IWonTask->Measured = false;
+								IWonTask->Measuring = true;
+								IWonTask->MeasredTemp = -100;
 								IWonTask->Clear_AVG();
 								IWonFunc->Delay_ms(300);
 								continue;
 							}
 
-							MeasredTemp = MEASURED_TEMP;
+							IWonTask->MeasredTemp = MEASURED_TEMP;
 							IWonFunc->DisplayRGB(BLUE);
 							IWonFunc->DisplayLOW();
 							IWonFunc->Beep();
-							Measuring = false;
-							Measured = true;
-							MeasredCount1 = 0;
-							MeasredCount2 = 0;
+							IWonTask->Measuring = false;
+							IWonTask->Measured = true;
+							IWonTask->MeasredCount1 = 0;
+							IWonTask->MeasredCount2 = 0;
 						}
 						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
-							MeasredTemp = MEASURED_TEMP;
+							IWonTask->MeasredTemp = MEASURED_TEMP;
 							IWonFunc->DisplayRGB(BLUE);
 							IWonFunc->DisplayHIGH();
 							IWonFunc->Beep();
-							Measuring = false;
-							Measured = true;
-							MeasredCount1 = 0;
-							MeasredCount2 = 0;
+							IWonTask->Measuring = false;
+							IWonTask->Measured = true;
+							IWonTask->MeasredCount1 = 0;
+							IWonTask->MeasredCount2 = 0;
 						}
 						else
 						{
-							if (MeasredCount1 > 0 && MeasredCount2 < 50 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
+							if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
 							{
 								TEMP_AVG->Init();
-								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-								MeasredCount1 = 1;
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredCount1 = 1;
 							}
 							else
 							{
-								MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-								MeasredCount1++;
-								MeasredCount2++;
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredCount1++;
+								IWonTask->MeasredCount2++;
 
-								if (MeasredCount1 > 10 || MeasredCount2 >= 20)
+								if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
 								{
-									IWonFunc->BdyTempDisp(MeasredTemp);
+									IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
 
-									Measuring = false;
-									Measured = true;
-									MeasredCount1 = 0;
-									MeasredCount2 = 0;
+									IWonTask->Measuring = false;
+									IWonTask->Measured = true;
+									IWonTask->MeasredCount1 = 0;
+									IWonTask->MeasredCount2 = 0;
 								}
 							}
 						}
@@ -484,26 +471,26 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						if (MeasredCount1 > 0 && (MEASURED_TEMP - MeasredTemp > 3 || MEASURED_TEMP - MeasredTemp < -3))
+						if (IWonTask->MeasredCount1 > 0 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
 						{
 							TEMP_AVG->Init();
-							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-							MeasredCount1 = 1;
+							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+							IWonTask->MeasredCount1 = 1;
 						}
 						else
 						{
-							MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-							MeasredCount1++;
-							MeasredCount2++;
+							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+							IWonTask->MeasredCount1++;
+							IWonTask->MeasredCount2++;
 
-							if (MeasredCount1 > 10 || MeasredCount2 > 20)
+							if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 > 20)
 							{
-								IWonFunc->ObjTempDisp(MeasredTemp);
+								IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
 
-								Measuring = false;
-								Measured = true;
-								MeasredCount1 = 0;
-								MeasredCount2 = 0;
+								IWonTask->Measuring = false;
+								IWonTask->Measured = true;
+								IWonTask->MeasredCount1 = 0;
+								IWonTask->MeasredCount2 = 0;
 							}
 						}
 					}
