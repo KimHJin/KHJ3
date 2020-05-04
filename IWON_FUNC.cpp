@@ -507,7 +507,6 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	if(temp > 850) // 사물 온도 모드에서 85도 초과
 	{
 		DisplayHIGH();
-		memTempDataDisplay(UnitCalc(temp/10, tempUnit_p));
 	}
 	else 
 	{
