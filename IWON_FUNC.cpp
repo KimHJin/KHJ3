@@ -461,10 +461,10 @@ VOID IWON_TEMP_FUNC::TempLogDataSave(int16_t saveData)
 {
 	for (INT8 i = 0; i < 31; i++)
 	{
-		memTemp_p(i) = memTemp_p(i + 1);
+		__EEPROM->memTempData[i] = __EEPROM->memTempData[i + 1];
 	}
 
-	memTemp_p(31) = saveData;
+	__EEPROM->memTempData[31] = saveData;
 }
 
 VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
@@ -476,8 +476,10 @@ VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
 	memNumber_p = 32;
 
 	TempLogDataSave(temp);
+
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
+
+	memTempDataDisplay(UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 }
 
 VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)

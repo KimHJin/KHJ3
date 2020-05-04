@@ -184,60 +184,6 @@ void keyScan()
 	}
 }
 
-void tempLogDataSave(int16_t saveData)
-{
-	for (INT8 i = 0; i < 31; i++)
-	{
-		__EEPROM->memTempData[i] = __EEPROM->memTempData[i + 1];
-	}
-
-	__EEPROM->memTempData[31] = saveData;
-}
-
-void saveTemp(INT16 temp)
-{
-	IWonFunc->LastMeasred = 1;
-
-	TEMP = temp;
-
-	memNumber_p = 32;
-
-	tempLogDataSave(temp);
-
-	memNumberDisplay(memNumber_p);
-
-	memTempDataDisplay(IWonFunc->UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-}
-
-
-void systemError(VOID)
-{
-	IWonFunc->DisplayRGB(RED);
-	IWonFunc->DisplayError();
-
-	IWonFunc->Delay_ms(50);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-}
-
-void measuringDisp(void)
-{  
-  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
-	  
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->G1 = 1;
-	LCD->G2 = 1;
-	LCD->G3 = 1;
-
-	LCD->DP1 = 0;
-}
 
 /*********************************************/
 /*****************  MAIN  ********************/
@@ -333,7 +279,7 @@ int main(void)
 	INT32 AMB = IWonTask->Get_AMB_TEMP();		
 	if (AMB < 0 || 500 < AMB)
 	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-		systemError();
+		IWonFunc->SystemError();
 	}
 
 
@@ -385,7 +331,7 @@ int main(void)
 				else
 				if(DeviceTestModeValue==450)	// - - - 표시
 				{
-					measuringDisp();
+					IWonFunc->MeasuringDisp();
 				}
 				else
 				if(DeviceTestModeValue==550)
