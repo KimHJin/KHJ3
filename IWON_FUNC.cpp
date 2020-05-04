@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//Code Name : IWON TEMP FUNC
+// Code Name : IWON TEMP FUNC
 //
 // For STM8L0
 //
@@ -83,6 +83,9 @@ VOID IWON_TEMP_FUNC::LCD_clear(VOID)
 
 VOID IWON_TEMP_FUNC::POWER_DOWN(VOID)
 {
+	DisplayOFF();
+	Delay_ms(1000);
+
 	LCD_clear();
 	while(1)	// 무조건 무한루프 돌면서 파워를 끈다.
 	{
@@ -452,3 +455,102 @@ VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 
 	Delay_ms(500);
 }
+
+
+VOID IWON_TEMP_FUNC::TempLogDataSave(int16_t saveData)
+{
+	for (INT8 i = 0; i < 31; i++)
+	{
+		memTemp_p(i) = memTemp_p(i + 1);
+	}
+
+	memTemp_p(31) = saveData;
+}
+
+VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
+{
+	LastMeasred = 1;
+
+	TEMP = temp;
+
+	memNumber_p = 32;
+
+	TempLogDataSave(temp);
+	memNumberDisplay(memNumber_p);
+	memTempDataDisplay(UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
+}
+
+VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
+{
+	Beep();								
+	DisplayRGB(GREEN);
+	
+	if(temp < 0) // 사물 온도 모드에서 0도 미만
+	{
+		DisplayLOW();
+	}
+	else 
+	if(temp > 850) // 사물 온도 모드에서 85도 초과
+	{
+		DisplayHIGH();  
+	}
+	else 
+	{
+		tempValueDisplay(UnitCalc(temp, tempUnit_p));
+		SaveTemp(temp);
+	}
+}
+VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
+{
+	if (temp >= 381 && temp <= 425)
+	{ // HIGH FEVER
+		DisplayRGB(RED);
+		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		BeepMode(HIGH_FEVER);
+	}
+	else if (temp >= 371 && temp <= 380)
+	{ // LIGHT FEVER
+		DisplayRGB(YELLOW);
+		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		BeepMode(LIGHT_FEVER);
+	}
+	else if (temp >= 334 && temp <= 370)
+	{ // NORMAL
+		DisplayRGB(BLUE);
+		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		BeepMode(NORMAL);
+	}
+
+	SaveTemp(temp);
+}
+
+
+VOID IWON_TEMP_FUNC::SystemError(VOID)
+{
+	DisplayRGB(RED);
+	DisplayError();
+
+	Delay_ms(50);
+	Beep(1000);
+	Delay_ms(40);
+	Beep(1000);
+	Delay_ms(40);
+	Beep(1000);
+	Delay_ms(40);
+}
+
+VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
+{  
+  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
+	  
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+
+	LCD->G1 = 1;
+	LCD->G2 = 1;
+	LCD->G3 = 1;
+
+	LCD->DP1 = 0;
+}
+
