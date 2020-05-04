@@ -27,22 +27,19 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 	NUMBER_CLEAR(1);
 	NUMBER_CLEAR(2);
 	NUMBER_CLEAR(3);
-	//displayNumber(0, 1);
-	//displayNumber(0, 2);
-	//displayNumber(0, 3);
 
 	memNumberDisplay(memNumber_p);
-	memTempDataDisplay(IWonFunc->UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
 	measureModeSet(measureMode_p);
 	buzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
 
-	LCD->X8 = 1;	// Display "LOG"
-	LCD->DP1 = 1; // Display "."
-	LCD->DP2 = 1; // Display "."
+	LCD->X8 = 1;   // Display "LOG"
+	LCD->DP1 = 1;  // Display "."
+	LCD->DP2 = 1;  // Display "."
 }
 
-void displayNumber(int number, int position)
+void displayNumber(INT8 number, INT8 position)
 {
 
 	switch (number)
@@ -515,19 +512,22 @@ void displayNumber(int number, int position)
 			NUMBER_CLEAR(8);
 			NUMBER_9(8);
 		}
-		break;
 
 		break;
 	}
 }
 
-void tempValueDisplay(int16_t value, BOOL fillZero)
+void tempValueDisplay(INT16 value, BOOL fillZero)
 {
-	int forthNumber = value % 10;
-	int thirdNumber = (value / 10) % 10;
-	int secondNumber = (value / 100) % 10;
-	int firstNumber = value / 1000;
-
+	INT8 forthNumber = value % 10;
+	INT8 thirdNumber = (value / 10) % 10;
+	INT8 secondNumber = (value / 100) % 10;
+	INT8 firstNumber = value / 1000;
+	
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+	
 	if (firstNumber == 1)
 		LCD->X9 = 1;
 	else
@@ -538,7 +538,6 @@ void tempValueDisplay(int16_t value, BOOL fillZero)
 		displayNumber(secondNumber, 1);
 	}
 	else
-	if (firstNumber == 0)
 	{
 		if(fillZero)
 		{
@@ -554,12 +553,12 @@ void tempValueDisplay(int16_t value, BOOL fillZero)
 	displayNumber(forthNumber, 3);
 	LCD->DP1 = 1;
 }
-void tempValueDisplay(int16_t value)
+void tempValueDisplay(INT16 value)
 {
 	tempValueDisplay(value, true);
 }
 
-void memNumberDisplay(int number)
+void memNumberDisplay(INT8 number)
 {
 	int secondNum = number % 10;
 	int firstNum = number / 10;
@@ -568,13 +567,17 @@ void memNumberDisplay(int number)
 	displayNumber(secondNum, 5);
 }
 
-void memTempDataDisplay(int tempData)
+void memTempDataDisplay(INT16 tempData, BOOL fillZero)
 {
-
-	int forthNumber = tempData % 10;
-	int thirdNumber = (tempData / 10) % 10;
-	int secondNumber = (tempData / 100) % 10;
-	int firstNumber = tempData / 1000;
+	INT8 forthNumber = tempData % 10;
+	INT8 thirdNumber = (tempData / 10) % 10;
+	INT8 secondNumber = (tempData / 100) % 10;
+	INT8 firstNumber = tempData / 1000;
+	
+    NUMBER_CLEAR(6);
+	NUMBER_CLEAR(7);
+	NUMBER_CLEAR(8);
+	
 
 	if (firstNumber == 1)
 		LCD->X10 = 1;
@@ -585,12 +588,29 @@ void memTempDataDisplay(int tempData)
 	{
 		displayNumber(secondNumber, 6);
 	}
+	else
+	{
+		if(fillZero)
+		{
+			displayNumber(0, 6);
+		}
+		else
+		{
+			NUMBER_CLEAR(6);
+		}		
+	}
+	
 	displayNumber(thirdNumber, 7);
 	displayNumber(forthNumber, 8);
 	LCD->DP2 = 1;
 }
 
-void measureModeSet(int mode)
+void memTempDataDisplay(INT16 tempData)
+{
+	memTempDataDisplay(tempData, true);
+}
+
+void measureModeSet(BOOL mode)
 {
 	if (mode) // HUMAN
 	{
@@ -604,7 +624,7 @@ void measureModeSet(int mode)
 	}
 }
 
-void buzzerCMD(int state)
+void buzzerCMD(BOOL state)
 {
 	if (state) // MUTE OFF
 	{
@@ -619,7 +639,7 @@ void buzzerCMD(int state)
 	}
 }
 
-void tempUnitSet(int unit)
+void tempUnitSet(BOOL unit)
 {
 	if (unit) // Celsius
 	{

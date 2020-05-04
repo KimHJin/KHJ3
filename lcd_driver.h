@@ -95,14 +95,15 @@
 	setBitSegment(G, position);
 
 void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc);
-void tempValueDisplay(int16_t value, BOOL fillZero);	// fillZero 를 true 로 하면 00.0 같이 왼쪽에 맨 왼쪽 0 이 표시된다.
-void tempValueDisplay(int16_t value);					// 위의 fill 을 true 하여 동작
-void displayNumber(int number, int position);
-void memNumberDisplay(int number);
-void memTempDataDisplay(int tempData);
-void buzzerCMD(int state);
-void measureModeSet(int mode);
-void tempUnitSet(int unit);
+void tempValueDisplay(INT16 value, BOOL fillZero);	// fillZero 를 true 로 하면 00.0 같이 왼쪽에 맨 왼쪽 0 이 표시된다.
+void tempValueDisplay(INT16 value);					// 위의 fill 을 true 하여 동작
+void displayNumber(INT8 number, INT8 position);
+void memNumberDisplay(INT8 number);
+void memTempDataDisplay(INT16 tempData, BOOL fillZero);
+void memTempDataDisplay(INT16 tempData);
+void buzzerCMD(BOOL state);
+void measureModeSet(BOOL mode);
+void tempUnitSet(BOOL unit);
 
 
 #endif

@@ -190,10 +190,10 @@ void tempLogDataSave(int16_t saveData)
 {
 	for (INT8 i = 0; i < 31; i++)
 	{
-		__EEPROM->memTempData[i] = __EEPROM->memTempData[i + 1];
+		memTemp_p(i) = memTemp_p(i + 1);
 	}
 
-	__EEPROM->memTempData[31] = saveData;
+	memTemp_p(31) = saveData;
 }
 
 void saveTemp(INT16 temp)
@@ -208,7 +208,7 @@ void saveTemp(INT16 temp)
 
 	memNumberDisplay(memNumber_p);
 
-	memTempDataDisplay(IWonFunc->UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
+	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
 }
 
 
@@ -285,7 +285,8 @@ int main(void)
 		}
 		IWonFunc->LastMeasred = 0;
 	}
-
+	
+	
 /*	
 	delay_ms(2000);	
 	BeepMode(NORMAL); 	
@@ -406,7 +407,7 @@ int main(void)
 		IWonTask->ClearPowerDown();
 	}
 	
-	tempValueDisplay(0);
+	tempValueDisplay(-50);
 
 	while (IWonTask->NeedPowerDown() == false)
 	{
@@ -573,14 +574,28 @@ int main(void)
 							MeasredCount1++;
 							MeasredCount2++;
 
+							INT16 temp = MeasredTemp;
 							if (MeasredCount1 > 10 || MeasredCount2 > 20)
 							{
 								IWonFunc->Beep();
-
-								tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p));
+								
 								IWonFunc->DisplayRGB(GREEN);
-								saveTemp(MeasredTemp);
-
+								
+								if(temp < 0) // 사물 온도 모드에서 0도 미만
+								{
+									IWonFunc->DisplayLOW();
+								}
+								else 
+								if(temp > 850) // 사물 온도 모드에서 85도 초과
+								{
+									IWonFunc->DisplayHIGH();  
+								}
+								else 
+								{
+									tempValueDisplay(IWonFunc->UnitCalc(temp, tempUnit_p));
+									saveTemp(MeasredTemp);
+								}
+								
 								Measuring = false;
 								Measured = true;
 								MeasredCount1 = 0;

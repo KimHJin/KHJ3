@@ -2,6 +2,7 @@
 #define __EEPROM_H__
 
 #include "stm8l15x.h"
+#include "IWON_FUNC.h"
 
 #define EEPROM_base (uint16_t)0x1000
 
@@ -14,19 +15,20 @@
 #define measureMode_p  __EEPROM->measureMode
 #define buzzerState_p  __EEPROM->buzzerState
 #define tempUnit_p 	   __EEPROM->tempUnit
+#define memTemp_p(num) __EEPROM->memTempData[num]
 
 typedef struct
 {
 
-  int8_t memNumber;
-  int8_t measureMode;
-  int8_t buzzerState;
-  int8_t tempUnit;
+  INT8 memNumber;
+  INT8 measureMode;
+  INT8 buzzerState;
+  INT8 tempUnit;
 
-  int16_t memTempData[32];
-  int16_t measureTemp;
+  INT16 memTempData[32];
+  INT16 measureTemp;
 
-  int16_t caliData;
+  INT16 caliData;
 
 } EEROM_TypeDef;
 
