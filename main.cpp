@@ -105,9 +105,7 @@ void testMode(INT16 VDDmV, INT16 BATmV)
 		  break;
 
 		default: 	// 파워다운 테스트
-			IWonFunc->DisplayOFF();
-			IWonFunc->Delay_ms(1000);
-			IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
+			IWonFunc->POWER_DOWN();	// 함후 안에서 LCD 처리와 Delay 처리 while 로 무한루프 처리한다.
 			break;			
 	}
 }
@@ -455,7 +453,7 @@ int main(void)
 				else 
 					IWonFunc->DisplayRGB(GREEN);
 
-				measuringDisp();
+				IWonFunc->MeasuringDisp();
 				IWonFunc->Beep();
 			}
 			else if (Measuring)
@@ -463,7 +461,7 @@ int main(void)
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-					systemError();
+					IWonFunc->SystemError();
 
 					MeasredTemp = 0;
 
@@ -528,26 +526,7 @@ int main(void)
 
 								if (MeasredCount1 > 10 || MeasredCount2 >= 20)
 								{
-									if (MEASURED_TEMP >= 381 && MEASURED_TEMP <= 425)
-									{ // HIGH FEVER
-										IWonFunc->DisplayRGB(RED);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(HIGH_FEVER);
-									}
-									else if (MEASURED_TEMP >= 371 && MEASURED_TEMP <= 380)
-									{ // LIGHT FEVER
-										IWonFunc->DisplayRGB(YELLOW);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(LIGHT_FEVER);
-									}
-									else if (MEASURED_TEMP >= 334 && MEASURED_TEMP <= 370)
-									{ // NORMAL
-										IWonFunc->DisplayRGB(BLUE);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(NORMAL);
-									}
-
-									saveTemp(MeasredTemp);
+									IWonFunc->BdyTempDisp(MeasredTemp);
 
 									Measuring = false;
 									Measured = true;
@@ -575,11 +554,7 @@ int main(void)
 
 							if (MeasredCount1 > 10 || MeasredCount2 > 20)
 							{
-								IWonFunc->Beep();
-
-								tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p));
-								IWonFunc->DisplayRGB(GREEN);
-								saveTemp(MeasredTemp);
+								IWonFunc->ObjTempDisp(MeasredTemp);
 
 								Measuring = false;
 								Measured = true;
@@ -591,11 +566,9 @@ int main(void)
 				}
 			}
 		}
-	} //while
+	} //while	
 	
-    IWonFunc->DisplayOFF();
-	IWonFunc->Delay_ms(1000);
-	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
+	IWonFunc->POWER_DOWN();	// 함후 안에서 LCD 처리와 Delay 처리 while 로 무한루프 처리한다.
 }
 
 /*********************************************/
