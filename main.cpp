@@ -471,7 +471,7 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						if (IWonTask->MeasredCount1 > 0 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
+						if (IWonTask->MeasredCount1 > 0 && ABS(MEASURED_TEMP - IWonTask->MeasredTemp) > 3)
 						{
 							TEMP_AVG->Init();
 							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
@@ -483,7 +483,7 @@ int main(void)
 							IWonTask->MeasredCount1++;
 							IWonTask->MeasredCount2++;
 
-							if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 > 20)
+							if (IWonTask->MeasredCount1 > 5 || IWonTask->MeasredCount2 > 10)
 							{
 								IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
 

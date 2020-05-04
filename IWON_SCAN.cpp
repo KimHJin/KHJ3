@@ -331,7 +331,7 @@ INT16 IWON_TEMP_SCAN::GetTSUMB()
 	{
 		if (TSUMB[i] == -999)
 			continue;
-		B += TSUMB[i];
+		B += (INT32)TSUMB[i];
 		C++;
 	}
 	if (C == 0)
