@@ -42,9 +42,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 /************************************************************************/
 
 
-/***************************************************************************************/
 /********************************* TEST MODE *******************************************/
-/***************************************************************************************/
 
 void MEAS_Test(void)
 {
@@ -105,8 +103,6 @@ void testMode(INT16 VDDmV, INT16 BATmV)
 		  break;
 
 		default: 	// 파워다운 테스트
-			IWonFunc->DisplayOFF();
-			IWonFunc->Delay_ms(1000);
 			IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 			break;			
 	}
@@ -184,61 +180,6 @@ void keyScan()
 		}
 		IWonFunc->Delay_ms(10);
 	}
-}
-
-void tempLogDataSave(int16_t saveData)
-{
-	for (INT8 i = 0; i < 31; i++)
-	{
-		memTemp_p(i) = memTemp_p(i + 1);
-	}
-
-	memTemp_p(31) = saveData;
-}
-
-void saveTemp(INT16 temp)
-{
-	IWonFunc->LastMeasred = 1;
-
-	TEMP = temp;
-
-	memNumber_p = 32;
-
-	tempLogDataSave(temp);
-
-	memNumberDisplay(memNumber_p);
-
-	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
-}
-
-
-void systemError(VOID)
-{
-	IWonFunc->DisplayRGB(RED);
-	IWonFunc->DisplayError();
-
-	IWonFunc->Delay_ms(50);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-	IWonFunc->Beep(1000);
-	IWonFunc->Delay_ms(40);
-}
-
-void measuringDisp(void)
-{  
-  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
-	  
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->G1 = 1;
-	LCD->G2 = 1;
-	LCD->G3 = 1;
-
-	LCD->DP1 = 0;
 }
 
 /*********************************************/
@@ -336,7 +277,7 @@ int main(void)
 	INT32 AMB = IWonTask->Get_AMB_TEMP();		
 	if (AMB < 0 || 500 < AMB)
 	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-		systemError();
+		IWonFunc->SystemError();
 	}
 
 
@@ -388,7 +329,7 @@ int main(void)
 				else
 				if(DeviceTestModeValue==450)	// - - - 표시
 				{
-					measuringDisp();
+					IWonFunc->MeasuringDisp();
 				}
 				else
 				if(DeviceTestModeValue==550)
@@ -407,7 +348,7 @@ int main(void)
 		IWonTask->ClearPowerDown();
 	}
 	
-	tempValueDisplay(-50);
+	// tempValueDisplay(-50);
 
 	while (IWonTask->NeedPowerDown() == false)
 	{
@@ -456,7 +397,7 @@ int main(void)
 				else 
 					IWonFunc->DisplayRGB(GREEN);
 
-				measuringDisp();
+				IWonFunc->MeasuringDisp();
 				IWonFunc->Beep();
 			}
 			else if (Measuring)
@@ -464,7 +405,7 @@ int main(void)
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-					systemError();
+					IWonFunc->SystemError();
 
 					MeasredTemp = 0;
 
@@ -529,26 +470,7 @@ int main(void)
 
 								if (MeasredCount1 > 10 || MeasredCount2 >= 20)
 								{
-									if (MEASURED_TEMP >= 381 && MEASURED_TEMP <= 425)
-									{ // HIGH FEVER
-										IWonFunc->DisplayRGB(RED);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(HIGH_FEVER);
-									}
-									else if (MEASURED_TEMP >= 371 && MEASURED_TEMP <= 380)
-									{ // LIGHT FEVER
-										IWonFunc->DisplayRGB(YELLOW);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(LIGHT_FEVER);
-									}
-									else if (MEASURED_TEMP >= 334 && MEASURED_TEMP <= 370)
-									{ // NORMAL
-										IWonFunc->DisplayRGB(BLUE);
-										tempValueDisplay(IWonFunc->UnitCalc(MeasredTemp, tempUnit_p)); // temp Display
-										IWonFunc->BeepMode(NORMAL);
-									}
-
-									saveTemp(MeasredTemp);
+									IWonFunc->BdyTempDisp(MeasredTemp);
 
 									Measuring = false;
 									Measured = true;
@@ -574,28 +496,10 @@ int main(void)
 							MeasredCount1++;
 							MeasredCount2++;
 
-							INT16 temp = MeasredTemp;
 							if (MeasredCount1 > 10 || MeasredCount2 > 20)
 							{
-								IWonFunc->Beep();
-								
-								IWonFunc->DisplayRGB(GREEN);
-								
-								if(temp < 0) // 사물 온도 모드에서 0도 미만
-								{
-									IWonFunc->DisplayLOW();
-								}
-								else 
-								if(temp > 850) // 사물 온도 모드에서 85도 초과
-								{
-									IWonFunc->DisplayHIGH();  
-								}
-								else 
-								{
-									tempValueDisplay(IWonFunc->UnitCalc(temp, tempUnit_p));
-									saveTemp(MeasredTemp);
-								}
-								
+								IWonFunc->ObjTempDisp(MeasredTemp);
+
 								Measuring = false;
 								Measured = true;
 								MeasredCount1 = 0;
@@ -608,8 +512,6 @@ int main(void)
 		}
 	} //while
 	
-    IWonFunc->DisplayOFF();
-	IWonFunc->Delay_ms(1000);
 	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 }
 

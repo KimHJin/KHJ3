@@ -41,7 +41,6 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 
 void displayNumber(INT8 number, INT8 position)
 {
-
 	switch (number)
 	{
 	case -1:
@@ -519,10 +518,10 @@ void displayNumber(INT8 number, INT8 position)
 
 void tempValueDisplay(INT16 value, BOOL fillZero)
 {
-	INT8 forthNumber = value % 10;
-	INT8 thirdNumber = (value / 10) % 10;
-	INT8 secondNumber = (value / 100) % 10;
-	INT8 firstNumber = value / 1000;
+	INT8 forthNumber = (INT8)(value % 10);
+	INT8 thirdNumber = (INT8)((value / 10) % 10);
+	INT8 secondNumber = (INT8)((value / 100) % 10);
+	INT8 firstNumber = (INT8)(value / 1000);
 	
 	NUMBER_CLEAR(1);
 	NUMBER_CLEAR(2);
@@ -560,8 +559,8 @@ void tempValueDisplay(INT16 value)
 
 void memNumberDisplay(INT8 number)
 {
-	int secondNum = number % 10;
-	int firstNum = number / 10;
+	INT8 secondNum = number % 10;
+	INT8 firstNum = number / 10;
 
 	displayNumber(firstNum, 4);
 	displayNumber(secondNum, 5);
@@ -569,10 +568,10 @@ void memNumberDisplay(INT8 number)
 
 void memTempDataDisplay(INT16 tempData, BOOL fillZero)
 {
-	INT8 forthNumber = tempData % 10;
-	INT8 thirdNumber = (tempData / 10) % 10;
-	INT8 secondNumber = (tempData / 100) % 10;
-	INT8 firstNumber = tempData / 1000;
+	INT8 forthNumber = (INT8)(tempData % 10);
+	INT8 thirdNumber = (INT8)((tempData / 10) % 10);
+	INT8 secondNumber = (INT8)((tempData / 100) % 10);
+	INT8 firstNumber = (INT8)(tempData / 1000);
 	
     NUMBER_CLEAR(6);
 	NUMBER_CLEAR(7);

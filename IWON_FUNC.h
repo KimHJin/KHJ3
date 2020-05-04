@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-//Code Name : IWON TEST
+// Code Name : IWON TEST
 //
 // For STM8L0
 //
@@ -155,6 +155,14 @@ public:
 	VOID CaliDone(IWON_TEMP_TASK *IWonTask);
 	VOID SpecialMode(IWON_TEMP_TASK *IWonTask);
 	VOID SpecialModeTask(IWON_TEMP_TASK *IWonTask);
+
+	VOID TempLogDataSave(int16_t saveData);
+	VOID SaveTemp(INT16 temp);
+	VOID ObjTempDisp(INT16 temp);
+	VOID BdyTempDisp(INT16 temp);
+
+	VOID SystemError(VOID);
+	VOID MeasuringDisp(VOID);
 
 private:   
 	VOID Init(VOID);
