@@ -197,10 +197,6 @@ int main(void)
 	EEPROM_init();
 	LCD_Display_init(IWonFunc);
 
-	if (measureMode_p)
-		IWonFunc->DisplayRGB(BLUE);
-	else 
-		IWonFunc->DisplayRGB(GREEN);
 
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
@@ -208,28 +204,7 @@ int main(void)
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
 	IWonFunc->Beep();
-
-	// 가장 마지막 측정 값
-	if(TEMP>0 && TEMP<500) 
-	{
-		IWonFunc->LastMeasred = 1;
-		if(IWonFunc->TempUnitTask(false)==1)
-		{
-			IWonFunc->Delay_ms(1200);
-		}
-		IWonFunc->LastMeasred = 0;
-	}
 	
-	
-/*	
-	delay_ms(2000);	
-	BeepMode(NORMAL); 	
-	delay_ms(2000);
-	BeepMode(LIGHT_FEVER); 
-	delay_ms(2000);
-	BeepMode(HIGH_FEVER); 
-	delay_ms(2000);
-*/
 	
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
@@ -245,96 +220,128 @@ int main(void)
 		}
 		IWonFunc->Delay_ms(30);
 	}
-	
-	IWonTask->BATmV = IWonTask->Get_BAT_mV();
-	IWonTask->VDDmV = IWonTask->Get_VDD_mV();
-	
-	// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
-	if(IWonTask->BATmV/100 <= 20)
-	    IWonFunc->LowBatteryDisplay_2v0();
-	else if(IWonTask->BATmV/100 < 22)
-		IWonFunc->LowBatteryDisplay_2v2();
-    else if(IWonTask->BATmV/100 < 24)
-	    IWonFunc->LowBatteryDisplay_2v4();
-	
-	
-	// 초기에 센서의 온도를 측정하게 된다.
-	INT32 AMB = IWonTask->Get_AMB_TEMP();		
-	if (AMB < 0 || 500 < AMB)
-	{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-		IWonFunc->SystemError();
-	}
-
-
-	// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
-	while (SW_PWR_ON) 
+		
+	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료
 	{
-		if(IWonTask->DeviceTestModeWait>500)
+	  
+	   	if (measureMode_p)
+			IWonFunc->DisplayRGB(BLUE);
+		else 
+			IWonFunc->DisplayRGB(GREEN);
+		
+			// 가장 마지막 측정 값
+		if(TEMP>0 && TEMP<500) 
 		{
-		  	if(SW_LEFT_ON && SW_RIGHT_ON)  // Test Mode 진입
+			IWonFunc->LastMeasred = 1;
+			if(IWonFunc->TempUnitTask(false)==1)
 			{
-				if(IWonTask->DeviceTestModeValue == 1)
-				{
-					IWonTest = new IWON_TEMP_TEST(IWonFunc, IWonTask);
-					IWonTest->SetTestModeFlag(1);					
-					IWonFunc->LCD_clear();
-					IWonFunc->DisplayRGB(CLEAR);
-					break;
-				}
-				IWonTask->DeviceTestModeValue++;
+				IWonFunc->Delay_ms(1200);
 			}
-		    else 
-			if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
-			{
-				if(IWonTask->DeviceTestModeValue==1) 
-				{
-					tempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
-				}
-				IWonTask->DeviceTestModeValue++;
-			}
-			else	
-			if(SW_LEFT_ON)	// 전원 버튼과 왼쪽 버튼을 누르고 있으면 내부 값 표시
-			{
-				// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
-				if(IWonTask->DeviceTestModeValue==1) 
-				{
-					tempValueDisplay(IWonTask->BATmV/100, false);		// <= 배터리 전압값 표시
-				}
-				else
-				if(IWonTask->DeviceTestModeValue==150) 
-				{
-					tempValueDisplay(AMB);					// 센서 온도값 표시
-				}
-				else
-				if(IWonTask->DeviceTestModeValue==300) 
-				{
-					tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
-					//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
-				}
-				else
-				if(IWonTask->DeviceTestModeValue==450)	// - - - 표시
-				{
-					IWonFunc->MeasuringDisp();
-				}
-				else
-				if(IWonTask->DeviceTestModeValue==550)
-				{
-					IWonTask->DeviceTestModeValue = 0;
-				}
-				IWonTask->DeviceTestModeValue++;
-			}
+			IWonFunc->LastMeasred = 0;
 		}
-		else
-		{
-			IWonTask->DeviceTestModeWait++;
+	  
+	  
+		IWonTask->BATmV = IWonTask->Get_BAT_mV();
+		IWonTask->VDDmV = IWonTask->Get_VDD_mV();
+		
+		// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
+		if(IWonTask->BATmV/100 <= 20)
+			IWonFunc->LowBatteryDisplay_2v0();
+		else if(IWonTask->BATmV/100 < 22)
+			IWonFunc->LowBatteryDisplay_2v2();
+		else if(IWonTask->BATmV/100 < 24)
+			IWonFunc->LowBatteryDisplay_2v4();
+		
+		
+		// 초기에 센서의 온도를 측정하게 된다.
+		INT32 AMB = IWonTask->Get_AMB_TEMP();		
+		if (AMB < 0 || 500 < AMB)
+		{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+			IWonFunc->SystemError();
 		}
 
-		IWonFunc->Delay_ms(10);
-		IWonTask->ClearPowerDown();
+		
+
+
+		// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
+		while (SW_PWR_ON) 
+		{
+			if(IWonTask->DeviceTestModeWait>500)
+			{
+				if(SW_LEFT_ON && SW_RIGHT_ON)  // Test Mode 진입
+				{
+					if(IWonTask->DeviceTestModeValue == 1)
+					{
+						IWonTest = new IWON_TEMP_TEST(IWonFunc, IWonTask);
+						IWonTest->SetTestModeFlag(1);					
+						IWonFunc->LCD_clear();
+						IWonFunc->DisplayRGB(CLEAR);
+						break;
+					}
+					IWonTask->DeviceTestModeValue++;
+				}
+				else 
+				if(SW_RIGHT_ON)	// 전원 버튼과 오른쪽 버튼을 누르고 있으면 버전 표시
+				{
+					if(IWonTask->DeviceTestModeValue==1) 
+					{
+						tempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
+					}
+					IWonTask->DeviceTestModeValue++;
+				}
+				else	
+				if(SW_LEFT_ON)	// 전원 버튼과 왼쪽 버튼을 누르고 있으면 내부 값 표시
+				{
+					// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
+					if(IWonTask->DeviceTestModeValue==1) 
+					{
+						tempValueDisplay(IWonTask->BATmV/100, false);		// <= 배터리 전압값 표시
+					}
+					else
+					if(IWonTask->DeviceTestModeValue==150) 
+					{
+						tempValueDisplay(AMB);					// 센서 온도값 표시
+					}
+					else
+					if(IWonTask->DeviceTestModeValue==300) 
+					{
+						tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
+						//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
+					}
+					else
+					if(IWonTask->DeviceTestModeValue==450)	// - - - 표시
+					{
+						IWonFunc->MeasuringDisp();
+					}
+					else
+					if(IWonTask->DeviceTestModeValue==550)
+					{
+						IWonTask->DeviceTestModeValue = 0;
+					}
+					IWonTask->DeviceTestModeValue++;
+				}
+			}
+			else
+			{
+				IWonTask->DeviceTestModeWait++;
+			}
+
+			IWonFunc->Delay_ms(10);
+			IWonTask->ClearPowerDown();
+		}
+		
+		tempValueDisplay(0);
+	}
+	else 
+	{
+	 	IWonFunc->LCD_clear();
+	    IWonFunc->DisplayRGB(CLEAR); 
+		
+		measureMode_p = 0; // 사물 측정 모드  
+		buzzerState_p = 1; // BUZZER ON
+		tempUnit_p    = 1; // 섭씨 모드
 	}
 	
-	tempValueDisplay(0);
-
 	while (IWonTask->NeedPowerDown() == false)
 	{
 		INT16 MEASURED_TEMP = 0;
@@ -345,7 +352,11 @@ int main(void)
 		{
 		  	if(testModeFlag==1) // Test Mode
 				testMode();			
-			else 
+			else if(AutoCaliFlag_p == 0)
+			{
+			  
+			}
+			else
 				keyScan();
 		}
 
@@ -487,16 +498,34 @@ int main(void)
 							{
 								IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
 
+								if(AutoCaliFlag_p == 0)
+								{
+									// 측정 된 온도 값을 받아 CAL
+									// 3번 측정 후 파워다운		
+									IWonFunc->AUTOCAL(IWonTask->MeasredTemp); // 실제 AUTO CAL 하는 부분
+									
+									if(IWonFunc->GET_AutoCal_Count() == 3) // 3번 측정 완료
+									{
+									  AutoCaliFlag_p = 1; // AUTO CAL 완료
+									  IWonFunc->POWER_DOWN(); // 파워다운
+									}
+								}
+								
 								IWonTask->Measuring = false;
 								IWonTask->Measured = true;
 								IWonTask->MeasredCount1 = 0;
 								IWonTask->MeasredCount2 = 0;
+								
 							}
 						}
 					}
 				}
 			}
 		}
+		
+		
+		
+		
 	} //while
 	
 	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.

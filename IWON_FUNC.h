@@ -139,6 +139,8 @@ public:
 	INT8 Measure_test_flag;
 	INT8 LastMeasred;
 	
+	INT8 AutoCal_Count;
+	
 	int16_t UnitCalc(int16_t temp, int unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);
@@ -167,6 +169,10 @@ public:
 	VOID MeasuringDisp(VOID);
 	
 	VOID ALLCLEAR(VOID);
+	
+	VOID AUTOCAL(INT16 temp);
+	INT8 GET_AutoCal_Count(VOID);
+
 
 private:   
 	VOID Init(VOID);

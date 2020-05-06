@@ -35,8 +35,8 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 	tempUnitSet(tempUnit_p);
 
 	LCD->X8 = 1;   // Display "LOG"
-	LCD->DP1 = 1;  // Display "."
-	LCD->DP2 = 1;  // Display "."
+	//LCD->DP1 = 1;  // Display "."
+	//LCD->DP2 = 1;  // Display "."
 }
 
 void displayNumber(INT8 number, INT8 position)

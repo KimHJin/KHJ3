@@ -27,6 +27,7 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	LowBatteryFlag = 0;
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
+	AutoCal_Count = 0;
 }
 
 
@@ -582,5 +583,15 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	{
 		memTemp_p(i) = 0;
 	}
+}
+
+VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
+{
+  AutoCal_Count++;
+}
+
+INT8 IWON_TEMP_FUNC::GET_AutoCal_Count(VOID)
+{
+  return AutoCal_Count;
 }
 
