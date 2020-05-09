@@ -125,12 +125,16 @@ void keyScan()
 			delayCount++;
 			IWonFunc->Delay_ms(15);
 			
-			if (delayCount == 350)
+			while(SW_LEFT_ON && SW_RIGHT_ON)
 			{
-			    IWonFunc->Beep();
-			    IWonFunc->SpecialModeTask(IWonTask);
+			  	delayCount++;
+				IWonFunc->Delay_ms(15);
+				if (delayCount == 350)
+				{
+					IWonFunc->Beep();
+					IWonFunc->SpecialModeTask(IWonTask);
+				}
 			}
-
 			if (delayCount == 100 && !SW_RIGHT_ON) // LONG_PRESS
 			{
 				IWonFunc->Beep();
@@ -160,10 +164,15 @@ void keyScan()
 			delayCount++;
 			IWonFunc->Delay_ms(15);
 			
-			if (delayCount == 350)
+			while(SW_LEFT_ON && SW_RIGHT_ON)
 			{
-				IWonFunc->Beep();
-				IWonFunc->SpecialModeTask(IWonTask);		
+			  	delayCount++;
+				IWonFunc->Delay_ms(15);
+				if (delayCount == 350)
+				{
+					IWonFunc->Beep();
+					IWonFunc->SpecialModeTask(IWonTask);
+				}
 			}
 
 			if (delayCount == 100 && !SW_LEFT_ON) // LONG_PRESS
@@ -205,7 +214,8 @@ int main(void)
 
 	IWonFunc->Beep();
 	
-	
+
+
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
@@ -219,6 +229,13 @@ int main(void)
 			break;	// 빠져나가게 된다.
 		}
 		IWonFunc->Delay_ms(30);
+	}
+	
+		// 초기에 센서의 온도를 측정하게 된다.
+	INT32 AMB = IWonTask->Get_AMB_TEMP();		
+	if (AMB < 150 || 400 < AMB)
+	{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
+		IWonFunc->SystemError();
 	}
 		
 	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료
@@ -253,16 +270,6 @@ int main(void)
 			IWonFunc->LowBatteryDisplay_2v4();
 		
 		
-		// 초기에 센서의 온도를 측정하게 된다.
-		INT32 AMB = IWonTask->Get_AMB_TEMP();		
-		if (AMB < 0 || 500 < AMB)
-		{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-			IWonFunc->SystemError();
-		}
-
-		
-
-
 		// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
 		while (SW_PWR_ON) 
 		{
@@ -351,13 +358,17 @@ int main(void)
 		if (IWonTask->Measuring == false)
 		{
 		  	if(testModeFlag==1) // Test Mode
-				testMode();			
+			{	
+				testMode();
+			}
 			else if(AutoCaliFlag_p == 0)
 			{
 			  
 			}
 			else
+			{
 				keyScan();
+			}
 		}
 
 		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
@@ -401,8 +412,8 @@ int main(void)
 			else if (IWonTask->Measuring)
 			{ // 온도 측정
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
-				if (AMB < 0 || 500 < AMB)
-				{ // 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+				if (AMB < 150 || 400 < AMB)
+				{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
 					IWonFunc->SystemError();
 
 					IWonTask->MeasredTemp = 0;
@@ -414,6 +425,7 @@ int main(void)
 				}
 				else if (AMB > 0)
 				{
+				    IWonFunc->LowHigh_FLag = 0;
 					if (measureMode_p == 1)
 					{
 						// 인체 측정
@@ -506,8 +518,9 @@ int main(void)
 									
 									if(IWonFunc->GET_AutoCal_Count() == 3) // 3번 측정 완료
 									{
-									  AutoCaliFlag_p = 1; // AUTO CAL 완료
-									  IWonFunc->POWER_DOWN(); // 파워다운
+										AutoCaliFlag_p = 1; // AUTO CAL 완료
+										IWonFunc->Delay_ms(2000);
+										IWonFunc->POWER_DOWN(); // 파워다운
 									}
 								}
 								

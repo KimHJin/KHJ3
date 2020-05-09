@@ -10,6 +10,12 @@
 #include "IWON_FUNC.h"
 #include "eeprom.h"
 
+#define AutoCalTemp1 356
+
+#define AutoCalTemp2 360
+
+#define AutoCalTemp3 370
+
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
 {
@@ -28,6 +34,7 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
 	AutoCal_Count = 0;
+	LowHigh_FLag = false;
 }
 
 
@@ -154,6 +161,7 @@ VOID IWON_TEMP_FUNC::DisplayLOW(VOID)
 	LCD->D2 = 1;
 	LCD->E2 = 1;
 	LCD->G2 = 1;
+	LowHigh_FLag = true;
 }
 
 VOID IWON_TEMP_FUNC::DisplayHIGH(VOID)
@@ -173,6 +181,7 @@ VOID IWON_TEMP_FUNC::DisplayHIGH(VOID)
 
 	LCD->F2 = 1; // I
 	LCD->E2 = 1;
+	LowHigh_FLag = true;
 }
 
 VOID IWON_TEMP_FUNC::DisplayError(VOID)
@@ -342,7 +351,7 @@ INT8 IWON_TEMP_FUNC::TempUnitTask(BOOL inv)
 	}
 
 	tempUnitSet(tempUnit_p);
-	if ((334 <= TEMP && TEMP <= 425) || measureMode_p == 0) 
+	if (LowHigh_FLag == false) 
 	{
 		if(LastMeasred==1)
 		{
@@ -389,9 +398,7 @@ VOID IWON_TEMP_FUNC::CaliDone(IWON_TEMP_TASK *IWonTask)
 	LCD_clear();
 	BeepMode(NORMAL);
 
-	displayNumber(0, 1);
-	displayNumber(0, 2);
-	displayNumber(0, 3);
+	tempValueDisplay(0);
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
@@ -509,10 +516,12 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	{
 		DisplayHIGH();
 	}
-	else 
+	else
 	{
 		tempValueDisplay(UnitCalc(temp, tempUnit_p));
-		SaveTemp(temp);
+		
+		if(AutoCaliFlag_p == 1)
+			SaveTemp(temp);
 	}
 }
 VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
@@ -552,6 +561,10 @@ VOID IWON_TEMP_FUNC::SystemError(VOID)
 	Delay_ms(40);
 	Beep(1000);
 	Delay_ms(40);
+	
+	while(!SW_PWR_ON);
+	
+	POWER_DOWN();
 }
 
 VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
@@ -587,11 +600,33 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 
 VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 {
-  AutoCal_Count++;
-}
+	AutoCal_Count++;
+  	
+	switch(AutoCal_Count)
+	{
+		case 1: 
+
+			caliData_p = AutoCalTemp1 - temp;
+
+		break;
+		
+		case 2:
+
+		  
+		  
+		break;
+		
+	    case 3:
+
+		break;
+	}
+  
+  
+  
+}        
 
 INT8 IWON_TEMP_FUNC::GET_AutoCal_Count(VOID)
 {
-  return AutoCal_Count;
+	return AutoCal_Count;
 }
 

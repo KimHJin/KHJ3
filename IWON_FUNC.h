@@ -141,6 +141,8 @@ public:
 	
 	INT8 AutoCal_Count;
 	
+	BOOL LowHigh_FLag;
+	
 	int16_t UnitCalc(int16_t temp, int unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);
