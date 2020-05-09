@@ -134,7 +134,6 @@ public:
 	VOID DisplayError(VOID);
 	VOID DisplayOFF(VOID);
 
-	INT8 YellowFlag;
 	INT8 LowBatteryFlag;
 	INT8 Measure_test_flag;
 	INT8 LastMeasred;
@@ -143,7 +142,7 @@ public:
 	
 	BOOL LowHigh_FLag;
 	
-	int16_t UnitCalc(int16_t temp, int unit);
+	INT16 UnitCalc(INT16 temp, BOOL unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);
 	VOID LowBatteryDisplay_2v2(VOID);

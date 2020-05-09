@@ -152,7 +152,6 @@ private:
 
 	INT16 ADJ_VALUE;
 
-	int yellowDisp_Count;
 	int lowBattery_Count;
 	
 };

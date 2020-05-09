@@ -6,6 +6,7 @@
 // 2020/04/18 I-WON SOLUTION CO LTD
 // 2020/04/18 v1.0 by KGY & KHJ
 // 2020/04/27 v1.1 by KHJ
+// 2020/05/09 v2.0 by KHJ
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stm8l15x.h"
@@ -26,8 +27,6 @@ IWON_TEMP_FUNC *IWonFunc = NULL;
 INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 {
 	IWonTask->Time();
-	if (IWonFunc->YellowFlag)
-		IWonTask->YellowDisp();
 	
 	if(IWonFunc->LowBatteryFlag)
 	    IWonTask->lowBatteryDisp();

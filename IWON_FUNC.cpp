@@ -29,7 +29,6 @@ IWON_TEMP_FUNC::~IWON_TEMP_FUNC()
 
 VOID IWON_TEMP_FUNC::Init(VOID)
 {
-	YellowFlag = 0;
 	LowBatteryFlag = 0;
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
@@ -106,42 +105,37 @@ VOID IWON_TEMP_FUNC::DisplayRGB(INT8 color)
 {
 	if (color == RED)
 	{
-		GPIO_LOW(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		YellowFlag = 0;
+		GPIO_LOW(GPIOD, GPIO_Pin_4);  // RED
+		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
+		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
 	}
 
 	else if (color == GREEN)
 	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_LOW(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		YellowFlag = 0;
+		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
+		GPIO_LOW(GPIOF, GPIO_Pin_0);  // GREEN
+		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
 	}
 
 	else if (color == BLUE)
 	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_LOW(GPIOB, GPIO_Pin_7);
-		YellowFlag = 0;
+		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
+		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
+		GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
 	}
 
 	else if (color == YELLOW)
 	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		YellowFlag = 1;
+		GPIO_LOW(GPIOD, GPIO_Pin_4); // RED  
+		GPIO_LOW(GPIOF, GPIO_Pin_0); // GREEN
+		GPIO_HIGH(GPIOB, GPIO_Pin_7);// BLUE
 	}
 
 	else if (color == CLEAR)
 	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4);
-		GPIO_HIGH(GPIOF, GPIO_Pin_0);
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);
-		YellowFlag = 0;
+		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
+		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
+		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
 	}
 }
 
@@ -228,11 +222,6 @@ VOID IWON_TEMP_FUNC::DisplayOFF(VOID)
 	LCD->G3 = 1;
 }
 
-
-
-
-
-
 VOID IWON_TEMP_FUNC::Delay_10us(INT16 us)
 {
 	us *= 16;
@@ -248,8 +237,6 @@ VOID IWON_TEMP_FUNC::Delay_ms(INT16 ms)
 		Delay_10us(100);
 	}
 }
-
-
 
 INT8 IWON_TEMP_FUNC::Delay_10us_with_key(INT16 us)
 {
@@ -277,12 +264,12 @@ INT8 IWON_TEMP_FUNC::Delay_ms_with_key(INT16 ms)
 	return 0;
 }
 
-int16_t IWON_TEMP_FUNC::UnitCalc(int16_t temp, int unit)
+INT16 IWON_TEMP_FUNC::UnitCalc(INT16 temp, BOOL unit)
 {
-	int16_t value = temp;
+	INT16 value = temp;
 	if (!unit)
 	{
-		value = (int16_t)((((float)temp / 10) * 1.8 + 32) * 10);
+		value = (INT16)((((float)temp / 10) * 1.8 + 32) * 10);
 	}
 
 	return value;
@@ -618,11 +605,10 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 		
 	    case 3:
 
+		  
+		  
 		break;
 	}
-  
-  
-  
 }        
 
 INT8 IWON_TEMP_FUNC::GET_AutoCal_Count(VOID)
