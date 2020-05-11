@@ -10,7 +10,7 @@
 #include "IWON_FUNC.h"
 #include "eeprom.h"
 
-#define AutoCalTemp1 356
+#define AutoCalTemp1 350
 
 #define AutoCalTemp2 360
 
@@ -519,9 +519,8 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	else
 	{
 		tempValueDisplay(UnitCalc(temp, tempUnit_p));
-		
-		if(AutoCaliFlag_p == 1)
-			SaveTemp(temp);
+	
+		SaveTemp(temp);
 	}
 }
 VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
