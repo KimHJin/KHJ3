@@ -49,10 +49,6 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	measuredFlag = false;
 }
 
-
-
-
-
 VOID IWON_TEMP_FUNC::Beep(INT16 length)
 {
 	if (buzzerState_p)
@@ -604,17 +600,23 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 	switch(AutoCal_Count)
 	{
 		case 1: 
-			memTempDataDisplay(1);
+			memTempDataDisplay(10);
 			caliData_p = (AutoCalTemp1 - temp)/5;
 			//caliData_p = 50;
 			DisplayRGB(GREEN);
 			successDisp();
+			Delay_ms(2000);
+			NUMBER_CLEAR(1);
+			NUMBER_CLEAR(2);
+			NUMBER_CLEAR(3);
+			LCD->DP1 = 0;
+			memTempDataDisplay((AutoCal_Count+1)*10);
 
 		break;
 		
 		case 2:
-		    memTempDataDisplay(2);
-			if(temp <= AutoCalTemp2 + 100 && temp >= AutoCalTemp2 - 100)
+		    memTempDataDisplay(20);
+			if(temp <= AutoCalTemp2 + 20 && temp >= AutoCalTemp2 - 20)
 			{
 				DisplayRGB(GREEN);
 				successDisp();
@@ -626,15 +628,24 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 				failDisp();
 				passFlag2 = false;
 			}
-			Delay_ms(2000);
+			Delay_ms(1000);
 			
 			tempValueDisplay(temp);
+			
+			Delay_ms(2000);
+			
+			NUMBER_CLEAR(1);
+			NUMBER_CLEAR(2);
+			NUMBER_CLEAR(3);
+			LCD->DP1 = 0;
+			DisplayRGB(BLUE);
+			memTempDataDisplay((AutoCal_Count+1)*10);
 		break;
 		
 	    case 3:
-			memTempDataDisplay(3);
+			memTempDataDisplay(30);
 			
-			if(temp <= AutoCalTemp3 + 100 && temp >= AutoCalTemp3 - 100)
+			if(temp <= AutoCalTemp3 + 20 && temp >= AutoCalTemp3 - 20)
 			{
 				DisplayRGB(GREEN);
 				successDisp();	
@@ -646,12 +657,22 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 				failDisp();
 				passFlag3 = false;
 			}
-			Delay_ms(2000);
+			Delay_ms(1000);
+			
 			tempValueDisplay(temp);
+			
+			Delay_ms(2000);
+			
+			NUMBER_CLEAR(1);
+			NUMBER_CLEAR(2);
+			NUMBER_CLEAR(3);
+			LCD->DP1 = 0;
+			DisplayRGB(BLUE);
+			memTempDataDisplay((AutoCal_Count+1)*10);
 		break;
 		
 		case 4:
-			memTempDataDisplay(4);
+			memTempDataDisplay(40);
 			
 			if(temp <= AutoCalTemp4 + 20 && temp >= AutoCalTemp4 - 20)
 			{
@@ -666,13 +687,23 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 				failDisp();
 				passFlagLow = false;
 			}
-			Delay_ms(2000);
+			Delay_ms(1000);
+			
 			tempValueDisplay(temp);
+			
+			Delay_ms(2000);
+			
+			NUMBER_CLEAR(1);
+			NUMBER_CLEAR(2);
+			NUMBER_CLEAR(3);
+			LCD->DP1 = 0;
+			DisplayRGB(BLUE);
+			memTempDataDisplay((AutoCal_Count+1)*10);
 		  
 		break;
 		
 		case 5:
-			memTempDataDisplay(5);
+			memTempDataDisplay(50);
 			
 			if(temp <= AutoCalTemp5 + 20 && temp >= AutoCalTemp5 - 20)
 			{
@@ -686,8 +717,11 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 				failDisp();
 				passFlagHigh = false;
 			}
-			Delay_ms(2000);
+			Delay_ms(1000);
+			
 			tempValueDisplay(temp);
+			
+			Delay_ms(2000);
 		break;
 	}
 }        

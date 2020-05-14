@@ -341,6 +341,9 @@ int main(void)
 		measureMode_p = 0; // 사물 측정 모드  
 		buzzerState_p = 1; // BUZZER ON
 		tempUnit_p    = 1; // 섭씨 모드
+		
+		IWonFunc->DisplayRGB(BLUE);
+		memTempDataDisplay(10);
 	}
 	
 	while (IWonTask->NeedPowerDown() == false)
@@ -554,8 +557,17 @@ int main(void)
 									IWonTask->Set_AdjValue(caliData_p);
 									if(IWonFunc->GET_AutoCal_Count() == 5) // 3번 측정 완료
 									{
-										AutoCaliFlag_p = 1; // AUTO CAL 완료
-										IWonFunc->Delay_ms(2000);
+									  
+									  	if(IWonFunc->passFlag2 && IWonFunc->passFlag3 && IWonFunc->passFlagLow && IWonFunc->passFlagHigh)
+										{
+											AutoCaliFlag_p = 1; // AUTO CAL 성공
+										}
+										else 
+										{
+											AutoCaliFlag_p = 0; // AUTO CAL 실패
+											caliData_p = 0;
+										}
+										IWonFunc->Delay_ms(1000);
 										IWonFunc->POWER_DOWN(); // 파워다운
 									}
 
