@@ -268,11 +268,12 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			//printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
 
 			// constants for the thermopile calculation
-			const float k = 0.004313f;
+			//const float k = 0.004313f;
+			const float k = 0.0046f;
 			//const float k = 0.004313f + 0.0095; 	// 값을 높이면 측정온도가 내려간다. 0.0001 당 0.7~0.8도 (단, 높은 온도쪽이 많이 떨어진다)
 
 			// 값을 키우면 TOBJ 온도가 올라간다.
-			float delta = 2.468f + 0.150f + (float)VADJ1 / 1000.f;
+			float delta = 2.658f;
 
 			//AMB_TEMP = 280;
 
@@ -285,7 +286,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 
 			// 값을 높이면 TOBJ 온도가 내려간다.
 			// 값을 높이면 낮은 쪽의 온도차가 높은쪽의 온도차 감소량보다 많이 감소한다.
-			float shiftv = 0.81f + (float)VADJ2 / 100.f;
+			float shiftv = 1.02f;
 			float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp
 
 			//VreftpcmV = 2250;	// 72.0 oC
@@ -297,7 +298,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 
 			float v2 = (float)VreftpcmV / 1000.f + comp - shiftv;
 			float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp
-			INT16 T_OBJ = (INT16)(objtemp * 10.f) - 59 + TADJ0;
+			INT16 T_OBJ = (INT16)(objtemp * 10.f);
 
 			INT16 BB = GetTSUMB();
 			//printf("BB=%d\r\n", BB);
