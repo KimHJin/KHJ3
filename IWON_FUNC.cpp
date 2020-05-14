@@ -11,13 +11,13 @@
 #include "eeprom.h"
 
 //#define AutoCalTemp3 350
-#define AutoCalTemp1 360 
+#define AutoCalTemp1 371 
 
 //#define AutoCalTemp3 375				
-#define AutoCalTemp2 382 
+#define AutoCalTemp2 390 
 
 //#define AutoCalTemp3 405
-#define AutoCalTemp3 500 
+#define AutoCalTemp3 573 
 
 #define AutoCalTemp4 320 
 
@@ -605,7 +605,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 	{
 		case 1: 
 			memTempDataDisplay(1);
-			caliData_p = (AutoCalTemp1 - temp)/4;
+			caliData_p = (AutoCalTemp1 - temp)/5;
 			//caliData_p = 50;
 			DisplayRGB(GREEN);
 			successDisp();
