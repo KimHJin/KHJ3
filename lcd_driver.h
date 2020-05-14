@@ -104,6 +104,8 @@ void memTempDataDisplay(INT16 tempData);
 void buzzerCMD(BOOL state);
 void measureModeSet(BOOL mode);
 void tempUnitSet(BOOL unit);
+void successDisp(void);
+void failDisp(void);
 
 
 #endif

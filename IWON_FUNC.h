@@ -142,6 +142,13 @@ public:
 	
 	BOOL LowHigh_FLag;
 	
+	BOOL passFlag1;
+	BOOL passFlag2;
+	BOOL passFlagHigh;
+	BOOL passFlagLow;
+	
+	BOOL measuredFlag;
+	
 	INT16 UnitCalc(INT16 temp, BOOL unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);

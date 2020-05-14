@@ -652,3 +652,41 @@ void tempUnitSet(BOOL unit)
 		LCD->X7 = 1;
 	}
 }
+
+void successDisp(void)
+{
+    NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+
+	LCD->A1 = 1; // S
+	LCD->C1 = 1;
+	LCD->D1 = 1;
+	LCD->F1 = 1;
+	LCD->G1 = 1;
+	
+	LCD->C2 = 1; // U
+	LCD->D2 = 1;
+	LCD->E2 = 1;
+}
+
+void failDisp(void)
+{
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+	
+
+	
+	LCD->A1 = 1; // F
+	LCD->E1 = 1;
+	LCD->F1 = 1;
+	LCD->G1 = 1;
+
+	LCD->A2 = 1; // A
+	LCD->B2 = 1;
+	LCD->C2 = 1;
+	LCD->E2 = 1;
+	LCD->F2 = 1;
+	LCD->G2 = 1;
+}

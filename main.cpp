@@ -210,8 +210,6 @@ int main(void)
 	
 	IWonFunc->Beep();
 	
-
-
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
@@ -340,7 +338,7 @@ int main(void)
 	 	IWonFunc->LCD_clear();
 	    IWonFunc->DisplayRGB(CLEAR); 
 		
-		measureMode_p = 1; // 체온 측정 모드  
+		measureMode_p = 0; // 사물 측정 모드  
 		buzzerState_p = 1; // BUZZER ON
 		tempUnit_p    = 1; // 섭씨 모드
 	}
@@ -359,7 +357,7 @@ int main(void)
 			}
 			else if(AutoCaliFlag_p == 0)
 			{
-			  
+				IWonTask->ClearPowerDown();
 			}
 			else
 			{
@@ -427,81 +425,106 @@ int main(void)
 						// 인체 측정
 						MEASURED_TEMP = IWonTask->Get_BDY_TEMP();
 
-		
-						if(AutoCaliFlag_p == 0)
+						if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
+						{ // LOW  Less Than 33.4 C
+							IWonTask->RetryCount++;
+							if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
+							{
+								IWonTask->Measured = false;
+								IWonTask->Measuring = true;
+								IWonTask->MeasredTemp = -100;
+								IWonTask->Clear_AVG();
+								IWonFunc->Delay_ms(300);
+								continue;
+							}
+
+							IWonTask->MeasredTemp = MEASURED_TEMP;
+							if(AutoCaliFlag_p == 1)
+							{
+								IWonFunc->DisplayRGB(BLUE);
+								IWonFunc->DisplayLOW();
+								IWonFunc->Beep();
+							}
+							else
+							{
+								IWonFunc->measuredFlag = true;
+							}
+							
+							IWonTask->Measuring = false;
+							IWonTask->Measured = true;
+							IWonTask->MeasredCount1 = 0;
+							IWonTask->MeasredCount2 = 0;
+						}
+						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
+						{ // HIGH Greater Than 42.5 C
+							IWonTask->MeasredTemp = MEASURED_TEMP;
+							
+							if(AutoCaliFlag_p == 1)
+							{
+								IWonFunc->DisplayRGB(BLUE);
+								IWonFunc->DisplayHIGH();
+								IWonFunc->Beep();
+							}
+							else 
+							{
+								IWonFunc->measuredFlag = true;
+							}
+							IWonTask->Measuring = false;
+							IWonTask->Measured = true;
+							IWonTask->MeasredCount1 = 0;
+							IWonTask->MeasredCount2 = 0;
+						}
+						else
+						{
+							if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
+							{
+								TEMP_AVG->Init();
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredCount1 = 1;
+							}
+							else
+							{
+								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+								IWonTask->MeasredCount1++;
+								IWonTask->MeasredCount2++;
+
+								if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
+								{
+									if(AutoCaliFlag_p == 1) 
+										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
+									else 
+										IWonFunc->measuredFlag = true; 		
+									  
+									  
+									IWonTask->Measuring = false;
+									IWonTask->Measured = true;
+									IWonTask->MeasredCount1 = 0;
+									IWonTask->MeasredCount2 = 0;
+								}
+							}
+						}
+						/*
+						if(AutoCaliFlag_p == 0 && IWonFunc->measuredFlag == true)
 						{
 							// 측정 된 온도 값을 받아 CAL
-							// 3번 측정 후 파워다운		
-							IWonFunc->AUTOCAL(MEASURED_TEMP); // 실제 AUTO CAL 하는 부분
+							// 5번 측정 후 파워다운		
+							IWonFunc->AUTOCAL(IWonTask->MeasredTemp); // 실제 AUTO CAL 하는 부분
 
-							if(IWonFunc->GET_AutoCal_Count() == 3) // 3번 측정 완료
+							if(IWonFunc->GET_AutoCal_Count() == 5) // 3번 측정 완료
 							{
 								AutoCaliFlag_p = 1; // AUTO CAL 완료
 								IWonFunc->Delay_ms(2000);
 								IWonFunc->POWER_DOWN(); // 파워다운
 							}
+							
+							IWonFunc->measuredFlag = false;
+							IWonTask->Measuring = false;
+							IWonTask->Measured = true;
+							IWonTask->MeasredCount1 = 0;
+							IWonTask->MeasredCount2 = 0;
 						}
-						else 
-						{
-							if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
-							{ // LOW  Less Than 33.4 C
-								IWonTask->RetryCount++;
-								if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
-								{
-									IWonTask->Measured = false;
-									IWonTask->Measuring = true;
-									IWonTask->MeasredTemp = -100;
-									IWonTask->Clear_AVG();
-									IWonFunc->Delay_ms(300);
-									continue;
-								}
-
-								IWonTask->MeasredTemp = MEASURED_TEMP;
-								IWonFunc->DisplayRGB(BLUE);
-								IWonFunc->DisplayLOW();
-								IWonFunc->Beep();
-								IWonTask->Measuring = false;
-								IWonTask->Measured = true;
-								IWonTask->MeasredCount1 = 0;
-								IWonTask->MeasredCount2 = 0;
-							}
-							else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
-							{ // HIGH Greater Than 42.5 C
-								IWonTask->MeasredTemp = MEASURED_TEMP;
-								IWonFunc->DisplayRGB(BLUE);
-								IWonFunc->DisplayHIGH();
-								IWonFunc->Beep();
-								IWonTask->Measuring = false;
-								IWonTask->Measured = true;
-								IWonTask->MeasredCount1 = 0;
-								IWonTask->MeasredCount2 = 0;
-							}
-							else
-							{
-								if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
-								{
-									TEMP_AVG->Init();
-									IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-									IWonTask->MeasredCount1 = 1;
-								}
-								else
-								{
-									IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-									IWonTask->MeasredCount1++;
-									IWonTask->MeasredCount2++;
-
-									if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
-									{
-										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
-
-										IWonTask->Measuring = false;
-										IWonTask->Measured = true;
-										IWonTask->MeasredCount1 = 0;
-										IWonTask->MeasredCount2 = 0;
-									}
-								}
-							}
-						}
+						*/
+						
 					}
 					else
 					{
@@ -521,8 +544,31 @@ int main(void)
 
 							if (IWonTask->MeasredCount1 > 5 || IWonTask->MeasredCount2 > 10)
 							{
-								IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
 								
+								
+								if(AutoCaliFlag_p == 0)
+								{
+									// 측정 된 온도 값을 받아 CAL
+									// 5번 측정 후 파워다운		
+									IWonFunc->AUTOCAL(IWonTask->MeasredTemp); // 실제 AUTO CAL 하는 부분
+									IWonTask->Set_AdjValue(caliData_p);
+									if(IWonFunc->GET_AutoCal_Count() == 5) // 3번 측정 완료
+									{
+										AutoCaliFlag_p = 1; // AUTO CAL 완료
+										IWonFunc->Delay_ms(2000);
+										IWonFunc->POWER_DOWN(); // 파워다운
+									}
+
+									IWonTask->Measuring = false;
+									IWonTask->Measured = true;
+									IWonTask->MeasredCount1 = 0;
+									IWonTask->MeasredCount2 = 0;
+								}
+								else 
+								{
+									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
+								}
+
 								IWonTask->Measuring = false;
 								IWonTask->Measured = true;
 								IWonTask->MeasredCount1 = 0;
@@ -536,7 +582,7 @@ int main(void)
 		}
 		
 	} //while
-	
+
 	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 }
 

@@ -10,11 +10,18 @@
 #include "IWON_FUNC.h"
 #include "eeprom.h"
 
-#define AutoCalTemp1 350
+//#define AutoCalTemp3 350
+#define AutoCalTemp1 360 
 
-#define AutoCalTemp2 360
+//#define AutoCalTemp3 375				
+#define AutoCalTemp2 382 
 
-#define AutoCalTemp3 370
+//#define AutoCalTemp3 405
+#define AutoCalTemp3 500 
+
+#define AutoCalTemp4 320 
+
+#define AutoCalTemp5 440
 
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
@@ -34,6 +41,12 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	LastMeasred = 0;  
 	AutoCal_Count = 0;
 	LowHigh_FLag = false;
+	passFlag1 = false;
+	passFlag2 = false;
+	passFlagHigh = false;
+	passFlagLow  = false;
+
+	measuredFlag = false;
 }
 
 
@@ -591,21 +604,81 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 	switch(AutoCal_Count)
 	{
 		case 1: 
-
-			caliData_p = AutoCalTemp1 - temp;
+			memTempDataDisplay(1);
+			caliData_p = (AutoCalTemp1 - temp);
+			//caliData_p = 50;
+			DisplayRGB(GREEN);
+			successDisp();
 
 		break;
 		
 		case 2:
-
-		  
-		  
+		    memTempDataDisplay(2);
+			if(temp <= AutoCalTemp2 + 100 && temp >= AutoCalTemp2 - 100)
+			{
+			  DisplayRGB(GREEN);
+			  successDisp();
+			}
+			else 
+			{
+			  DisplayRGB(RED);
+			  failDisp();
+			}
+			Delay_ms(2000);
+			
+			tempValueDisplay(temp);
 		break;
 		
 	    case 3:
-
+			memTempDataDisplay(3);
+			
+			if(temp <= AutoCalTemp3 + 100 && temp >= AutoCalTemp3 - 100)
+			{
+			  DisplayRGB(GREEN);
+			  successDisp();	
+			}
+			else 
+			{
+			  DisplayRGB(RED);
+			  failDisp();
+			}
+			Delay_ms(2000);
+			tempValueDisplay(temp);
+		break;
+		
+		case 4:
+			memTempDataDisplay(4);
+			
+			if(temp <= AutoCalTemp4 + 20 && temp >= AutoCalTemp4 - 20)
+			{
+			  DisplayRGB(GREEN);
+			  successDisp();	
+			}
+			else 
+			{
+			  DisplayRGB(RED);
+			  failDisp();
+			}
+			Delay_ms(2000);
+			tempValueDisplay(temp);
 		  
-		  
+		break;
+		
+		case 5:
+			memTempDataDisplay(5);
+			
+			if(temp <= AutoCalTemp5 + 20 && temp >= AutoCalTemp5 - 20)
+			{
+			  DisplayRGB(GREEN);
+			  successDisp();	
+			}
+			else 
+			{
+			  DisplayRGB(RED);
+			  failDisp();
+			}
+			Delay_ms(2000);
+			tempValueDisplay(temp);
 		break;
 	}
 }        
