@@ -102,6 +102,10 @@ void testMode()
 		  break;
 
 		default: 	// 파워다운 테스트
+		  
+		    for(int i=0; i<32; i++)
+				memTemp_p(i) = 0;
+			
 			IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 			break;			
 	}

@@ -16,7 +16,7 @@
 #define IWON_TEMP_TASK_H
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
-#define DEFINED_FW_VER 12
+#define DEFINED_FW_VER 13
 
 #define DEFINED_adcVREFValue 1224
 
