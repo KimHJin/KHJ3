@@ -151,7 +151,7 @@ void keyScan()
 
 	if (SW_RIGHT_ON) // SW_RIGHT
 	{
-		// POWER_DOWN();	// 개발용
+		IWonFunc->POWER_DOWN();	// 개발용
 
 		IWonTask->ClearPowerDown();
 
@@ -403,6 +403,9 @@ int main(void)
 					IWonFunc->DisplayRGB(GREEN);
 
 				IWonFunc->MeasuringDisp();
+
+										tempValueDisplay(AMB);					// 센서 온도값 표시
+
 				IWonFunc->Beep();
 			}
 			else if (IWonTask->Measuring)

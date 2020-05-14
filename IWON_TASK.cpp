@@ -282,7 +282,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			float ambtemp = (float)AMB_TEMP / 10.f;
 			//float reftemp = 23.f;       // 값을 낮추면 온도가 올라간다.
 			//reftemp += 32.0f - ambtemp; // 즉, 이값을 높이면 온도가 올라간다.
-			float reftemp = 25.f;
+			float reftemp = 15.f;
 			//reftemp = ambtemp;
 			INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
 
@@ -524,7 +524,8 @@ VOID IWON_TEMP_TASK::Set_AdjValue(INT32 ADJV)
 
 BOOL IWON_TEMP_TASK::NeedPowerDown(VOID)
 {
-	return (powerDown_msec > 15000);
+  return false;
+	//return (powerDown_msec > 15000);
 }
 VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 {
