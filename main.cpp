@@ -196,21 +196,18 @@ void keyScan()
 
 int main(void)
 {		
-	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
+	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
 	IWonFunc = new IWON_TEMP_FUNC();
 	
-	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
-	
-	IWonTask->GPIO_init();
 	EEPROM_init();
 	LCD_Display_init(IWonFunc);
-
 
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
 
+	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-
+	
 	IWonFunc->Beep();
 	
 

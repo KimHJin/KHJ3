@@ -23,6 +23,7 @@ public:
 	// 소멸자
 	~IWON_TEMP_SCAN();
 
+/*
 	// TOBJ 를 이 값만큼 빼준다.
 	VOID SetTADJ0(INT16 tadj0);
 	INT16 GetTADJ0(VOID);
@@ -34,11 +35,14 @@ public:
 	// shaft v 값
 	VOID SetVADJ2(INT16 vadj2);
 	INT16 GetVADJ2(VOID);
-
+*/
+	
 protected:
+/*
 	INT16 TADJ0;
 	INT16 VADJ1;
 	INT16 VADJ2;
+*/
 
 	INT8 TSUMN;
 	INT8 TSUMC;

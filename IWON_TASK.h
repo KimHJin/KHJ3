@@ -64,8 +64,6 @@ public:
 	VOID YellowDisp(VOID);
 	VOID lowBatteryDisp(VOID);
 	
-	VOID GPIO_init(VOID);
-
 
   	INT16 BATmV;
 	INT16 VDDmV;
@@ -82,6 +80,8 @@ public:
 
 private:
 	VOID Init(VOID);
+
+	VOID GPIO_init(VOID);
 
 	VOID Delay_10us(INT16 us);
 	VOID Delay_ms(INT16 ms);	

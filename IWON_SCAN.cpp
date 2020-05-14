@@ -196,9 +196,11 @@ const static INT8 TB_TBL[] = {
 // 생성자
 IWON_TEMP_SCAN::IWON_TEMP_SCAN()
 {
+  /*
 	TADJ0 = DEFINED_TADJ0;
 	VADJ1 = DEFINED_VADJ1;
 	VADJ2 = DEFINED_VADJ2;
+  */
 
 	TSUMN = DEFINED_TSUMN; // 온도 평균값을 만들기 위하여 몇개의 방을 써야할지 결정
 	TSUMC = 0;
@@ -208,9 +210,11 @@ IWON_TEMP_SCAN::IWON_TEMP_SCAN()
 }
 IWON_TEMP_SCAN::IWON_TEMP_SCAN(INT8 tsumn)
 {
+  /*
 	TADJ0 = DEFINED_TADJ0;
 	VADJ1 = DEFINED_VADJ1;
 	VADJ2 = DEFINED_VADJ2;
+  */
 
 	TSUMN = tsumn; // 온도 평균값을 만들기 위하여 몇개의 방을 써야할지 결정
 	TSUMC = 0;
@@ -234,6 +238,7 @@ VOID IWON_TEMP_SCAN::InitTSUMB(VOID)
 	TSUMB = (INT16 *)malloc(sizeof(INT16) * TSUMN);
 }
 
+/*
 // TOBJ 를 이 값만큼 빼준다.
 VOID IWON_TEMP_SCAN::SetTADJ0(INT16 tadj0)
 {
@@ -263,6 +268,7 @@ INT16 IWON_TEMP_SCAN::GetVADJ2(VOID)
 {
 	return VADJ2;
 }
+*/
 
 //-----------------------------------------------------------------------------
 // NTC 기준 테이블 인덱스 넘버를 찾는다.

@@ -31,6 +31,8 @@ IWON_TEMP_TASK::~IWON_TEMP_TASK()
 
 VOID IWON_TEMP_TASK::Init(VOID)
 {
+  	GPIO_init();
+  
   	BATmV = 0;
 	VDDmV = 0;
 
@@ -125,7 +127,7 @@ VOID IWON_TEMP_TASK::Init_Clock(VOID)
 	CLK_PeripheralClockConfig(CLK_Peripheral_ADC1, ENABLE);
 
 	/* Select HSE as system clock source */
-	CLK_SYSCLKSourceSwitchCmd(ENABLE);
+	//CLK_SYSCLKSourceSwitchCmd(ENABLE);
 	//CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSE);
 	CLK_SYSCLKSourceConfig(CLK_SYSCLKSource_HSI);
 	CLK_SYSCLKDivConfig(CLK_SYSCLKDiv_1);
@@ -232,7 +234,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + (ADJ_VALUE * 10);
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ((ADJ_VALUE-5) * 10);
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
 		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
