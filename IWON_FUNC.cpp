@@ -605,7 +605,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 	{
 		case 1: 
 			memTempDataDisplay(1);
-			caliData_p = (AutoCalTemp1 - temp);
+			caliData_p = (AutoCalTemp1 - temp)/4;
 			//caliData_p = 50;
 			DisplayRGB(GREEN);
 			successDisp();
