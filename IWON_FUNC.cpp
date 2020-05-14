@@ -10,14 +10,14 @@
 #include "IWON_FUNC.h"
 #include "eeprom.h"
 
-//#define AutoCalTemp3 350
-#define AutoCalTemp1 371 
+#define AutoCalTemp1 350
+//#define AutoCalTemp1 371 
 
-//#define AutoCalTemp3 375				
-#define AutoCalTemp2 390 
+#define AutoCalTemp2 375				
+//#define AutoCalTemp2 390 
 
-//#define AutoCalTemp3 405
-#define AutoCalTemp3 573 
+#define AutoCalTemp3 405
+//#define AutoCalTemp3 573 
 
 #define AutoCalTemp4 320 
 
@@ -41,8 +41,8 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	LastMeasred = 0;  
 	AutoCal_Count = 0;
 	LowHigh_FLag = false;
-	passFlag1 = false;
 	passFlag2 = false;
+	passFlag3 = false;
 	passFlagHigh = false;
 	passFlagLow  = false;
 
@@ -616,13 +616,15 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 		    memTempDataDisplay(2);
 			if(temp <= AutoCalTemp2 + 100 && temp >= AutoCalTemp2 - 100)
 			{
-			  DisplayRGB(GREEN);
-			  successDisp();
+				DisplayRGB(GREEN);
+				successDisp();
+				passFlag2 = true;
 			}
 			else 
 			{
-			  DisplayRGB(RED);
-			  failDisp();
+				DisplayRGB(RED);
+				failDisp();
+				passFlag2 = false;
 			}
 			Delay_ms(2000);
 			
@@ -634,13 +636,15 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 			
 			if(temp <= AutoCalTemp3 + 100 && temp >= AutoCalTemp3 - 100)
 			{
-			  DisplayRGB(GREEN);
-			  successDisp();	
+				DisplayRGB(GREEN);
+				successDisp();	
+				passFlag3 = true;
 			}
 			else 
 			{
-			  DisplayRGB(RED);
-			  failDisp();
+				DisplayRGB(RED);
+				failDisp();
+				passFlag3 = false;
 			}
 			Delay_ms(2000);
 			tempValueDisplay(temp);
@@ -651,13 +655,16 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 			
 			if(temp <= AutoCalTemp4 + 20 && temp >= AutoCalTemp4 - 20)
 			{
-			  DisplayRGB(GREEN);
-			  successDisp();	
+				DisplayRGB(GREEN);
+				successDisp();
+				passFlagLow = true;
+				
 			}
 			else 
 			{
-			  DisplayRGB(RED);
-			  failDisp();
+				DisplayRGB(RED);
+				failDisp();
+				passFlagLow = false;
 			}
 			Delay_ms(2000);
 			tempValueDisplay(temp);
@@ -669,13 +676,15 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
 			
 			if(temp <= AutoCalTemp5 + 20 && temp >= AutoCalTemp5 - 20)
 			{
-			  DisplayRGB(GREEN);
-			  successDisp();	
+				DisplayRGB(GREEN);
+				successDisp();	
+				passFlagHigh = true;
 			}
 			else 
 			{
-			  DisplayRGB(RED);
-			  failDisp();
+				DisplayRGB(RED);
+				failDisp();
+				passFlagHigh = false;
 			}
 			Delay_ms(2000);
 			tempValueDisplay(temp);

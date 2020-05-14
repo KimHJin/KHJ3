@@ -142,8 +142,8 @@ public:
 	
 	BOOL LowHigh_FLag;
 	
-	BOOL passFlag1;
 	BOOL passFlag2;
+	BOOL passFlag3;
 	BOOL passFlagHigh;
 	BOOL passFlagLow;
 	
