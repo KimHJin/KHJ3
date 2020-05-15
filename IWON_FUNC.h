@@ -149,6 +149,8 @@ public:
 	
 	BOOL measuredFlag;
 	
+	INT8 AutoCalDelayCount;
+	
 	INT16 UnitCalc(INT16 temp, BOOL unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);

@@ -27,7 +27,7 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 	NUMBER_CLEAR(1);
 	NUMBER_CLEAR(2);
 	NUMBER_CLEAR(3);
-
+	
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
 	measureModeSet(measureMode_p);

@@ -211,6 +211,12 @@ int main(void)
 
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
 	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+
+	if (measureMode_p)
+		IWonFunc->DisplayRGB(BLUE);
+	else 
+		IWonFunc->DisplayRGB(GREEN);
+
 	
 	IWonFunc->Beep();
 	
@@ -239,11 +245,6 @@ int main(void)
 	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료
 	{
 	  
-	   	if (measureMode_p)
-			IWonFunc->DisplayRGB(BLUE);
-		else 
-			IWonFunc->DisplayRGB(GREEN);
-		
 			// 가장 마지막 측정 값
 		if(TEMP>0 && TEMP<500) 
 		{
@@ -365,6 +366,22 @@ int main(void)
 			else if(AutoCaliFlag_p == 0)
 			{
 				IWonTask->ClearPowerDown();
+				while(SW_LEFT_ON && SW_RIGHT_ON)
+				{
+					IWonFunc->AutoCalDelayCount++;
+					IWonFunc->Delay_ms(100);
+					
+					if(IWonFunc->AutoCalDelayCount == 40)
+					{
+						AutoCaliFlag_p = 1;
+						caliData_p = 0;
+						
+						IWonFunc->POWER_DOWN();
+						
+					}
+				}
+				
+				IWonFunc->AutoCalDelayCount = 0;
 			}
 			else
 			{
