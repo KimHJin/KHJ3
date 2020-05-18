@@ -425,6 +425,7 @@ int main(void)
 					IWonFunc->DisplayRGB(GREEN);
 
 				IWonFunc->MeasuringDisp();
+				LED_ON();
 				IWonFunc->Beep();
 			}
 			else if (IWonTask->Measuring)
@@ -440,6 +441,7 @@ int main(void)
 					IWonTask->Measured = true;
 					IWonTask->MeasredCount1 = 0;
 					IWonTask->MeasredCount2 = 0;
+					LED_OFF();
 				}
 				else if (AMB > 0)
 				{
@@ -466,7 +468,9 @@ int main(void)
 							if(AutoCaliFlag_p == 1)
 							{
 								IWonFunc->DisplayRGB(BLUE);
+								LED_OFF();
 								IWonFunc->DisplayLOW();
+								
 								IWonFunc->Beep();
 							}
 							else
@@ -478,6 +482,7 @@ int main(void)
 							IWonTask->Measured = true;
 							IWonTask->MeasredCount1 = 0;
 							IWonTask->MeasredCount2 = 0;
+							
 						}
 						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
 						{ // HIGH Greater Than 42.5 C
@@ -486,7 +491,9 @@ int main(void)
 							if(AutoCaliFlag_p == 1)
 							{
 								IWonFunc->DisplayRGB(BLUE);
+								LED_OFF();
 								IWonFunc->DisplayHIGH();
+								
 								IWonFunc->Beep();
 							}
 							else 
@@ -497,6 +504,7 @@ int main(void)
 							IWonTask->Measured = true;
 							IWonTask->MeasredCount1 = 0;
 							IWonTask->MeasredCount2 = 0;
+							
 						}
 						else
 						{
@@ -514,6 +522,7 @@ int main(void)
 
 								if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
 								{
+								    LED_OFF();
 									if(AutoCaliFlag_p == 1) 
 										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
 									else 
@@ -524,6 +533,7 @@ int main(void)
 									IWonTask->Measured = true;
 									IWonTask->MeasredCount1 = 0;
 									IWonTask->MeasredCount2 = 0;
+									
 								}
 							}
 						}
@@ -599,13 +609,15 @@ int main(void)
 								}
 								else 
 								{
-									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);
+								    LED_OFF();
+									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 								}
 
 								IWonTask->Measuring = false;
 								IWonTask->Measured = true;
 								IWonTask->MeasredCount1 = 0;
 								IWonTask->MeasredCount2 = 0;
+								
 								
 							}
 						}

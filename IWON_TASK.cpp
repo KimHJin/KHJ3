@@ -567,6 +567,8 @@ VOID IWON_TEMP_TASK::GPIO_init(VOID)
     
 	GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_In_FL_No_IT); // TEST_MODE
 	
+	GPIO_Init(GPIOD, GPIO_Pin_6, GPIO_Mode_Out_PP_High_Fast); // RESERVED_LED
+	
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
 

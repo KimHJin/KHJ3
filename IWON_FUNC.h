@@ -79,11 +79,16 @@ typedef const BYTE *LPCBYTE;
 #define ADC_CONVERT_RATIO 804 /* (3287mV ~ 3300mV / 0xFFF) x 1000 */
 //#define ADC_CONVERT_RATIO	802		/* (3287mV / 0xFFF)	x 1000 */
 
+#define GPIO_HIGH(a, b) a->ODR |= b
+#define GPIO_LOW(a, b) a->ODR &= ~b
+#define GPIO_TOGGLE(a, b) a->ODR ^= b
 
 
 #define SW_PWR_ON    !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
 #define SW_LEFT_ON   !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
 #define SW_RIGHT_ON  !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
+#define LED_ON()      GPIO_LOW(GPIOD, GPIO_Pin_6)  
+#define LED_OFF()     GPIO_HIGH(GPIOD, GPIO_Pin_6)  
 
 #define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
 
@@ -97,9 +102,7 @@ typedef const BYTE *LPCBYTE;
 #define YELLOW 4
 #define CLEAR 5
 
-#define GPIO_HIGH(a, b) a->ODR |= b
-#define GPIO_LOW(a, b) a->ODR &= ~b
-#define GPIO_TOGGLE(a, b) a->ODR ^= b
+
 
 
 #include "IWON_TASK.h"
