@@ -536,7 +536,7 @@ VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 
 BOOL IWON_TEMP_TASK::MeasureTimerFlag(VOID)
 {
-	return (measureTimer > 5000);
+	return (measureTimer > 4000);
 }
 VOID IWON_TEMP_TASK::ClearMeasureTimer(VOID)
 {
