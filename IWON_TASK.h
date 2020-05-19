@@ -59,13 +59,16 @@ public:
 	VOID Clear_AVG(VOID);
 	VOID Set_AdjValue(INT32 ADJV);
 
-	BOOL NeedPowerDown(VOID);
-	VOID ClearPowerDown(VOID);
+	//BOOL NeedPowerDown(VOID);
+	//VOID ClearPowerDown(VOID);
+	
+	// 의료기기 인증용
+	BOOL MeasureTimerFlag(VOID);
+	VOID ClearMeasureTimer(VOID);
 
 	VOID YellowDisp(VOID);
 	VOID lowBatteryDisp(VOID);
 	
-
   	INT16 BATmV;
 	INT16 VDDmV;
 
@@ -100,7 +103,8 @@ private:
 
 	BOOL IS_BODY_CC(VOID);
 
-	INT32 powerDown_msec;
+	//INT32 powerDown_msec;
+	INT32 measureTimer;
 
 	UINT adcVREFValue; // 1.224V
 	UINT adcVREFINTvalue;

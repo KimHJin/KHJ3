@@ -52,7 +52,7 @@ void MEAS_Test(void)
 
 void testMode()
 {	
-    IWonTask->ClearPowerDown();
+    //IWonTask->ClearPowerDown();
 	
 	INT8 nowAction = 0;
 	
@@ -118,7 +118,7 @@ void keyScan()
 {
 	if (SW_LEFT_ON) // SW_LEFT
 	{
-		IWonTask->ClearPowerDown();
+		//IWonTask->ClearPowerDown();
 
 		IWonFunc->Delay_ms(15);
 		int delayCount = 0;
@@ -157,7 +157,7 @@ void keyScan()
 	{
 		// POWER_DOWN();	// 개발용
 
-		IWonTask->ClearPowerDown();
+		//IWonTask->ClearPowerDown();
 
 		IWonFunc->Delay_ms(15);
 		INT16 delayCount = 0;
@@ -333,7 +333,7 @@ int main(void)
 			}
 
 			IWonFunc->Delay_ms(10);
-			IWonTask->ClearPowerDown();
+			//IWonTask->ClearPowerDown();
 		}
 		
 		tempValueDisplay(0);
@@ -351,7 +351,8 @@ int main(void)
 		memTempDataDisplay(10);
 	}
 	
-	while (IWonTask->NeedPowerDown() == false)
+	//while (IWonTask->NeedPowerDown() == false)
+	while(1)
 	{
 		INT16 MEASURED_TEMP = 0;
 	  
@@ -365,7 +366,7 @@ int main(void)
 			}
 			else if(AutoCaliFlag_p == 0)
 			{
-				IWonTask->ClearPowerDown();
+				//IWonTask->ClearPowerDown();
 				while(SW_LEFT_ON && SW_RIGHT_ON)
 				{
 					IWonFunc->AutoCalDelayCount++;
@@ -389,11 +390,11 @@ int main(void)
 			}
 		}
 
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->MeasureTimerFlag() == true))
 		{
-			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
+		  if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->MeasureTimerFlag() == true)
 			{
-				IWonTask->ClearPowerDown();
+				//IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				TEMP_AVG->Init();
@@ -405,7 +406,7 @@ int main(void)
 				IWonTask->RetryCount = 0;
 			}
 		}
-		if (IWonTask->Measuring == false && IWonTask->Measured && SW_PWR_ON == false)
+		if (IWonTask->Measuring == false && IWonTask->Measured && (SW_PWR_ON == false || IWonTask->MeasureTimerFlag() == false))
 		{
 			IWonTask->Measured = false;
 		}
@@ -482,6 +483,7 @@ int main(void)
 							IWonTask->Measured = true;
 							IWonTask->MeasredCount1 = 0;
 							IWonTask->MeasredCount2 = 0;
+							IWonTask->ClearMeasureTimer();
 							
 						}
 						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
@@ -504,6 +506,7 @@ int main(void)
 							IWonTask->Measured = true;
 							IWonTask->MeasredCount1 = 0;
 							IWonTask->MeasredCount2 = 0;
+							IWonTask->ClearMeasureTimer();
 							
 						}
 						else
@@ -533,6 +536,7 @@ int main(void)
 									IWonTask->Measured = true;
 									IWonTask->MeasredCount1 = 0;
 									IWonTask->MeasredCount2 = 0;
+									IWonTask->ClearMeasureTimer();
 									
 								}
 							}
@@ -606,6 +610,7 @@ int main(void)
 									IWonTask->Measured = true;
 									IWonTask->MeasredCount1 = 0;
 									IWonTask->MeasredCount2 = 0;
+									
 								}
 								else 
 								{
@@ -617,6 +622,7 @@ int main(void)
 								IWonTask->Measured = true;
 								IWonTask->MeasredCount1 = 0;
 								IWonTask->MeasredCount2 = 0;
+								IWonTask->ClearMeasureTimer();
 								
 								
 							}
@@ -628,7 +634,7 @@ int main(void)
 		
 	} //while
 
-	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
+	//IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 }
 
 /*********************************************/

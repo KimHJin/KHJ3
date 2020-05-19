@@ -101,8 +101,9 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	Init_TIM4();
 	Init_ADC();
 
-	powerDown_msec = 0;
-    lowBattery_Count = 0;
+	//powerDown_msec = 0;
+    measureTimer = 0;
+	lowBattery_Count = 0;
 }
 
 VOID IWON_TEMP_TASK::Delay_10us(INT16 us)
@@ -165,7 +166,8 @@ DWORD IWON_TEMP_TASK::GetTimeOutStartTime(VOID)
 VOID IWON_TEMP_TASK::Time(VOID)
 {
 	timeStamp++;
-	powerDown_msec++;
+	//powerDown_msec++;
+	measureTimer++;
 }
 BOOL IWON_TEMP_TASK::TimeOut(DWORD startTime, UINT delayTime)
 {
@@ -521,7 +523,7 @@ VOID IWON_TEMP_TASK::Set_AdjValue(INT32 ADJV)
 {
 	ADJ_VALUE = ADJV;
 }
-
+/*
 BOOL IWON_TEMP_TASK::NeedPowerDown(VOID)
 {
 	return (powerDown_msec > 15000);
@@ -529,6 +531,16 @@ BOOL IWON_TEMP_TASK::NeedPowerDown(VOID)
 VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 {
 	powerDown_msec = 0;
+}
+*/
+
+BOOL IWON_TEMP_TASK::MeasureTimerFlag(VOID)
+{
+	return (measureTimer > 5000);
+}
+VOID IWON_TEMP_TASK::ClearMeasureTimer(VOID)
+{
+	measureTimer = 0;
 }
 
 VOID IWON_TEMP_TASK::lowBatteryDisp(VOID)

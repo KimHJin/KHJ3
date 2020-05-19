@@ -104,7 +104,7 @@ INT8 IWON_TEMP_TEST::LCD_Test(VOID)
 	INT8 key = 0;
 	while(key==0) 
 	{	  
-		IWonTask->ClearPowerDown();
+		//IWonTask->ClearPowerDown();
 	  
 		for(INT8 i=0; i<14; i++)	// 모든 아이콘 표시
 		  LCD->RAM[i] = 0xFF;		
@@ -128,7 +128,7 @@ INT8 IWON_TEMP_TEST::BackLight_Test(VOID)
 	INT8 key = 0;
 	while(key==0) 
 	{	  
-		IWonTask->ClearPowerDown();
+		//IWonTask->ClearPowerDown();
 	  
 		IWonFunc->DisplayRGB(RED);
 		key = IWonFunc->Delay_ms_with_key(100);

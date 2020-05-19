@@ -412,7 +412,7 @@ VOID IWON_TEMP_FUNC::CaliDone(IWON_TEMP_TASK *IWonTask)
 
 VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 {
-	IWonTask->ClearPowerDown();
+	//IWonTask->ClearPowerDown();
 
 	if (SW_RIGHT_ON)
 	{
