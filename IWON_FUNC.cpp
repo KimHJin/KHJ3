@@ -23,6 +23,8 @@
 
 #define AutoCalTemp5 440
 
+#define VoltagemV 1236
+
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
 {
@@ -586,6 +588,8 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	buzzerState_p  = 1;
 	tempUnit_p 	   = 1;
 	AutoCaliFlag_p = 0;
+	offSetVolt_p   = 0;
+	
 
 	for(INT8 i=0; i<32; i++)
 	{
@@ -593,18 +597,24 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	}
 }
 
-VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp)
+VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp)
 {
 	AutoCal_Count++;
-  	
+  	INT16 offset;
 	switch(AutoCal_Count)
 	{
 		case 1: 
 			memTempDataDisplay(10);
-			caliData_p = (AutoCalTemp1 - temp)/5;
+			//caliData_p = (AutoCalTemp1 - temp)/5;
 			//caliData_p = 50;
+			
+			offSetVolt_p = VoltagemV - Vtp;
+			offset = (INT16)(Vtp/10);
+			
 			DisplayRGB(GREEN);
 			successDisp();
+			Delay_ms(1000);
+			tempValueDisplay(offset);
 			Delay_ms(2000);
 			NUMBER_CLEAR(1);
 			NUMBER_CLEAR(2);

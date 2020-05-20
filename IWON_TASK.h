@@ -52,7 +52,7 @@ public:
 	INT16 Get_BAT_mV(VOID);
 	INT16 Get_VDD_mV(VOID);
 	INT16 Get_NTC_mV(VOID);
-	INT16 Get_TPC_mV(VOID);
+	INT32 Get_TPC_mV(VOID);
 
 	UINT Get_ADC_CAL(VOID);
 

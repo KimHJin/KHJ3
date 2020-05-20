@@ -584,9 +584,9 @@ int main(void)
 								{
 									// 측정 된 온도 값을 받아 CAL
 									// 5번 측정 후 파워다운		
-									IWonFunc->AUTOCAL(IWonTask->MeasredTemp); // 실제 AUTO CAL 하는 부분
+									IWonFunc->AUTOCAL(IWonTask->MeasredTemp, IWonTask->Get_TPC_mV()); // 실제 AUTO CAL 하는 부분
 									IWonTask->Set_AdjValue(caliData_p);
-									if(IWonFunc->GET_AutoCal_Count() == 5) // 3번 측정 완료
+									if(IWonFunc->GET_AutoCal_Count() == 3) // 3번 측정 완료
 									{
 									  
 									  	if(IWonFunc->passFlag2 && IWonFunc->passFlag3 && IWonFunc->passFlagLow && IWonFunc->passFlagHigh)

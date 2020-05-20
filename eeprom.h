@@ -16,6 +16,7 @@
 #define tempUnit_p 	   __EEPROM->tempUnit
 #define memTemp_p(num) __EEPROM->memTempData[num]
 #define AutoCaliFlag_p __EEPROM->AutoCaliFlag
+#define offSetVolt_p   __EEPROM->offSetVolt
 
 typedef struct
 {
@@ -30,6 +31,8 @@ typedef struct
   INT8 caliData;
   
   INT8 AutoCaliFlag;
+  
+  INT32 offSetVolt;
 
 } EEROM_TypeDef;
 

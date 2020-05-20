@@ -183,7 +183,7 @@ public:
 	
 	VOID ALLCLEAR(VOID);
 	
-	VOID AUTOCAL(INT16 temp);
+	VOID AUTOCAL(INT16 temp, INT32 Vtp);
 	INT8 GET_AutoCal_Count(VOID);
 
 

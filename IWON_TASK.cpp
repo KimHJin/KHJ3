@@ -11,6 +11,7 @@ void delay_ms(int ms);
 
 #include "IWON_TASK.h"
 
+
 IWON_TEMP_TASK::IWON_TEMP_TASK() : IWON_TEMP_SCAN()
 {
 	Init();
@@ -234,7 +235,9 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000)+ (ADJ_VALUE * 10);
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000)+ ADJ_VALUE + offSetVolt_p;
+		
+		tempValueDisplay((INT16)(VreftpcmV - 1000));
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
 		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
@@ -503,9 +506,9 @@ INT16 IWON_TEMP_TASK::Get_NTC_mV(VOID)
 {
 	return (INT16)VrefntcmV;
 }
-INT16 IWON_TEMP_TASK::Get_TPC_mV(VOID)
+INT32 IWON_TEMP_TASK::Get_TPC_mV(VOID)
 {
-	return (INT16)VreftpcmV;
+	return VreftpcmV;
 }
 UINT IWON_TEMP_TASK::Get_ADC_CAL(VOID)
 {
