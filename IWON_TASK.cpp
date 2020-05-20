@@ -70,6 +70,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	Vrefbat = 0;
 	Vrefntc = 0;
 	Vreftpc = 0;
+	
+	VoltmV = 0;
 
 	ADJ_VALUE = 0;
 
@@ -237,7 +239,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000)+ ADJ_VALUE + offSetVolt_p;
 		
-		tempValueDisplay((INT16)(VreftpcmV - 1000));
+		tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
 		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
@@ -268,45 +270,33 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		else
 		{
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);
+			
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 + PR) / 10;
 			
-			//printf("NTCRES=%ld, AMB_TEMP=%d.%d\r\n", MRES, AMB_TEMP/10, AMB_TEMP%10);
-
-			// constants for the thermopile calculation
-			//const float k = 0.004313f;
-			const float k = 0.0046f;
-			//const float k = 0.004313f + 0.0095; 	// 값을 높이면 측정온도가 내려간다. 0.0001 당 0.7~0.8도 (단, 높은 온도쪽이 많이 떨어진다)
-
-			// 값을 키우면 TOBJ 온도가 올라간다.
-			float delta = 2.658f;
-
-			//AMB_TEMP = 280;
-
 			float ambtemp = (float)AMB_TEMP / 10.f;
-			//float reftemp = 23.f;       // 값을 낮추면 온도가 올라간다.
-			//reftemp += 32.0f - ambtemp; // 즉, 이값을 높이면 온도가 올라간다.
-			float reftemp = 15.f;
-			//reftemp = ambtemp;
+
+			//tempValueDisplay(AMB_TEMP);
+
+			const float k = 0.0046f;
+
+			const float delta = 2.658f;
+
+		    const float reftemp = 25.f;
+		
+			const float shiftv = 1.02f;
+			
+			
 			INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
-
-			// 값을 높이면 TOBJ 온도가 내려간다.
-			// 값을 높이면 낮은 쪽의 온도차가 높은쪽의 온도차 감소량보다 많이 감소한다.
-			float shiftv = 1.02f;
+			
 			float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp
-
-			//VreftpcmV = 2250;	// 72.0 oC
-			//VreftpcmV = 2185;	// 70.0 oC
-			//VreftpcmV = 2100;	// 68.0 oC
-			//VreftpcmV = 1950;	// 62.2 oC
-
-			//VreftpcmV = 1071;	// 30.8 oC
-
+			
 			float v2 = (float)VreftpcmV / 1000.f + comp - shiftv;
+			
 			float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp
+			
 			INT16 T_OBJ = (INT16)(objtemp * 10.f);
 
 			INT16 BB = GetTSUMB();
-			//printf("BB=%d\r\n", BB);
 
 			if (BB != -999)
 			{
@@ -316,7 +306,14 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 					ClearTSUMB();
 				}
 			}
-
+			/*
+			if(AutoCaliFlag_p == 0)
+			{
+				float VoltV = k*(pow(ambtemp + 10, 4.f - delta) - 2*pow(ambtemp, 4.f - delta)) + 1.02f + k*pow(25, 4.f - delta);
+				VoltmV = (INT32)(VoltV*1000);
+				//tempValueDisplay((INT16)(VoltmV - (VoltmV/1000)*1000));
+			}
+			*/
 			// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 			if(T_OBJ-AMBADJ < 0) {
 				OBJ_TEMP = AddTSUMB(0);

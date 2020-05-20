@@ -78,6 +78,8 @@ public:
 	INT8 MeasredCount1;
 	INT8 MeasredCount2;
 	INT8 RetryCount;
+	
+	INT32 VoltmV;
 
 private:
 	VOID Init(VOID);
