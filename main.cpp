@@ -20,6 +20,8 @@ IWON_TEMP_TASK *IWonTask = NULL;
 IWON_TEMP_TEST *IWonTest = NULL;
 IWON_TEMP_FUNC *IWonFunc = NULL;
 
+INT32 AMB;
+
 /************************************************************************/
 /**
   * 1 msec 마다 호출되는 인터럽트이므로 응용해서 사용해도 좋다.
@@ -203,21 +205,19 @@ int main(void)
 	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
 	IWonFunc = new IWON_TEMP_FUNC();
 	
+	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
+	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+	
 	EEPROM_init();
 	LCD_Display_init(IWonFunc);
 
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
 
-	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
-	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
-
-	if (measureMode_p)
-		IWonFunc->DisplayRGB(BLUE);
-	else 
-		IWonFunc->DisplayRGB(GREEN);
-
 	
+	
+	//IWonFunc->Delay_ms(2000);
+
 	IWonFunc->Beep();
 	
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
@@ -236,7 +236,8 @@ int main(void)
 	}
 	
 		// 초기에 센서의 온도를 측정하게 된다.
-	INT32 AMB = IWonTask->Get_AMB_TEMP();		
+	AMB = IWonTask->Get_AMB_TEMP();
+	
 	if (AMB < 150 || 400 < AMB)
 	{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
 		IWonFunc->SystemError();
@@ -584,11 +585,11 @@ int main(void)
 								{
 									// 측정 된 온도 값을 받아 CAL
 									// 5번 측정 후 파워다운		
-									IWonFunc->AUTOCAL(IWonTask->MeasredTemp, IWonTask->Get_TPC_mV()); // 실제 AUTO CAL 하는 부분
+									IWonFunc->AUTOCAL(IWonTask->MeasredTemp, IWonTask->Get_TPC_mV(), IWonTask->Get_VoltmV()); // 실제 AUTO CAL 하는 부분
 									IWonTask->Set_AdjValue(caliData_p);
-									if(IWonFunc->GET_AutoCal_Count() == 3) // 3번 측정 완료
+									if(IWonFunc->GET_AutoCal_Count() == 1) // 3번 측정 완료
 									{
-									  
+									    /*
 									  	if(IWonFunc->passFlag2 && IWonFunc->passFlag3 && IWonFunc->passFlagLow && IWonFunc->passFlagHigh)
 										{
 											AutoCaliFlag_p = 1; // AUTO CAL 성공
@@ -598,6 +599,8 @@ int main(void)
 											AutoCaliFlag_p = 0; // AUTO CAL 실패
 											caliData_p = 0;
 										}
+									  */
+									    AutoCaliFlag_p = 1;
 										IWonFunc->Delay_ms(1000);
 										IWonFunc->POWER_DOWN(); // 파워다운
 									}

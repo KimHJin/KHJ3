@@ -597,10 +597,10 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	}
 }
 
-VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp)
+VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 {
 	AutoCal_Count++;
-  	INT16 offset;
+
 	switch(AutoCal_Count)
 	{
 		case 1: 
@@ -608,13 +608,11 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp)
 			//caliData_p = (AutoCalTemp1 - temp)/5;
 			//caliData_p = 50;
 			
-			offSetVolt_p = VoltagemV - Vtp;
-			offset = (INT16)(Vtp/10);
+			offSetVolt_p = VoltmV - Vtp;
 			
 			DisplayRGB(GREEN);
 			successDisp();
 			Delay_ms(1000);
-			tempValueDisplay(offset);
 			Delay_ms(2000);
 			NUMBER_CLEAR(1);
 			NUMBER_CLEAR(2);

@@ -53,6 +53,8 @@ public:
 	INT16 Get_VDD_mV(VOID);
 	INT16 Get_NTC_mV(VOID);
 	INT32 Get_TPC_mV(VOID);
+	
+	INT32 Get_VoltmV(VOID);
 
 	UINT Get_ADC_CAL(VOID);
 
@@ -129,6 +131,8 @@ private:
 	INT32 Vrefbat;
 	INT32 Vrefntc;
 	INT32 Vreftpc;
+	
+	INT32 VoltmV;
 
 	DWORD TTtime;
 	DWORD MGtime;

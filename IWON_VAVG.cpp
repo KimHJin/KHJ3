@@ -125,3 +125,4 @@ INT8 IWON_TEMP_VAVG::GetCC(VOID)
 {
 	return cc;
 }
+
