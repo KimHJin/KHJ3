@@ -37,7 +37,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
   	BATmV = 0;
 	VDDmV = 0;
 
-	DeviceTestModeWait = 0;	// 테스트 가능 모드를 위해서 있는 변수
+	DeviceTestModeWait = 0;		// 테스트 가능 모드를 위해서 있는 변수
 	DeviceTestModeValue = 0;	// 테스트 가능 모드를 위해서 있는 변수
 
 	Measuring = false;
@@ -65,6 +65,24 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	R2 = DEFINED_R2; // 200K
 	R3 = 0;					 // 측정된 써미스터 저항값
 
+	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
+	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
+	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
+	VrefntcAvg = new IWON_TEMP_VAVG(10);
+	VreftpcAvg = new IWON_TEMP_VAVG(10);
+
+	ClearAllTemp();
+	
+	Init_Clock();
+	Init_TIM4();
+	Init_ADC();
+
+	powerDown_msec = 0;
+    lowBattery_Count = 0;
+}
+
+VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
+{
 	Vrefint = 0;
 	Vrefvdd = 0;
 	Vrefbat = 0;
@@ -89,23 +107,16 @@ VOID IWON_TEMP_TASK::Init(VOID)
 
 	ClearTSUMB();
 
+	VrefintAvg->Init();
+	VrefvddAvg->Init();
+	VrefbatAvg->Init();
+	VrefntcAvg->Init();
+	VreftpcAvg->Init();
+
 	timeStamp = 0;
 	startTime = GetTimeOutStartTime();
 	TTtime = startTime;
 	MGtime = startTime;
-
-	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefntcAvg = new IWON_TEMP_VAVG(10);
-	VreftpcAvg = new IWON_TEMP_VAVG(10);
-
-	Init_Clock();
-	Init_TIM4();
-	Init_ADC();
-
-	powerDown_msec = 0;
-    lowBattery_Count = 0;
 }
 
 VOID IWON_TEMP_TASK::Delay_10us(INT16 us)
@@ -239,7 +250,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000)+ ADJ_VALUE + offSetVolt_p;
 		
-		tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
+		//tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
 		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);

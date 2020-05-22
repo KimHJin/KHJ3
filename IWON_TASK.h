@@ -39,6 +39,8 @@ public:
 	// 소멸자
 	~IWON_TEMP_TASK();
 
+	VOID ClearAllTemp(VOID);
+	
 	BOOL Task(UINT MGInterval, UINT TTInterval);
 	BOOL Task(VOID);
 	VOID Time(VOID);
