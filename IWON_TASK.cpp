@@ -266,7 +266,9 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		//printf("CAL=%d, VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", adcCalValue, VDD, V0, R0, R1, R2, R3);
 		
 		INT32 MRES = R3 * 10;
-		//printf("MRES=%ld\r\n", MRES);
+		// printf("MRES=%ld\r\n", MRES);		
+		// tempValueDisplay(MRES / 100, false);
+		
 		INT16 ntcIndex = GetNTCIndex(MRES);
 		if (ntcIndex == 0)
 		{
@@ -282,7 +284,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		{
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);
 			
-			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 + PR) / 10;
+			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
 			
 			float ambtemp = (float)AMB_TEMP / 10.f;
 
