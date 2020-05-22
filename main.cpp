@@ -221,33 +221,24 @@ int main(void)
 	IWonFunc->Beep();
 
 	INT32 AMB = 0;
-	
-	for(INT8 ii=0;ii<100;ii++)
-	{	
-		// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
-		for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
-		{
-			IWonTask->Task();
-			if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
-				for (BYTE i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
-				{
-					IWonTask->Task();			  
-					IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
-				}
-				break;	// 빠져나가게 된다.
-			}
-			IWonFunc->Delay_ms(30);
-		}
-		
-		// 초기에 센서의 온도를 측정하게 된다.
-		AMB = IWonTask->Get_AMB_TEMP();		
-		tempValueDisplay(AMB, false);					// 센서 온도값 표시
-		IWonTask->ClearAllTemp();
-		IWonFunc->Delay_ms(2000);
-		IWonTask->ClearPowerDown();
-	}
 
+	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
+	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
+	{
+		IWonTask->Task();
+		if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
+			for (BYTE i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+			{
+				IWonTask->Task();			  
+				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
+			}
+			break;	// 빠져나가게 된다.
+		}
+		IWonFunc->Delay_ms(30);
+	}
 	
+	// 초기에 센서의 온도를 측정하게 된다.
+	AMB = IWonTask->Get_AMB_TEMP();				
 	if (AMB < 150 || 400 < AMB)
 	{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
 		IWonFunc->SystemError();
