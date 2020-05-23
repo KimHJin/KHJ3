@@ -98,7 +98,7 @@ INT32 IWON_TEMP_VAVG::AddCalc(INT32 v)
 INT32 IWON_TEMP_VAVG::AddCalc(INT32 v, INT32 cv)
 {
 	INT32 vv = AddCalc(v);
-	if (vv - v > cv || v - vv < -cv)
+	if (ABS(vv - v) > cv)
 	{
 		erc++;
 		if (erc < 2)

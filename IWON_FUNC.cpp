@@ -8,19 +8,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "IWON_FUNC.h"
+
 #include "eeprom.h"
 
-#define AutoCalTemp1 350
-//#define AutoCalTemp1 371 
-
-#define AutoCalTemp2 375				
-//#define AutoC1175alTemp2 390 
+// 오토 캘리브레이션 타겟 온도
+#define AutoCalTemp1 330	/* 첫번째 : 사물온도 33.0 도 */
+#define AutoCalTemp2 400	/* 두번째 : 사물온도 40.0 도 */
 
 #define AutoCalTemp3 405
-//#define AutoCalTemp3 573 
-
 #define AutoCalTemp4 320 
-
 #define AutoCalTemp5 440
 
 #define VoltagemV 1175
@@ -33,7 +29,7 @@ IWON_TEMP_FUNC::IWON_TEMP_FUNC()
 // 소멸자
 IWON_TEMP_FUNC::~IWON_TEMP_FUNC()
 {
-  
+
 }
 
 VOID IWON_TEMP_FUNC::Init(VOID)
@@ -41,7 +37,7 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	LowBatteryFlag = 0;
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
-	AutoCal_Count = 0;
+	AutoCalStep = 0;
 	LowHigh_FLag = false;
 	passFlag2 = false;
 	passFlag3 = false;
@@ -49,6 +45,8 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	passFlagLow  = false;
 
 	measuredFlag = false;
+
+	AutoCalAVG = NULL;
 }
 
 VOID IWON_TEMP_FUNC::Beep(INT16 length)
@@ -588,46 +586,71 @@ VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
 
 VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 {
-	caliData_p     = 0;   
+	caliData_p     = 0; // 수동 보정값 0 으로 저장   
 	TEMP           = 0;   
 	memNumber_p    = 0;  
-	measureMode_p  = 0;
-	buzzerState_p  = 1;
-	tempUnit_p 	   = 1;
+	measureMode_p  = 0;	// 사물 측정 모드  
+	buzzerState_p  = 1;	// BUZZER ON
+	tempUnit_p 	   = 1;	// 섭씨 모드
 	AutoCaliFlag_p = 0;
-	offSetVolt_p   = 0;
+	offSetVolt_p   = 0;	// 자동 보정값 0 으로 저장
 	
 	TempLogDataClear();
 }
 
-VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
+VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 {
-	AutoCal_Count++;
-	switch(AutoCal_Count)
+	INT16 MeasredTemp = IWonTask->MeasredTemp;	
+	INT32 VoltmV = 0;
+	INT32 TPCmV = 0;
+	INT32 ADJmV = 0;
+
+	switch(AutoCalStep)
 	{
-		case 1: 
+		case 0: 
 			memTempDataDisplay(10);
-			//caliData_p = (AutoCalTemp1 - temp)/5;
-			//caliData_p = 50;
-			
-			offSetVolt_p = VoltmV - Vtp;
+
+			AutoCalAVG = new IWON_TEMP_VAVG(10, 5);
+			while(!AutoCalAVG->IsOC())
+			{
+				if (IWonTask->Task())
+				{
+					TPCmV = IWonTask->Get_TPC_mV();
+					TPCmV = AutoCalAVG->AddCalc(TPCmV, 20);
+					tempValueDisplay((INT16)(TPCmV/10));
+				}
+			}
+			delete AutoCalAVG;
+
+			VoltmV = IWonTask->CALC_TPC_mV(AutoCalTemp1);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
+
+			ADJmV = VoltmV - TPCmV;
+			offSetVolt_p = ADJmV;
 		
 			DisplayRGB(GREEN);
 			SuccessDisp();
 			Delay_ms(1000);
-			tempValueDisplay((INT16)offSetVolt_p);
+			
+			tempValueDisplay((INT16)(VoltmV/10));
+			Delay_ms(2000);
+			tempValueDisplay((INT16)(TPCmV/10));
+			Delay_ms(2000);
+			tempValueDisplay((INT16)ADJmV);
+
+			// tempValueDisplay((INT16)offSetVolt_p);
+
 			Delay_ms(2000);
 			NUMBER_CLEAR(1);
 			NUMBER_CLEAR(2);
 			NUMBER_CLEAR(3);
 			LCD->DP1 = 0;
-			memTempDataDisplay((AutoCal_Count+1)*10);
-
+			memTempDataDisplay((AutoCalStep+2)*10);
+			AutoCalStep = 10;
 		break;
 		
-		case 2:
+		case 1:
 		    memTempDataDisplay(20);
-			if(temp <= AutoCalTemp2 + 20 && temp >= AutoCalTemp2 - 20)
+			if(MeasredTemp <= AutoCalTemp2 + 20 && MeasredTemp >= AutoCalTemp2 - 20)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();
@@ -641,7 +664,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			}
 			Delay_ms(1000);
 			
-			tempValueDisplay(temp);
+			tempValueDisplay(MeasredTemp);
 			
 			Delay_ms(2000);
 			
@@ -650,13 +673,13 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			NUMBER_CLEAR(3);
 			LCD->DP1 = 0;
 			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCal_Count+1)*10);
+			memTempDataDisplay((AutoCalStep+2)*10);
 		break;
 		
-	    case 3:
+	    case 2:
 			memTempDataDisplay(30);
 			
-			if(temp <= AutoCalTemp3 + 20 && temp >= AutoCalTemp3 - 20)
+			if(MeasredTemp <= AutoCalTemp3 + 20 && MeasredTemp >= AutoCalTemp3 - 20)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();	
@@ -670,7 +693,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			}
 			Delay_ms(1000);
 			
-			tempValueDisplay(temp);
+			tempValueDisplay(MeasredTemp);
 			
 			Delay_ms(2000);
 			
@@ -679,13 +702,13 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			NUMBER_CLEAR(3);
 			LCD->DP1 = 0;
 			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCal_Count+1)*10);
+			memTempDataDisplay((AutoCalStep+1)*10);
 		break;
 		
-		case 4:
+		case 3:
 			memTempDataDisplay(40);
 			
-			if(temp <= AutoCalTemp4 + 20 && temp >= AutoCalTemp4 - 20)
+			if(MeasredTemp <= AutoCalTemp4 + 20 && MeasredTemp >= AutoCalTemp4 - 20)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();
@@ -700,7 +723,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			}
 			Delay_ms(1000);
 			
-			tempValueDisplay(temp);
+			tempValueDisplay(MeasredTemp);
 			
 			Delay_ms(2000);
 			
@@ -709,14 +732,14 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			NUMBER_CLEAR(3);
 			LCD->DP1 = 0;
 			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCal_Count+1)*10);
+			memTempDataDisplay((AutoCalStep+2)*10);
 		  
 		break;
 		
-		case 5:
+		case 4:
 			memTempDataDisplay(50);
 			
-			if(temp <= AutoCalTemp5 + 20 && temp >= AutoCalTemp5 - 20)
+			if(MeasredTemp <= AutoCalTemp5 + 20 && MeasredTemp >= AutoCalTemp5 - 20)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();	
@@ -730,16 +753,26 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			}
 			Delay_ms(1000);
 			
-			tempValueDisplay(temp);
+			tempValueDisplay(MeasredTemp);
 			
 			Delay_ms(2000);
+		break;
+
+		default:
+			AutoCaliFlag_p = 1;
+
+			this->Delay_ms(500);
+			this->Beep();
+			this->Delay_ms(100);	   
+			this->Beep();
+			this->POWER_DOWN(); // 파워다운									
 		break;
 	}
 }        
 
-INT8 IWON_TEMP_FUNC::GET_AutoCal_Count(VOID)
+INT8 IWON_TEMP_FUNC::GET_AutoCalStep(VOID)
 {
-	return AutoCal_Count;
+	return AutoCalStep;
 }
 
 

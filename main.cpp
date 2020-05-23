@@ -227,11 +227,11 @@ int main(void)
 	IWonFunc->Beep();
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
-	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
+	for (INT16 i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
 		IWonTask->Task();
 		if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
-			for (BYTE i = 0; i < 12; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+			for (BYTE i = 0; i < 32; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task();			  
 				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
@@ -243,13 +243,16 @@ int main(void)
 	
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
-	// 사용 환경의 온도가 10 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
-	if( AMB < 100 || 400 < AMB )
+	// 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+	if( AMB < 100 || 500 < AMB )
 	{ 
+		tempValueDisplay(AMB, false);
+		IWonFunc->Delay_ms(1000);
 		IWonFunc->SystemError();
 	}
-		
-	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료인가?
+
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1);		
+	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입
 		
@@ -352,22 +355,14 @@ int main(void)
 		// 오토 캘리브레이션 동작으로 진입
 
 	 	IWonFunc->LCD_clear();
-	    IWonFunc->DisplayRGB(CLEAR); 
+		IWonFunc->DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
+		IWonFunc->ALLCLEAR();
 		
-		measureMode_p	= 0; // 사물 측정 모드  
-		buzzerState_p	= 1; // BUZZER ON
-		tempUnit_p		= 1; // 섭씨 모드
-
-		offSetVolt_p	= 0; // 자동 보정값 0 으로 저장
-		caliData_p		= 0; // 수동 보정값 0 으로 저장
-
 		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
-		IWonFunc->DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
 		memTempDataDisplay(10);
 	}
-		//IWonTest = NULL;		
 	
 	while (IWonTask->NeedPowerDown() == false)
 	{
@@ -381,7 +376,8 @@ int main(void)
 			{	
 				TestMode(IWonTest);
 			}
-			else if(AutoCaliFlag_p == 0)
+			else 
+			if(IsAutoCalCompleted==false)
 			{
 				// 오토 캘리브레이션 모드로 동작 중...
 				IWonTask->ClearPowerDown();
@@ -399,6 +395,8 @@ int main(void)
 						offSetVolt_p = 0;
 						caliData_p = 0;
 						
+						IWonFunc->Beep();
+						IWonFunc->Delay_ms(100);	   
 						IWonFunc->POWER_DOWN();						
 					}
 				}
@@ -489,7 +487,7 @@ int main(void)
 							}
 
 							IWonTask->MeasredTemp = MEASURED_TEMP;
-							if(AutoCaliFlag_p == 1)
+							if(IsAutoCalCompleted)
 							{
 								IWonFunc->DisplayRGB(BLUE);
 								LED_OFF();
@@ -512,7 +510,7 @@ int main(void)
 						{ // HIGH Greater Than 42.5 C
 							IWonTask->MeasredTemp = MEASURED_TEMP;
 							
-							if(AutoCaliFlag_p == 1)
+							if(IsAutoCalCompleted)
 							{
 								IWonFunc->DisplayRGB(BLUE);
 								LED_OFF();
@@ -547,7 +545,7 @@ int main(void)
 								if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
 								{
 								    LED_OFF();
-									if(AutoCaliFlag_p == 1) 
+									if(IsAutoCalCompleted) 
 										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
 									else 
 										IWonFunc->measuredFlag = true; 		
@@ -560,29 +558,7 @@ int main(void)
 									
 								}
 							}
-						}
-						/*
-						if(AutoCaliFlag_p == 0 && IWonFunc->measuredFlag == true)
-						{
-							// 측정 된 온도 값을 받아 CAL
-							// 5번 측정 후 파워다운		
-							IWonFunc->AUTOCAL(IWonTask->MeasredTemp); // 실제 AUTO CAL 하는 부분
-
-							if(IWonFunc->GET_AutoCal_Count() == 5) // 3번 측정 완료
-							{
-								AutoCaliFlag_p = 1; // AUTO CAL 완료
-								IWonFunc->Delay_ms(2000);
-								IWonFunc->POWER_DOWN(); // 파워다운
-							}
-							
-							IWonFunc->measuredFlag = false;
-							IWonTask->Measuring = false;
-							IWonTask->Measured = true;
-							IWonTask->MeasredCount1 = 0;
-							IWonTask->MeasredCount2 = 0;
-						}
-						*/
-						
+						}						
 					}
 					else
 					{
@@ -602,37 +578,10 @@ int main(void)
 
 							if (IWonTask->MeasredCount1 > 5 || IWonTask->MeasredCount2 > 10)
 							{
-								
-								
-								if(AutoCaliFlag_p == 0)
+								if(!IsAutoCalCompleted)
 								{
 									// 측정 된 온도 값을 받아 CAL
-									// 5번 측정 후 파워다운		
-									IWonFunc->AUTOCAL(IWonTask->MeasredTemp, IWonTask->Get_TPC_mV(), IWonTask->VoltmV); // 실제 AUTO CAL 하는 부분
-									IWonTask->Set_AdjValue(caliData_p);
-									if(IWonFunc->GET_AutoCal_Count() == 1) // 3번 측정 완료
-									{
-									  /*
-									  	if(IWonFunc->passFlag2 && IWonFunc->passFlag3 && IWonFunc->passFlagLow && IWonFunc->passFlagHigh)
-										{
-											AutoCaliFlag_p = 1; // AUTO CAL 성공
-										}
-										else 
-										{
-											AutoCaliFlag_p = 0; // AUTO CAL 실패
-											caliData_p = 0;
-										}
-									*/
-									    AutoCaliFlag_p = 1;
-									    IWonFunc->Delay_ms(1000);
-										IWonFunc->POWER_DOWN(); // 파워다운
-									
-									}
-
-									IWonTask->Measuring = false;
-									IWonTask->Measured = true;
-									IWonTask->MeasredCount1 = 0;
-									IWonTask->MeasredCount2 = 0;
+									IWonFunc->AUTOCAL(IWonTask); // 실제 AUTO CAL 하는 부분
 								}
 								else 
 								{

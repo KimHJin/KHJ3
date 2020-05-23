@@ -517,22 +517,32 @@ void displayNumber(INT8 number, INT8 position)
 }
 
 void tempValueDisplay(INT16 value, BOOL fillZero)
-{
+{	
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+
+	// 소수점
+	LCD->DP1 = 1;
+
+	// 마이너스 부호표시 (테스트용)
+	//if(value < 0) 
+		//LCD->DP1 = 0;
+
+	// 음수도 양수로 처리 (마이너스는 위해서 표시됨)
+	if(value<0) value = ABS(value);
+
 	INT8 forthNumber = (INT8)(value % 10);
 	INT8 thirdNumber = (INT8)((value / 10) % 10);
 	INT8 secondNumber = (INT8)((value / 100) % 10);
 	INT8 firstNumber = (INT8)(value / 1000);
-	
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-	
+
 	if (firstNumber == 1)
 		LCD->X9 = 1;
 	else
 		LCD->X9 = 0;
 
-	if (firstNumber == 1 || (firstNumber == 0 && secondNumber != 0))
+	if (firstNumber == 1 || secondNumber != 0)
 	{
 		displayNumber(secondNumber, 1);
 	}
@@ -550,7 +560,6 @@ void tempValueDisplay(INT16 value, BOOL fillZero)
 	
 	displayNumber(thirdNumber, 2);
 	displayNumber(forthNumber, 3);
-	LCD->DP1 = 1;
 }
 void tempValueDisplay(INT16 value)
 {

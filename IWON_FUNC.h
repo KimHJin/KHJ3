@@ -9,58 +9,15 @@
 
 #include "stm8l15x.h"
 #include "stm8l15x_conf.h"
-
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <math.h>
-#include <stdbool.h>
-
 #include "lcd_driver.h"
+
+#include "IWON_VAVG.h"
 
 #define HAL_ADC_MODULE_ENABLED
 
 
 #ifndef IWON_TEMP_FUNC_H
 #define IWON_TEMP_FUNC_H
-
-#define CHAR char
-#define VOID void
-#define CONST const
-#define BOOL bool
-#define LOCAL(type) static type
-#define WINAPI
-#define CALLBACK
-#define FALSE 0
-#define TRUE 1
-
-
-typedef signed char INT8;
-typedef int INT16;
-typedef long INT32;
-typedef long INT;
-typedef unsigned int UINT;
-typedef unsigned char BYTE;
-typedef unsigned short WORD;
-typedef unsigned long DWORD;
-typedef char *LPSTR;
-typedef const char *LPCSTR;
-typedef VOID *LPVOID;
-typedef const VOID *LPCVOID;
-typedef BYTE *LPBYTE;
-typedef const BYTE *LPCBYTE;
-
-#define lstrlen strlen
-#define lstrcpy strcpy
-#define lstrcat strcat
-#define lstrcmp strcmp
-#define lstrcmpi strcasecmp
-
-#define CRLF "\r\n"
-#define CRLFSP "     \r\n"
-
-#define ABS(x) ((x) > 0 ? (x) : -(x))
 
 #define DEFINED_TADJ0 0
 #define DEFINED_VADJ1 0
@@ -148,7 +105,7 @@ public:
 	INT8 Measure_test_flag;
 	INT8 LastMeasred;
 	
-	INT8 AutoCal_Count;
+	INT8 AutoCalStep;
 	
 	BOOL LowHigh_FLag;
 	
@@ -193,8 +150,8 @@ public:
 	
 	VOID ALLCLEAR(VOID);
 	
-	VOID AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV);
-	INT8 GET_AutoCal_Count(VOID);
+	VOID AUTOCAL(IWON_TEMP_TASK *IWonTask);
+	INT8 GET_AutoCalStep(VOID);
 
 	VOID SuccessDisp(VOID);
 	VOID FailDisp(VOID);
@@ -203,6 +160,8 @@ public:
 
 private:   
 	VOID Init(VOID);
+
+	IWON_TEMP_VAVG *AutoCalAVG;
 };
 
 #endif

@@ -42,6 +42,9 @@ public:
 
 	VOID ClearAllTemp(VOID);
 	
+	INT32 CALC_TPC_mV(INT16 ObjTemp);
+	INT16 CALC_OBJTEMP(INT32 TPCmV);
+
 	BOOL Task(UINT MGInterval, UINT TTInterval);
 	BOOL Task(VOID);
 	VOID Time(VOID);
@@ -83,8 +86,6 @@ public:
 	INT8 MeasredCount2;
 	INT8 RetryCount;
 	
-	INT32 VoltmV;
-
 private:
 	VOID Init(VOID);
 

@@ -89,8 +89,6 @@ VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
 	Vrefntc = 0;
 	Vreftpc = 0;
 	
-	VoltmV = 0;
-
 	ADJ_VALUE = 0;
 	OFS_VALUE = 0;
 	
@@ -238,6 +236,52 @@ BOOL IWON_TEMP_TASK::IS_BODY_CC(VOID)
 	return (VreftpcAvg->GetCC()>10);
 }
 
+INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp)
+{
+	INT16 t = 0;
+	for(INT32 TPCmV=800; TPCmV<1500; TPCmV++)	// 우선 800mV ~ 1500mV 사이를 찾아본다.
+	{
+		t = CALC_OBJTEMP(TPCmV);
+		if(t==ObjTemp) return TPCmV;
+	}
+	for(INT32 TPCmV=800; TPCmV>0; TPCmV--)	// 우선 800mV 이하를 찾아본다
+	{
+		t = CALC_OBJTEMP(TPCmV);
+		if(t==ObjTemp) return TPCmV;
+	}
+	for(INT32 TPCmV=1500; TPCmV<3300; TPCmV++)	// 우선 1500mV 이상을 찾아본다
+	{
+		t = CALC_OBJTEMP(TPCmV);
+		if(t==ObjTemp) return TPCmV;
+	}
+	return -1;	// 찾지 못한 것이다.
+}
+
+INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
+{
+	float ambtemp = (float)AMB_TEMP / 10.f;
+
+	const float k = 0.0046f;
+	const float delta = 2.658f;
+	const float reftemp = 25.f;		
+	const float shiftv = 1.02f;
+							
+	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
+	float v2 = (float)TPCmV / 1000.f + comp - shiftv;			
+	float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp			
+	INT16 T_OBJ = (INT16)(objtemp * 10.f);
+
+	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
+	INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
+	if(T_OBJ-AMBADJ < 0) {
+		OBJ_TEMP = AddTSUMB(0);
+	} else {
+		OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
+	}
+
+	return T_OBJ;
+}
+
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
 	return Task(DEFINED_ADC_CALC, DEFINED_ADC_DELAY);
@@ -252,6 +296,9 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
+		//tempValueDisplay((INT16)OFS_VALUE);
+		//tempValueDisplay(-204);
+
 		//tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
 
 		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
@@ -284,35 +331,11 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		}
 		else
 		{
-			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);
-			
+			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);			
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
-			
-			float ambtemp = (float)AMB_TEMP / 10.f;
 
-			//tempValueDisplay(AMB_TEMP);
-
-			const float k = 0.0046f;
-
-			const float delta = 2.658f;
-
-		    const float reftemp = 25.f;
-		
-			const float shiftv = 1.02f;
-			
-			
-			INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
-			
-			float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp
-			
-			float v2 = (float)VreftpcmV / 1000.f + comp - shiftv;
-			
-			float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp
-			
-			INT16 T_OBJ = (INT16)(objtemp * 10.f);
-
+			INT16 T_OBJ = CALC_OBJTEMP(VreftpcmV);
 			INT16 BB = GetTSUMB();
-
 			if (BB != -999)
 			{
 				BB = BB - T_OBJ;
@@ -320,20 +343,6 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				{
 					ClearTSUMB();
 				}
-			}
-			/*
-			if(AutoCaliFlag_p == 0)
-			{
-				float VoltV = k*(pow(ambtemp + 10, 4.f - delta) - 2*pow(ambtemp, 4.f - delta)) + 1.02f + k*pow(25, 4.f - delta);
-				VoltmV = (INT32)(VoltV*1000);
-				//tempValueDisplay((INT16)(VoltmV - (VoltmV/1000)*1000));
-			}
-			*/
-			// TODO : - 값 고민 대상, 연산 속도 무지 느림.
-			if(T_OBJ-AMBADJ < 0) {
-				OBJ_TEMP = AddTSUMB(0);
-			} else {
-				OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
 			}
 
 
