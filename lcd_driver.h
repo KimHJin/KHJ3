@@ -1,12 +1,11 @@
 #ifndef __LCD_DRIVER_H__
 #define __LCD_DRIVER_H__
 
-#include "IWON_SCAN.h"
-#include "IWON_FUNC.h"
-
 #include "stm8l15x.h"
 #include "stm8l15x_lcd.h"
+#include "stm8l15x_conf.h"
 #include "eeprom.h"
+#include "IWON_FUNC.h"
 
 #define setBitSegment(segment, position) \
 	;                                      \

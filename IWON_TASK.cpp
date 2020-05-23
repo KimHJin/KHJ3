@@ -7,10 +7,9 @@
 // 2020/04/18 v1.0 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
-void delay_ms(int ms);
-
 #include "IWON_TASK.h"
-
+#include "lcd_driver.h"
+#include "stm8l15x_clk.h"
 
 IWON_TEMP_TASK::IWON_TEMP_TASK() : IWON_TEMP_SCAN()
 {
@@ -68,7 +67,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	VrefintAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefvddAvg = new IWON_TEMP_VAVG(5, 3);
 	VrefbatAvg = new IWON_TEMP_VAVG(5, 3);
-	VrefntcAvg = new IWON_TEMP_VAVG(10);
+	VrefntcAvg = new IWON_TEMP_VAVG(10, 30);
 	VreftpcAvg = new IWON_TEMP_VAVG(10);
 
 	ClearAllTemp();
@@ -119,21 +118,6 @@ VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
 	MGtime = startTime;
 }
 
-VOID IWON_TEMP_TASK::Delay_10us(INT16 us)
-{
-	us *= 16;
-	for (INT16 i = 0; i < us; i++)
-	{
-		us = us;
-	}
-}
-VOID IWON_TEMP_TASK::Delay_ms(INT16 ms)
-{
-	for (INT16 i = 0; i < ms; i++)
-	{
-		Delay_10us(100);
-	}
-}
 
 VOID IWON_TEMP_TASK::Init_Clock(VOID)
 {
@@ -274,13 +258,14 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
 	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 	INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
 	if(T_OBJ-AMBADJ < 0) {
-		OBJ_TEMP = AddTSUMB(0);
+		T_OBJ = AddTSUMB(0);
 	} else {
-		OBJ_TEMP = AddTSUMB(T_OBJ) - AMBADJ;
+		T_OBJ = AddTSUMB(T_OBJ - AMBADJ);
 	}
 
 	return T_OBJ;
 }
+
 
 BOOL IWON_TEMP_TASK::Task(VOID)
 {
@@ -288,6 +273,7 @@ BOOL IWON_TEMP_TASK::Task(VOID)
 }
 BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 { // MGInterval = Measure (200), TTInteval = Take Interval (50)
+
 	if (TimeOut(MGtime, MGInterval) && IS_BODY_CC())
 	{
 		VrefintmV = (INT32)(((INT32)Vrefint * (INT32)ADC_CONVERT_RATIO) / 1000);
@@ -296,6 +282,13 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
+		//VreftpcmV = 1105;
+		//if(Vreftpc>0)
+			//VreftpcmV = CALC_TPC_mV(330);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
+
+		//VrefntcmV = 1206;
+		//tempValueDisplay((INT16)VrefbatmV, false);
+
 		//tempValueDisplay((INT16)OFS_VALUE);
 		//tempValueDisplay(-204);
 
@@ -308,43 +301,46 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		// R0 는 써미스터와 병렬로 연결된 저항과 병렬 합계 저항 값
 		V0 = VrefntcmV;
 		R0 = ((DWORD)V0 * (R1 / 100)) / (DWORD)(DEFINED_VDD - V0) * 100;
-
+		
 		// R3 는 써미스터 저항 값
-		R3 = ((R2/10)*(R0/10)*10) / (R2-R0);
+		// R3 = ((R2/10)*(R0/10)*10) / (R2-R0);
+		R3 = ((R2/10)*R0) / (R2-R0);
+
+		//tempValueDisplay(R3, false);
 
 		//printf("CAL=%d, VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", adcCalValue, VDD, V0, R0, R1, R2, R3);
 		
 		INT32 MRES = R3 * 10;
 		// printf("MRES=%ld\r\n", MRES);		
-		// tempValueDisplay(MRES / 100, false);
-		
+		//tempValueDisplay(MRES / 100, false);
+		//Delay_ms(500);
+
 		INT16 ntcIndex = GetNTCIndex(MRES);
+		//tempValueDisplay(ntcIndex, false);
 		if (ntcIndex == 0)
 		{
 			AMB_TEMP = -1; // Low
-										 //printf("AMB_TEMP LOW\r\n");
 		}
 		else if (ntcIndex == -1)
 		{
 			AMB_TEMP = -2; // High
-										 //printf("AMB_TEMP HIGH\r\n");
 		}
 		else
 		{
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);			
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
 
-			INT16 T_OBJ = CALC_OBJTEMP(VreftpcmV);
+			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV);
+
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
 			{
-				BB = BB - T_OBJ;
+				BB = BB - OBJ_TEMP;
 				if (ABS(BB) > 15)
 				{
 					ClearTSUMB();
 				}
 			}
-
 
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
 			if (TBL == -1)
@@ -365,6 +361,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		}
 
 		MGtime = GetTimeOutStartTime();
+
 		return (TSUMC>=DEFINED_ADC_SUM_C);
 	}
 	else if (TimeOut(TTtime, TTInterval))
@@ -389,7 +386,8 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			{
 				//printf("VrefintAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
+				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+				// return FALSE;
 			}
 
 			DISABLE_ALL_ADC();
@@ -407,7 +405,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (!VrefvddAvg->IsOC())
 			{
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
+				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
 				VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 				//printf("VrefvddAvg VrefvddmV=%ld\r\n", VrefvddmV);
 				if(VrefvddmV>1600) {
@@ -443,7 +441,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			{
 				//printf("VrefbatAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
+				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
 				VrefbatAvg->SetOC();
 			}
 
@@ -461,14 +459,14 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		{
 			if (VrefvddAvg->IsOC() && !VrefntcAvg->IsOC())
 			{
-				//printf("VrefntcAvg\r\n");
-		        for(int i=0;i<30;i++)
+		        for(INT8 i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
-					ADC_SoftwareStartConv(ADC1);
+					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
 					if(VrefntcAvg->IsOC()) break;
-				}				
+					ADC_SoftwareStartConv(ADC1);
+					//Delay_ms(5);
+				}								
 				VrefntcAvg->SetOC();
 			}
 
@@ -485,13 +483,13 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (VrefntcAvg->IsOC() && !VreftpcAvg->IsOC())
 			{
 				//printf("VreftpcAvg\r\n");
-		        for(int i=0;i<30;i++)
+		        for(INT8 i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 100);
+					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 50);
 					ADC_SoftwareStartConv(ADC1);
 					if(IS_BODY_CC()) break;
-				}				
+				}
 			}
 			// tCC = 0;
 		}

@@ -9,25 +9,12 @@
 // 2020/05/14 v1.2 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IWON_SCAN.h"
-#include "IWON_VAVG.h"
-
 #ifndef IWON_TEMP_TASK_H
 #define IWON_TEMP_TASK_H
 
-// 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
-// 버전 1.4 : AMP 측정 버그 수정
-#define DEFINED_FW_VER 14
-
-#define DEFINED_adcVREFValue 1224
-
-#define DEFINED_VDD 3300
-#define DEFINED_R1 100000
-#define DEFINED_R2 200000
-
-#define DEFINED_ADC_CALC 50
-#define DEFINED_ADC_DELAY 20
-#define DEFINED_ADC_SUM_C 2
+#include "IWON_ENV.h"
+#include "IWON_SCAN.h"
+#include "IWON_VAVG.h"
 
 class IWON_TEMP_TASK : IWON_TEMP_SCAN
 {
@@ -90,9 +77,6 @@ private:
 	VOID Init(VOID);
 
 	VOID GPIO_init(VOID);
-
-	VOID Delay_10us(INT16 us);
-	VOID Delay_ms(INT16 ms);	
 	
 	VOID Init_Clock(VOID);
 	VOID Init_TIM4(VOID);
@@ -161,8 +145,7 @@ private:
 	INT16 ADJ_VALUE;
 	INT32 OFS_VALUE;
 
-	int lowBattery_Count;
-	
+	int lowBattery_Count;	
 };
 
 #endif

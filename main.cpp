@@ -212,7 +212,7 @@ int main(void)
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
 
-	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
+	IWonTask = new IWON_TEMP_TASK(10); 		// 온도를 10개 합산해서 평균낸다.
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
@@ -224,21 +224,23 @@ int main(void)
 		IWonFunc->DisplayRGB(GREEN);
 
 	
+	//tempValueDisplay(0);
 	IWonFunc->Beep();
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (INT16 i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
 		IWonTask->Task();
-		if(IWonTask->Was_Calc()) {	// ADC 의 기초 계산이 완료된면...
-			for (BYTE i = 0; i < 32; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+		if(IWonTask->Was_Calc()) 
+		{	// ADC 의 기초 계산이 완료되면...
+			for (BYTE i = 0; i < 20; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task();			  
 				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 			}
 			break;	// 빠져나가게 된다.
 		}
-		IWonFunc->Delay_ms(30);
+		IWonFunc->Delay_ms(50);
 	}
 	
 	// 초기에 센서의 온도를 측정하게 된다.
@@ -246,10 +248,13 @@ int main(void)
 	// 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 	if( AMB < 100 || 500 < AMB )
 	{ 
-		tempValueDisplay(AMB, false);
-		IWonFunc->Delay_ms(1000);
+		//tempValueDisplay(AMB, false);
+		//IWonFunc->Delay_ms(1000);
 		IWonFunc->SystemError();
 	}
+	
+	//tempValueDisplay(AMB, false);
+	//IWonFunc->Delay_ms(1000);
 
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1);		
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
@@ -257,7 +262,7 @@ int main(void)
 		// 기본 동작모드 진입
 		
 		// 가장 마지막 측정 값
-		if(TEMP>0 && TEMP<500) 
+		if(TEMP>0 && TEMP<800) 
 		{
 			IWonFunc->LastMeasred = 1;
 			if(IWonFunc->TempUnitTask(false)==1)
@@ -266,8 +271,7 @@ int main(void)
 			}
 			IWonFunc->LastMeasred = 0;
 		}
-	  
-	  
+	  	  
 		IWonTask->BATmV = IWonTask->Get_BAT_mV();
 		IWonTask->VDDmV = IWonTask->Get_VDD_mV();
 		
@@ -347,8 +351,7 @@ int main(void)
 			IWonFunc->Delay_ms(10);
 			IWonTask->ClearPowerDown();
 		}
-		
-		tempValueDisplay(0);
+		tempValueDisplay(0);		
 	}
 	else 
 	{
@@ -412,16 +415,12 @@ int main(void)
 
 		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
 		{
-
 			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
 			{
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 				IWonTask->Clear_AVG();
 				TEMP_AVG->Init();
-
-				for(INT8 i=0;i<100;i++)
-					IWonTask->Task();
 
 				IWonFunc->Measure_test_flag = 0;
 				IWonTask->RetryCount = 0;

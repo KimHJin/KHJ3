@@ -7,7 +7,9 @@
 // 2020/04/18 v1.0 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "IWON_ENV.h"
 #include "IWON_TASK.h"
+#include "IWON_FUNC.h"
 
 #ifndef IWON_TEMP_TEST_H
 #define IWON_TEMP_TEST_H

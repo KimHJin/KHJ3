@@ -4,6 +4,7 @@
 	"editor.detectIndentation": false,
 	"files.associations": {
 		"ratio": "c",
-		"__node_handle": "c"
+		"__node_handle": "c",
+		"algorithm": "c"
 	}
 }

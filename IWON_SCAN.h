@@ -7,7 +7,7 @@
 // 2020/04/18 v1.0 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
-#include "IWON_FUNC.h"
+#include "IWON_ENV.h"
 
 #ifndef IWON_TEMP_SCAN_H
 #define IWON_TEMP_SCAN_H

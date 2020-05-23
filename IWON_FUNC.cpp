@@ -7,13 +7,14 @@
 // 2020/04/18 v1.0 by KGY
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "IWON_ENV.h"
 #include "IWON_FUNC.h"
-
-#include "eeprom.h"
+//#include "eeprom.h"
 
 // 오토 캘리브레이션 타겟 온도
 #define AutoCalTemp1 330	/* 첫번째 : 사물온도 33.0 도 */
-#define AutoCalTemp2 400	/* 두번째 : 사물온도 40.0 도 */
+//#define AutoCalTemp2 400	/* 두번째 : 사물온도 40.0 도 */
+#define AutoCalTemp2 330	/* 두번째 : 사물온도 40.0 도 */
 
 #define AutoCalTemp3 405
 #define AutoCalTemp4 320 
@@ -45,8 +46,6 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	passFlagLow  = false;
 
 	measuredFlag = false;
-
-	AutoCalAVG = NULL;
 }
 
 VOID IWON_TEMP_FUNC::Beep(INT16 length)
@@ -150,10 +149,8 @@ VOID IWON_TEMP_FUNC::DisplayRGB(INT8 color)
 VOID IWON_TEMP_FUNC::DisplayLOW(VOID)
 {
 	LCD->X9 = 0;
-	LCD->DP1 = 0;
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+
+	ClearDisp();
 
 	LCD->F1 = 1; // L
 	LCD->E1 = 1;
@@ -169,10 +166,8 @@ VOID IWON_TEMP_FUNC::DisplayLOW(VOID)
 VOID IWON_TEMP_FUNC::DisplayHIGH(VOID)
 {
 	LCD->X9 = 0;
-	LCD->DP1 = 0;
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+
+	ClearDisp();
 
 	LCD->F1 = 1; // H
 	LCD->E1 = 1;
@@ -188,9 +183,7 @@ VOID IWON_TEMP_FUNC::DisplayHIGH(VOID)
 
 VOID IWON_TEMP_FUNC::DisplayError(VOID)
 {
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+	ClearDisp();
 
 	LCD->A1 = 1; // E
 	LCD->D1 = 1;
@@ -203,8 +196,6 @@ VOID IWON_TEMP_FUNC::DisplayError(VOID)
 
 	LCD->G3 = 1; //r
 	LCD->E3 = 1;
-
-	LCD->DP1 = 0;
 }
 
 
@@ -573,15 +564,11 @@ VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
 {  
   	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
 	  
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+	ClearDisp();
 
 	LCD->G1 = 1;
 	LCD->G2 = 1;
 	LCD->G3 = 1;
-
-	LCD->DP1 = 0;
 }
 
 VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
@@ -605,19 +592,22 @@ VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 	INT32 TPCmV = 0;
 	INT32 ADJmV = 0;
 
+	IWON_TEMP_VAVG *AutoCalAVG = NULL;
+
 	switch(AutoCalStep)
 	{
 		case 0: 
+			// AUTO CAL STEP 1
+			// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
 			memTempDataDisplay(10);
 
-			AutoCalAVG = new IWON_TEMP_VAVG(10, 5);
+			AutoCalAVG = new IWON_TEMP_VAVG(10, 10);
 			while(!AutoCalAVG->IsOC())
 			{
 				if (IWonTask->Task())
 				{
 					TPCmV = IWonTask->Get_TPC_mV();
 					TPCmV = AutoCalAVG->AddCalc(TPCmV, 20);
-					tempValueDisplay((INT16)(TPCmV/10));
 				}
 			}
 			delete AutoCalAVG;
@@ -626,31 +616,24 @@ VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 
 			ADJmV = VoltmV - TPCmV;
 			offSetVolt_p = ADJmV;
+
+			IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 		
 			DisplayRGB(GREEN);
 			SuccessDisp();
 			Delay_ms(1000);
 			
-			tempValueDisplay((INT16)(VoltmV/10));
-			Delay_ms(2000);
-			tempValueDisplay((INT16)(TPCmV/10));
-			Delay_ms(2000);
-			tempValueDisplay((INT16)ADJmV);
-
-			// tempValueDisplay((INT16)offSetVolt_p);
-
-			Delay_ms(2000);
-			NUMBER_CLEAR(1);
-			NUMBER_CLEAR(2);
-			NUMBER_CLEAR(3);
-			LCD->DP1 = 0;
+			ClearDisp();
 			memTempDataDisplay((AutoCalStep+2)*10);
-			AutoCalStep = 10;
+			AutoCalStep++;
 		break;
-		
+
 		case 1:
+			// AUTO CAL STEP 2
+			// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
+
 		    memTempDataDisplay(20);
-			if(MeasredTemp <= AutoCalTemp2 + 20 && MeasredTemp >= AutoCalTemp2 - 20)
+			if(AutoCalTemp2 - 5 <= MeasredTemp && MeasredTemp <= AutoCalTemp2 + 5)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();
@@ -668,14 +651,12 @@ VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 			
 			Delay_ms(2000);
 			
-			NUMBER_CLEAR(1);
-			NUMBER_CLEAR(2);
-			NUMBER_CLEAR(3);
-			LCD->DP1 = 0;
+			ClearDisp();
 			DisplayRGB(BLUE);
 			memTempDataDisplay((AutoCalStep+2)*10);
+			AutoCalStep = 10;
 		break;
-		
+/*				
 	    case 2:
 			memTempDataDisplay(30);
 			
@@ -757,7 +738,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 			
 			Delay_ms(2000);
 		break;
-
+*/
 		default:
 			AutoCaliFlag_p = 1;
 
@@ -775,13 +756,18 @@ INT8 IWON_TEMP_FUNC::GET_AutoCalStep(VOID)
 	return AutoCalStep;
 }
 
-
-
-VOID IWON_TEMP_FUNC::SuccessDisp(VOID)
+VOID IWON_TEMP_FUNC::ClearDisp(VOID)
 {
     NUMBER_CLEAR(1);
 	NUMBER_CLEAR(2);
 	NUMBER_CLEAR(3);
+	
+	LCD->DP1 = 0;
+}
+
+VOID IWON_TEMP_FUNC::SuccessDisp(VOID)
+{
+	ClearDisp();
 
 	LCD->A1 = 1; // S
 	LCD->C1 = 1;
@@ -796,11 +782,8 @@ VOID IWON_TEMP_FUNC::SuccessDisp(VOID)
 
 VOID IWON_TEMP_FUNC::FailDisp(VOID)
 {
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-	
-	
+	ClearDisp();
+		
 	LCD->A1 = 1; // F
 	LCD->E1 = 1;
 	LCD->F1 = 1;
