@@ -114,39 +114,38 @@ VOID IWON_TEMP_FUNC::POWER_DOWN(VOID)
 
 VOID IWON_TEMP_FUNC::DisplayRGB(INT8 color)
 {
-	if (color == RED)
-	{
-		GPIO_LOW(GPIOD, GPIO_Pin_4);  // RED
-		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
-		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
-	}
+	GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
+	GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
+	GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
 
-	else if (color == GREEN)
+	switch(color)
 	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
-		GPIO_LOW(GPIOF, GPIO_Pin_0);  // GREEN
-		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
-	}
-
-	else if (color == BLUE)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
-		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
-		GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
-	}
-
-	else if (color == YELLOW)
-	{
-		GPIO_LOW(GPIOD, GPIO_Pin_4); // RED  
-		GPIO_LOW(GPIOF, GPIO_Pin_0); // GREEN
-		GPIO_HIGH(GPIOB, GPIO_Pin_7);// BLUE
-	}
-
-	else if (color == CLEAR)
-	{
-		GPIO_HIGH(GPIOD, GPIO_Pin_4); // RED
-		GPIO_HIGH(GPIOF, GPIO_Pin_0); // GREEN
-		GPIO_HIGH(GPIOB, GPIO_Pin_7); // BLUE
+		case RED:
+			GPIO_LOW(GPIOD, GPIO_Pin_4);  // RED
+			break;
+		case GREEN:
+			GPIO_LOW(GPIOF, GPIO_Pin_0);  // GREEN
+			break;
+		case BLUE:
+			GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
+			break;
+		case YELLOW:
+			GPIO_LOW(GPIOD, GPIO_Pin_4); // RED  
+			GPIO_LOW(GPIOF, GPIO_Pin_0); // GREEN
+			break;
+		case CYAN:
+			GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
+			GPIO_LOW(GPIOF, GPIO_Pin_0);  // GREEN
+			break;
+		case MAGENTA:
+			GPIO_LOW(GPIOD, GPIO_Pin_4);  // RED  
+			GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
+			break;
+		case WHITE:
+			GPIO_LOW(GPIOD, GPIO_Pin_4);  // RED  
+			GPIO_LOW(GPIOF, GPIO_Pin_0);  // GREEN
+			GPIO_LOW(GPIOB, GPIO_Pin_7);  // BLUE
+			break;
 	}
 }
 
@@ -324,7 +323,7 @@ VOID IWON_TEMP_FUNC::BuzzerStateTask(VOID)
 {
 	buzzerState_p ^= 1;
 
-	buzzerCMD(buzzerState_p);
+	BuzzerCMD(buzzerState_p);
 }
 
 VOID IWON_TEMP_FUNC::MeasureModeTask(VOID)
@@ -394,14 +393,13 @@ VOID IWON_TEMP_FUNC::CaliDone(IWON_TEMP_TASK *IWonTask)
     IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
 
 	LCD_clear();
-	BeepMode(NORMAL);
 
 	tempValueDisplay(0);
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
 	measureModeSet(measureMode_p);
-	buzzerCMD(buzzerState_p);
+	BuzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
 
 	LCD->X8 = 1; // Display "LOG"
@@ -418,22 +416,17 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 
 	if (SW_RIGHT_ON)
 	{
-		Delay_ms(400);
-		DisplayRGB(RED);
-		
+		Delay_ms(400);		
 		caliData_p++;
 		
 		if(caliData_p > 99) 
 	    	caliData_p = 99;
-
 
 		SpecialModeDisp(caliData_p);
 	}
 	else if (SW_LEFT_ON)
 	{
 		Delay_ms(400);
-		DisplayRGB(BLUE);
-
 		caliData_p--;
 		
 		if(caliData_p < -99)
@@ -447,7 +440,9 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 {
 	INT16 Count = 0;
-    DisplayRGB(CLEAR);
+
+	// 수동 보정모드에서는 바탕색을 CYAN (하늘색 비슷) 으로 한다.
+    DisplayRGB(CYAN);
 	LCD_clear();
 	
 	SpecialModeDisp(caliData_p);
@@ -458,21 +453,25 @@ VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 	{
 		SpecialMode(IWonTask);
 	}
-		
-	CaliDone(IWonTask);
-	
+
+	BeepMode(NORMAL);
+
+	// 수동보정모드를 빠져 나올때
 	while(SW_PWR_ON)
 	{
 		Count++;
 		Delay_ms(15);
 
+		// 측정버튼을 4초 이상 누르고 있으면 모든 저장된 내용을 지우고 오토 캘리브레이션 모드로 진입할 수 있는 상태로 설정된다.
 		if(Count == 350)
 		{
+			BeepMode(LIGHT_FEVER);
 			ALLCLEAR();
 			POWER_DOWN();
 		}
 	}
 	
+	CaliDone(IWonTask);
 	Delay_ms(500);
 }
 
@@ -486,6 +485,14 @@ VOID IWON_TEMP_FUNC::TempLogDataSave(int16_t saveData)
 
 	memTemp_p(31) = saveData;
 }
+VOID IWON_TEMP_FUNC::TempLogDataClear(VOID)
+{
+	for (INT8 i = 0; i < 32; i++)
+	{
+		memTemp_p(i) = 0;
+	}
+}
+
 
 VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
 {
@@ -590,11 +597,7 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	AutoCaliFlag_p = 0;
 	offSetVolt_p   = 0;
 	
-
-	for(INT8 i=0; i<32; i++)
-	{
-		memTemp_p(i) = 0;
-	}
+	TempLogDataClear();
 }
 
 VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
@@ -610,7 +613,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			offSetVolt_p = VoltmV - Vtp;
 		
 			DisplayRGB(GREEN);
-			successDisp();
+			SuccessDisp();
 			Delay_ms(1000);
 			tempValueDisplay((INT16)offSetVolt_p);
 			Delay_ms(2000);
@@ -627,13 +630,13 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			if(temp <= AutoCalTemp2 + 20 && temp >= AutoCalTemp2 - 20)
 			{
 				DisplayRGB(GREEN);
-				successDisp();
+				SuccessDisp();
 				passFlag2 = true;
 			}
 			else 
 			{
 				DisplayRGB(RED);
-				failDisp();
+				FailDisp();
 				passFlag2 = false;
 			}
 			Delay_ms(1000);
@@ -656,13 +659,13 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			if(temp <= AutoCalTemp3 + 20 && temp >= AutoCalTemp3 - 20)
 			{
 				DisplayRGB(GREEN);
-				successDisp();	
+				SuccessDisp();	
 				passFlag3 = true;
 			}
 			else 
 			{
 				DisplayRGB(RED);
-				failDisp();
+				FailDisp();
 				passFlag3 = false;
 			}
 			Delay_ms(1000);
@@ -685,14 +688,14 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			if(temp <= AutoCalTemp4 + 20 && temp >= AutoCalTemp4 - 20)
 			{
 				DisplayRGB(GREEN);
-				successDisp();
+				SuccessDisp();
 				passFlagLow = true;
 				
 			}
 			else 
 			{
 				DisplayRGB(RED);
-				failDisp();
+				FailDisp();
 				passFlagLow = false;
 			}
 			Delay_ms(1000);
@@ -716,13 +719,13 @@ VOID IWON_TEMP_FUNC::AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV)
 			if(temp <= AutoCalTemp5 + 20 && temp >= AutoCalTemp5 - 20)
 			{
 				DisplayRGB(GREEN);
-				successDisp();	
+				SuccessDisp();	
 				passFlagHigh = true;
 			}
 			else 
 			{
 				DisplayRGB(RED);
-				failDisp();
+				FailDisp();
 				passFlagHigh = false;
 			}
 			Delay_ms(1000);
@@ -739,3 +742,55 @@ INT8 IWON_TEMP_FUNC::GET_AutoCal_Count(VOID)
 	return AutoCal_Count;
 }
 
+
+
+VOID IWON_TEMP_FUNC::SuccessDisp(VOID)
+{
+    NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+
+	LCD->A1 = 1; // S
+	LCD->C1 = 1;
+	LCD->D1 = 1;
+	LCD->F1 = 1;
+	LCD->G1 = 1;
+	
+	LCD->C2 = 1; // u
+	LCD->D2 = 1;
+	LCD->E2 = 1;
+}
+
+VOID IWON_TEMP_FUNC::FailDisp(VOID)
+{
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+	
+	
+	LCD->A1 = 1; // F
+	LCD->E1 = 1;
+	LCD->F1 = 1;
+	LCD->G1 = 1;
+
+	LCD->A2 = 1; // A
+	LCD->B2 = 1;
+	LCD->C2 = 1;
+	LCD->E2 = 1;
+	LCD->F2 = 1;
+	LCD->G2 = 1;
+}
+
+VOID IWON_TEMP_FUNC::BuzzerCMD(BOOL state)
+{
+	if (state) // MUTE OFF
+	{
+		LCD->X3 = 1;
+		LCD->X4 = 0;
+	}
+	else // MUTE ON
+	{
+		LCD->X3 = 0;
+		LCD->X4 = 1;
+	}
+}

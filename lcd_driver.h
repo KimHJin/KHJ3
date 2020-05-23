@@ -101,11 +101,8 @@ void displayNumber(INT8 number, INT8 position);
 void memNumberDisplay(INT8 number);
 void memTempDataDisplay(INT16 tempData, BOOL fillZero);
 void memTempDataDisplay(INT16 tempData);
-void buzzerCMD(BOOL state);
 void measureModeSet(BOOL mode);
 void tempUnitSet(BOOL unit);
-void successDisp(void);
-void failDisp(void);
 
 
 #endif

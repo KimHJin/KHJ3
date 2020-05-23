@@ -31,7 +31,7 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
 	measureModeSet(measureMode_p);
-	buzzerCMD(buzzerState_p);
+	IWonFunc->BuzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
 
 	LCD->X8 = 1;   // Display "LOG"
@@ -623,20 +623,6 @@ void measureModeSet(BOOL mode)
 	}
 }
 
-void buzzerCMD(BOOL state)
-{
-	if (state) // MUTE OFF
-	{
-		LCD->X3 = 1;
-		LCD->X4 = 0;
-	}
-
-	else // MUTE ON
-	{
-		LCD->X3 = 0;
-		LCD->X4 = 1;
-	}
-}
 
 void tempUnitSet(BOOL unit)
 {
@@ -651,42 +637,4 @@ void tempUnitSet(BOOL unit)
 		LCD->X6 = 0;
 		LCD->X7 = 1;
 	}
-}
-
-void successDisp(void)
-{
-    NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-
-	LCD->A1 = 1; // S
-	LCD->C1 = 1;
-	LCD->D1 = 1;
-	LCD->F1 = 1;
-	LCD->G1 = 1;
-	
-	LCD->C2 = 1; // U
-	LCD->D2 = 1;
-	LCD->E2 = 1;
-}
-
-void failDisp(void)
-{
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-	
-
-	
-	LCD->A1 = 1; // F
-	LCD->E1 = 1;
-	LCD->F1 = 1;
-	LCD->G1 = 1;
-
-	LCD->A2 = 1; // A
-	LCD->B2 = 1;
-	LCD->C2 = 1;
-	LCD->E2 = 1;
-	LCD->F2 = 1;
-	LCD->G2 = 1;
 }

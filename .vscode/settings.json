@@ -1,5 +1,9 @@
 {
 	"editor.insertSpaces": false,
 	"editor.fontSize": 18,
-	"editor.detectIndentation": false
+	"editor.detectIndentation": false,
+	"files.associations": {
+		"ratio": "c",
+		"__node_handle": "c"
+	}
 }

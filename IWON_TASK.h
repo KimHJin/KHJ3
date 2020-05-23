@@ -60,7 +60,8 @@ public:
 	UINT Get_ADC_CAL(VOID);
 
 	VOID Clear_AVG(VOID);
-	VOID Set_AdjValue(INT32 ADJV);
+	VOID Set_AdjValue(INT16 ADJV);
+	VOID Set_OfsValue(INT32 OFSV);
 
 	BOOL NeedPowerDown(VOID);
 	VOID ClearPowerDown(VOID);
@@ -157,6 +158,7 @@ private:
 	INT16 BDY_TEMP;
 
 	INT16 ADJ_VALUE;
+	INT32 OFS_VALUE;
 
 	int lowBattery_Count;
 	

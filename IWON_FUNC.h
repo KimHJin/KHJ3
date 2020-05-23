@@ -79,6 +79,10 @@ typedef const BYTE *LPCBYTE;
 #define ADC_CONVERT_RATIO 804 /* (3287mV ~ 3300mV / 0xFFF) x 1000 */
 //#define ADC_CONVERT_RATIO	802		/* (3287mV / 0xFFF)	x 1000 */
 
+// 피부 방사율을 0.98 정도
+// 환경 방사 온도 변경법 등에 의한 정확한 계측에서는, 사람의 피부 의 방사율은 0.95 ~ 0.97 정도
+#define BODY_EMI 0.97
+
 #define GPIO_HIGH(a, b) a->ODR |= b
 #define GPIO_LOW(a, b) a->ODR &= ~b
 #define GPIO_TOGGLE(a, b) a->ODR ^= b
@@ -96,11 +100,14 @@ typedef const BYTE *LPCBYTE;
 #define LIGHT_FEVER 2
 #define NORMAL 3
 
+#define CLEAR 0
 #define RED 1
 #define GREEN 2
 #define BLUE 3
 #define YELLOW 4
-#define CLEAR 5
+#define CYAN 5
+#define MAGENTA 6
+#define WHITE 7
 
 
 
@@ -174,7 +181,10 @@ public:
 	VOID SpecialModeTask(IWON_TEMP_TASK *IWonTask);
 
 	VOID TempLogDataSave(int16_t saveData);
+	VOID TempLogDataClear(VOID);
+
 	VOID SaveTemp(INT16 temp);
+
 	VOID ObjTempDisp(INT16 temp);
 	VOID BdyTempDisp(INT16 temp);
 
@@ -185,6 +195,10 @@ public:
 	
 	VOID AUTOCAL(INT16 temp, INT32 Vtp, INT32 VoltmV);
 	INT8 GET_AutoCal_Count(VOID);
+
+	VOID SuccessDisp(VOID);
+	VOID FailDisp(VOID);
+	VOID BuzzerCMD(BOOL state);
 
 
 private:   

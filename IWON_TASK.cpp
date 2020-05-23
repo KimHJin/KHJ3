@@ -92,6 +92,8 @@ VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
 	VoltmV = 0;
 
 	ADJ_VALUE = 0;
+	OFS_VALUE = 0;
+	
 
 	VrefintmV = 0;
 	VrefvddmV = 0;
@@ -248,7 +250,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000)+ ADJ_VALUE + offSetVolt_p;
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
 		//tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
 
@@ -530,10 +532,17 @@ VOID IWON_TEMP_TASK::Clear_AVG(VOID)
 	VreftpcAvg->Init();
 }
 
-VOID IWON_TEMP_TASK::Set_AdjValue(INT32 ADJV)
+
+VOID IWON_TEMP_TASK::Set_AdjValue(INT16 ADJV)
 {
 	ADJ_VALUE = ADJV;
 }
+VOID IWON_TEMP_TASK::Set_OfsValue(INT32 OFSV)
+{
+	OFS_VALUE = OFSV;
+}
+
+
 
 BOOL IWON_TEMP_TASK::NeedPowerDown(VOID)
 {

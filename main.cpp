@@ -17,7 +17,6 @@
 
 // 아이원 온도계 테스크 클래스
 IWON_TEMP_TASK *IWonTask = NULL;
-IWON_TEMP_TEST *IWonTest = NULL;
 IWON_TEMP_FUNC *IWonFunc = NULL;
 
 /************************************************************************/
@@ -50,7 +49,7 @@ void MEAS_Test(void)
 	memTempDataDisplay(50);
 }
 
-void testMode()
+void TestMode(IWON_TEMP_TEST *IWonTest)
 {	
     IWonTask->ClearPowerDown();
 	
@@ -103,10 +102,8 @@ void testMode()
 
 		default: 	// 파워다운 테스트
 		  
-		    for(int i=0; i<32; i++)
-				memTemp_p(i) = 0;
-			
-			IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
+			IWonFunc->TempLogDataClear();	// 모든 로그 데이터 제거
+			IWonFunc->POWER_DOWN();			// 안에서 while 로 무한루프 돈다.
 			break;			
 	}
 }
@@ -134,6 +131,7 @@ void keyScan()
 				IWonFunc->Delay_ms(15);
 				if (delayCount == 350)
 				{
+					// 수동 보정모드 진입시킴
 					IWonFunc->Beep();
 					IWonFunc->SpecialModeTask(IWonTask);
 				}
@@ -173,6 +171,8 @@ void keyScan()
 				IWonFunc->Delay_ms(15);
 				if (delayCount == 350)
 				{
+					// 수동 보정모드 진입시킴
+
 					IWonFunc->Beep();
 					IWonFunc->SpecialModeTask(IWonTask);
 				}
@@ -199,19 +199,25 @@ void keyScan()
 /*********************************************/
 
 int main(void)
-{		
+{
+	IWON_TEMP_TEST *IWonTest = NULL;
+
 	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
 	IWonFunc = new IWON_TEMP_FUNC();
 	
 	EEPROM_init();
 	LCD_Display_init(IWonFunc);
 
+	// 수동 캘리브레이션 저장소의 값이 허용되는 이외의 값은 0 값으로 바꿔준다.
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
 
 	IWonTask = new IWON_TEMP_TASK(10); // 온도를 10개 합산해서 평균낸다.
-	IWonTask->Set_AdjValue(caliData_p); // <= 이 값을 저장하고 읽어서 여기에 적용 하세요.
+	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
+	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
+	// 인체 모드일때 BLUE 배경
+	// 사물 모드일때 GREEN 배경
 	if (measureMode_p)
 		IWonFunc->DisplayRGB(BLUE);
 	else 
@@ -219,8 +225,6 @@ int main(void)
 
 	
 	IWonFunc->Beep();
-
-	INT32 AMB = 0;
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (BYTE i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
@@ -238,14 +242,17 @@ int main(void)
 	}
 	
 	// 초기에 센서의 온도를 측정하게 된다.
-	AMB = IWonTask->Get_AMB_TEMP();				
-	if (AMB < 150 || 400 < AMB)
-	{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
+	INT32 AMB = IWonTask->Get_AMB_TEMP();
+	// 사용 환경의 온도가 10 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
+	if( AMB < 100 || 400 < AMB )
+	{ 
 		IWonFunc->SystemError();
 	}
 		
-	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료
+	if( AutoCaliFlag_p == 1 ) // AUTO CAL 완료인가?
 	{
+		// 기본 동작모드 진입
+		
 		// 가장 마지막 측정 값
 		if(TEMP>0 && TEMP<500) 
 		{
@@ -275,11 +282,12 @@ int main(void)
 		{
 			if(IWonTask->DeviceTestModeWait>500)
 			{
-				if(SW_LEFT_ON && SW_RIGHT_ON)  // Test Mode 진입
+				if(SW_LEFT_ON && SW_RIGHT_ON)  // LCD 테스트 등의 Test Mode 진입
 				{
 					if(IWonTask->DeviceTestModeValue == 1)
 					{
 						IWonTest = new IWON_TEMP_TEST(IWonFunc, IWonTask);
+						IWonFunc->Beep();
 						IWonTest->SetTestModeFlag(1);					
 						IWonFunc->LCD_clear();
 						IWonFunc->DisplayRGB(CLEAR);
@@ -341,31 +349,41 @@ int main(void)
 	}
 	else 
 	{
+		// 오토 캘리브레이션 동작으로 진입
+
 	 	IWonFunc->LCD_clear();
 	    IWonFunc->DisplayRGB(CLEAR); 
 		
-		measureMode_p = 0; // 사물 측정 모드  
-		buzzerState_p = 1; // BUZZER ON
-		tempUnit_p    = 1; // 섭씨 모드
-		
-		IWonFunc->DisplayRGB(BLUE);
+		measureMode_p	= 0; // 사물 측정 모드  
+		buzzerState_p	= 1; // BUZZER ON
+		tempUnit_p		= 1; // 섭씨 모드
+
+		offSetVolt_p	= 0; // 자동 보정값 0 으로 저장
+		caliData_p		= 0; // 수동 보정값 0 으로 저장
+
+		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
+		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
+
+		IWonFunc->DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
 		memTempDataDisplay(10);
 	}
+		//IWonTest = NULL;		
 	
 	while (IWonTask->NeedPowerDown() == false)
 	{
 		INT16 MEASURED_TEMP = 0;
 	  
 		INT8 testModeFlag = (IWonTest==NULL) ? 0 : IWonTest->GetTestModeFlag();
-		
+
 		if (IWonTask->Measuring == false)
 		{
 		  	if(testModeFlag==1) // Test Mode
 			{	
-				testMode();
+				TestMode(IWonTest);
 			}
 			else if(AutoCaliFlag_p == 0)
 			{
+				// 오토 캘리브레이션 모드로 동작 중...
 				IWonTask->ClearPowerDown();
 				while(SW_LEFT_ON && SW_RIGHT_ON)
 				{
@@ -374,11 +392,14 @@ int main(void)
 					
 					if(IWonFunc->AutoCalDelayCount == 40)
 					{
+						// 오토 캘리브레이션 모드에서 LEFT+RIGHT 버튼을 5초 이상 누르고 있으면 오토캘리브레이션 모드를 빠져나오게 된다.
 						AutoCaliFlag_p = 1;
+
+						// 이때 오토옵셋값 하고 수동보정값을 0 으로 저장된다.
+						offSetVolt_p = 0;
 						caliData_p = 0;
 						
-						IWonFunc->POWER_DOWN();
-						
+						IWonFunc->POWER_DOWN();						
 					}
 				}
 				
@@ -386,12 +407,14 @@ int main(void)
 			}
 			else
 			{
+				// 측정 모드로 동작 중...
 				keyScan();
 			}
 		}
 
 		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
 		{
+
 			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
 			{
 				IWonTask->ClearPowerDown();
@@ -621,8 +644,6 @@ int main(void)
 								IWonTask->Measured = true;
 								IWonTask->MeasredCount1 = 0;
 								IWonTask->MeasredCount2 = 0;
-								
-								
 							}
 						}
 					}
@@ -632,6 +653,9 @@ int main(void)
 		
 	} //while
 
+	IWonFunc->Beep();
+	IWonFunc->Delay_ms(100);	   
+	IWonFunc->Beep();
 	IWonFunc->POWER_DOWN();	// 함후 안에서 while 로 무한루프 돈다.
 }
 
