@@ -361,7 +361,7 @@ int main(void)
 		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
-		IWonFunc->VerDisp();		// <= 펌웨어 버전 표시
+		IWonFunc->VerDisp();		// 오토 캘리브레이션 동작 진입시 펌웨어 버전 표시 (앞에 V 자를 U 자 비슷하게하고 버전 표시함)
 
 		memTempDataDisplay(10);
 	}
