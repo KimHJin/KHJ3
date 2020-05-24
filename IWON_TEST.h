@@ -39,6 +39,9 @@ public:
 	INT8 LCD_Test(VOID);
 	INT8 BackLight_Test(VOID);
 
+	VOID MEAS_Test(VOID);
+
+	void TestTask(VOID);
 private:  
   	IWON_TEMP_FUNC *IWonFunc;
   	IWON_TEMP_TASK *IWonTask;

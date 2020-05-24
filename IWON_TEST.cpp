@@ -151,3 +151,69 @@ INT8 IWON_TEMP_TEST::BackLight_Test(VOID)
 	return key;
 }
 
+VOID IWON_TEMP_TEST::MEAS_Test(VOID)
+{
+	IWonFunc->Measure_test_flag = 1;
+	IWonFunc->LCD_clear();
+	memTempDataDisplay(50);
+}
+
+
+void IWON_TEMP_TEST::TestTask(VOID)
+{		
+	INT8 nowAction = 0;
+	
+    IWonTask->ClearPowerDown();
+
+	if(SW_LEFT_ON)
+	{
+	    IWonFunc->Beep();
+	    IWonFunc->Delay_ms(500);	   
+		this->DecTestCount();
+		nowAction = 1;
+		while(SW_LEFT_ON);
+	}	
+	else 
+	if(SW_RIGHT_ON)
+	{
+	    IWonFunc->Beep();
+	    IWonFunc->Delay_ms(500);
+		this->IncTestCount();		
+		nowAction = 2;
+		while(SW_RIGHT_ON);
+	}
+	
+	switch(this->GetTestCount())
+	{
+		case 0: 	// 부저 테스트
+		  IWonFunc->Beep(); 
+		  this->IncTestCount();
+		  IWonFunc->Delay_ms(500);		  
+		  nowAction = 2;
+		case 1: 	// 전원 테스트
+		  if(nowAction!=0) this->VDD_Test(IWonTask->VDDmV); 
+		  break;
+
+		case 2: 	// 배터리 전압 테스트
+		  if(nowAction!=0) this->BAT_Test(IWonTask->BATmV); 
+		  break;
+
+		case 3: 
+		  if(nowAction!=0) this->LCD_Test(); 
+		  break;
+
+		case 4: 	// 백라이트 테스트
+		  if(nowAction!=0) this->BackLight_Test(); 
+		  break;
+
+		case 5: 	// 온도 측정 테스트
+		  if(nowAction!=0) this->MEAS_Test();
+		  break;
+
+		default: 	// 파워다운 테스트
+		  
+			IWonFunc->TempLogDataClear();	// 모든 로그 데이터 제거
+			IWonFunc->POWER_DOWN();			// 안에서 while 로 무한루프 돈다.
+			break;			
+	}
+}

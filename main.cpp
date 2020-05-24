@@ -39,78 +39,6 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 }
 /************************************************************************/
 
-
-/********************************* TEST MODE *******************************************/
-
-void MEAS_Test(void)
-{
-	IWonFunc->Measure_test_flag = 1;
-	IWonFunc->LCD_clear();
-	memTempDataDisplay(50);
-}
-
-void TestMode(IWON_TEMP_TEST *IWonTest)
-{	
-    IWonTask->ClearPowerDown();
-	
-	INT8 nowAction = 0;
-	
-	if(SW_LEFT_ON)
-	{
-	    IWonFunc->Beep();
-	    IWonFunc->Delay_ms(500);	   
-		IWonTest->DecTestCount();
-		nowAction = 1;
-		while(SW_LEFT_ON);
-	}	
-	else 
-	if(SW_RIGHT_ON)
-	{
-	    IWonFunc->Beep();
-	    IWonFunc->Delay_ms(500);
-		IWonTest->IncTestCount();		
-		nowAction = 2;
-		while(SW_RIGHT_ON);
-	}
-	
-	switch(IWonTest->GetTestCount())
-	{
-		case 0: 	// 부저 테스트
-		  IWonFunc->Beep(); 
-		  IWonTest->IncTestCount();
-		  IWonFunc->Delay_ms(500);		  
-		  nowAction = 2;
-		case 1: 	// 전원 테스트
-		  if(nowAction!=0) IWonTest->VDD_Test(IWonTask->VDDmV); 
-		  break;
-
-		case 2: 	// 배터리 전압 테스트
-		  if(nowAction!=0) IWonTest->BAT_Test(IWonTask->BATmV); 
-		  break;
-
-		case 3: 
-		  if(nowAction!=0) IWonTest->LCD_Test(); 
-		  break;
-
-		case 4: 	// 백라이트 테스트
-		  if(nowAction!=0) IWonTest->BackLight_Test(); 
-		  break;
-
-		case 5: 	// 온도 측정 테스트
-		  if(nowAction!=0) MEAS_Test();
-		  break;
-
-		default: 	// 파워다운 테스트
-		  
-			IWonFunc->TempLogDataClear();	// 모든 로그 데이터 제거
-			IWonFunc->POWER_DOWN();			// 안에서 while 로 무한루프 돈다.
-			break;			
-	}
-}
-
-/***************************************************************************************/
-/***************************************************************************************/
-
 void keyScan()
 {
 	if (SW_LEFT_ON) // SW_LEFT
@@ -376,7 +304,7 @@ int main(void)
 		{
 		  	if(testModeFlag==1) // Test Mode
 			{	
-				TestMode(IWonTest);
+				IWonTest->TestTask();
 			}
 			else 
 			if(IsAutoCalCompleted==false)
@@ -468,22 +396,13 @@ int main(void)
 						// 인체 측정
 						MEASURED_TEMP = IWonTask->Get_BDY_TEMP();
 
-						if (!IsAutoCalCompleted)
-						{
-							IWonTask->MeasredTemp = MEASURED_TEMP;
-
-							// 측정 된 온도 값을 받아 CAL
-							IWonCal->AUTOCAL(IWonTask, IWonFunc); // 실제 AUTO CAL 하는 부분
-
-							IWonTask->SetMeasredStates();
-						}
-						else 
+						if (IsAutoCalCompleted || (IWonCal!=NULL && IWonTask->Measured==false && IWonCal->GET_AutoCalStep()>0))
 						{
 							if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
 							{ 
 								// LOW  Less Than 33.4 C
 								IWonTask->RetryCount++;
-								if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
+								if(IWonCal==NULL && IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
 								{
 									IWonTask->Measured = false;
 									IWonTask->Measuring = true;
@@ -537,6 +456,21 @@ int main(void)
 									}
 								}
 							}
+						}
+
+						if (!IsAutoCalCompleted && (IWonTask->Measured || IWonCal->GET_AutoCalStep()==0))
+						{
+							BEAM_OFF();
+
+							if(IWonCal->GET_AutoCalStep()>2)
+							{
+							    IWonFunc->Delay_ms(2000);
+							}
+
+							// 측정 된 온도 값을 받아 CAL
+							IWonCal->AUTOCAL(IWonTask, IWonFunc); // 실제 AUTO CAL 하는 부분
+
+							IWonTask->SetMeasredStates();
 						}
 					}
 					else

@@ -345,15 +345,15 @@ INT8 IWON_TEMP_FUNC::TempUnitTask(BOOL inv)
 
 VOID IWON_TEMP_FUNC::SpecialModeDisp(int16_t value)
 {
-    int16_t temp = 0;
+    INT16 temp = 0;
   
 	if(value < 0) 
 		temp = -1 * value;
 	else 
 		temp = value;
 
-	int secondNumber = temp % 10;
-	int firstNumber = temp / 10;
+	INT16 secondNumber = temp % 10;
+	INT16 firstNumber = temp / 10;
 	
 	if(value < 0) 
 		LCD->G1 = 1;

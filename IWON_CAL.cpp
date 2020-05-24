@@ -117,7 +117,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						// 인체모드로 변경해야 한다.
 						IWonFunc->MeasureModeTask();
 					}
-					if(AutoCalStep==5)
+					if(AutoCalStep==6)
 					{
 						// 오토 캘리브레이션 완료 저장
 						AutoCaliFlag_p = 1;
