@@ -11,23 +11,6 @@
 #include "IWON_FUNC.h"
 
 
-/**
- * 오토 캘리브레이션
- * /
-
-// 오토 캘리브레이션 타겟 온도
-#define AutoCalTemp1 330	/* 첫번째 : 사물온도 33.0 도 */
-//#define AutoCalTemp2 400	/* 두번째 : 사물온도 40.0 도 */
-#define AutoCalTemp2 330	/* 두번째 : 사물온도 40.0 도 - 테스트를 위해서 */
-
-#define AutoCalTemp3 405
-#define AutoCalTemp4 320 
-#define AutoCalTemp5 440
-
-#define AutoCalTorn 5		/* 허용오차 */
-
-
-
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
 {
@@ -44,26 +27,22 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	LowBatteryFlag = 0;
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
-	AutoCalStep = 0;
 	LowHigh_FLag = false;
-	passFlag2 = false;
-	passFlag3 = false;
-	passFlagHigh = false;
-	passFlagLow  = false;
-
 	measuredFlag = false;
+
+	AutoCalDelayCount = 0;
 }
 
 VOID IWON_TEMP_FUNC::Beep(INT16 length)
 {
-	if (buzzerState_p)
-		for (INT16 i = 0; i < length; i++)
-		{
-			GPIO_HIGH(GPIOD, GPIO_Pin_5);
-			Delay_10us(20);
-			GPIO_LOW(GPIOD, GPIO_Pin_5);
-			Delay_10us(20);
-		}
+	if (!buzzerState_p) return;
+	for (INT16 i = 0; i < length; i++)
+	{
+		GPIO_HIGH(GPIOD, GPIO_Pin_5);
+		Delay_10us(20);
+		GPIO_LOW(GPIOD, GPIO_Pin_5);
+		Delay_10us(20);
+	}
 }
 
 VOID IWON_TEMP_FUNC::Beep(VOID)
@@ -350,7 +329,7 @@ INT8 IWON_TEMP_FUNC::TempUnitTask(BOOL inv)
 	{
 		if(LastMeasred==1)
 		{
-			tempValueDisplay(UnitCalc(TEMP, tempUnit_p));
+			TempValueDisplay(UnitCalc(TEMP, tempUnit_p));
 			r = 1;
 		}
 	}
@@ -392,7 +371,7 @@ VOID IWON_TEMP_FUNC::CaliDone(IWON_TEMP_TASK *IWonTask)
 
 	LCD_clear();
 
-	tempValueDisplay(0);
+	TempValueDisplay(0);
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
@@ -520,7 +499,7 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	}
 	else
 	{
-		tempValueDisplay(UnitCalc(temp, tempUnit_p));
+		TempValueDisplay(UnitCalc(temp, tempUnit_p));
 	
 		SaveTemp(temp);
 	}
@@ -530,19 +509,19 @@ VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
 	if (temp >= 381 && temp <= 425)
 	{ // HIGH FEVER
 		DisplayRGB(RED);
-		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		BeepMode(HIGH_FEVER);
 	}
 	else if (temp >= 371 && temp <= 380)
 	{ // LIGHT FEVER
 		DisplayRGB(YELLOW);
-		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		BeepMode(LIGHT_FEVER);
 	}
 	else if (temp >= 334 && temp <= 370)
 	{ // NORMAL
 		DisplayRGB(BLUE);
-		tempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
+		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		BeepMode(NORMAL);
 	}
 
@@ -592,177 +571,6 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	offSetVolt_p   = 0;	// 자동 보정값 0 으로 저장
 	
 	TempLogDataClear();
-}
-
-VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
-{
-	INT16 MeasredTemp = IWonTask->MeasredTemp;	
-	INT32 VoltmV = 0;
-	INT32 TPCmV = 0;
-	INT32 ADJmV = 0;
-
-	IWON_TEMP_VAVG *AutoCalAVG = NULL;
-
-	switch(AutoCalStep)
-	{
-		case 0: 
-			// AUTO CAL STEP 1
-			// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
-			memTempDataDisplay(10);
-
-			AutoCalAVG = new IWON_TEMP_VAVG(10, 10);
-			while(!AutoCalAVG->IsOC())
-			{
-				if (IWonTask->Task())
-				{
-					TPCmV = IWonTask->Get_TPC_mV();
-					TPCmV = AutoCalAVG->AddCalc(TPCmV, 20);
-				}
-			}
-			delete AutoCalAVG;
-
-			VoltmV = IWonTask->CALC_TPC_mV(AutoCalTemp1);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
-
-			ADJmV = VoltmV - TPCmV;
-			offSetVolt_p = ADJmV;
-
-			IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
-		
-			DisplayRGB(GREEN);
-			SuccessDisp();
-			Delay_ms(1000);
-			
-			ClearDisp();
-			memTempDataDisplay((AutoCalStep+2)*10);
-			AutoCalStep++;
-		break;
-
-		case 1:
-			// AUTO CAL STEP 2
-			// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
-
-		    memTempDataDisplay(20);
-			if(AutoCalTemp2 - AutoCalTorn <= MeasredTemp && MeasredTemp <= AutoCalTemp2 + AutoCalTorn)
-			{
-				DisplayRGB(GREEN);
-				SuccessDisp();
-				passFlag2 = true;
-			}
-			else 
-			{
-				DisplayRGB(RED);
-				FailDisp();
-				passFlag2 = false;
-			}
-			Delay_ms(1000);
-			
-			tempValueDisplay(MeasredTemp);
-			
-			Delay_ms(2000);
-			
-			ClearDisp();
-			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCalStep+2)*10);
-			AutoCalStep = 10;
-		break;
-/*				
-	    case 2:
-			memTempDataDisplay(30);
-			
-			if(MeasredTemp <= AutoCalTemp3 + 20 && MeasredTemp >= AutoCalTemp3 - 20)
-			{
-				DisplayRGB(GREEN);
-				SuccessDisp();	
-				passFlag3 = true;
-			}
-			else 
-			{
-				DisplayRGB(RED);
-				FailDisp();
-				passFlag3 = false;
-			}
-			Delay_ms(1000);
-			
-			tempValueDisplay(MeasredTemp);
-			
-			Delay_ms(2000);
-			
-			NUMBER_CLEAR(1);
-			NUMBER_CLEAR(2);
-			NUMBER_CLEAR(3);
-			LCD->DP1 = 0;
-			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCalStep+1)*10);
-		break;
-		
-		case 3:
-			memTempDataDisplay(40);
-			
-			if(MeasredTemp <= AutoCalTemp4 + 20 && MeasredTemp >= AutoCalTemp4 - 20)
-			{
-				DisplayRGB(GREEN);
-				SuccessDisp();
-				passFlagLow = true;
-				
-			}
-			else 
-			{
-				DisplayRGB(RED);
-				FailDisp();
-				passFlagLow = false;
-			}
-			Delay_ms(1000);
-			
-			tempValueDisplay(MeasredTemp);
-			
-			Delay_ms(2000);
-			
-			NUMBER_CLEAR(1);
-			NUMBER_CLEAR(2);
-			NUMBER_CLEAR(3);
-			LCD->DP1 = 0;
-			DisplayRGB(BLUE);
-			memTempDataDisplay((AutoCalStep+2)*10);
-		  
-		break;
-		
-		case 4:
-			memTempDataDisplay(50);
-			
-			if(MeasredTemp <= AutoCalTemp5 + 20 && MeasredTemp >= AutoCalTemp5 - 20)
-			{
-				DisplayRGB(GREEN);
-				SuccessDisp();	
-				passFlagHigh = true;
-			}
-			else 
-			{
-				DisplayRGB(RED);
-				FailDisp();
-				passFlagHigh = false;
-			}
-			Delay_ms(1000);
-			
-			tempValueDisplay(MeasredTemp);
-			
-			Delay_ms(2000);
-		break;
-*/
-		default:
-			AutoCaliFlag_p = 1;
-
-			this->Delay_ms(500);
-			this->Beep();
-			this->Delay_ms(100);	   
-			this->Beep();
-			this->POWER_DOWN(); // 파워다운									
-		break;
-	}
-}        
-
-INT8 IWON_TEMP_FUNC::GET_AutoCalStep(VOID)
-{
-	return AutoCalStep;
 }
 
 VOID IWON_TEMP_FUNC::ClearDisp(VOID)
@@ -819,3 +627,13 @@ VOID IWON_TEMP_FUNC::BuzzerCMD(BOOL state)
 		LCD->X4 = 1;
 	}
 }
+
+VOID IWON_TEMP_FUNC::TempValueDisplay(INT16 value, BOOL fillZero)
+{
+	tempValueDisplay(value, fillZero);
+}
+VOID IWON_TEMP_FUNC::TempValueDisplay(INT16 value)
+{
+	TempValueDisplay(value, true);
+}
+

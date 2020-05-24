@@ -602,7 +602,7 @@ ITStatus CLK_GetITStatus(CLK_IT_TypeDef CLK_IT)
 
 
 /**
-  * @brief  Clears the CLK’s interrupt pending bits.
+  * @brief  Clears the CLKï¿½s interrupt pending bits.
   * @param  CLK_IT : specifies the interrupt pending bits.
   *    This parameter can be a value of CLK_IT_TypeDef
   * @retval None

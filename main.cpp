@@ -10,10 +10,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stm8l15x.h"
-#include "lcd_driver.h"
+//#include "lcd_driver.h"
 
 #include "IWON_TASK.h"
 #include "IWON_TEST.h"
+#include "IWON_CAL.h"
 
 // 아이원 온도계 테스크 클래스
 IWON_TEMP_TASK *IWonTask = NULL;
@@ -201,6 +202,7 @@ void keyScan()
 int main(void)
 {
 	IWON_TEMP_TEST *IWonTest = NULL;
+	IWON_TEMP_CAL *IWonCal = NULL;
 
 	IWON_TEMP_VAVG *TEMP_AVG = new IWON_TEMP_VAVG();
 	IWonFunc = new IWON_TEMP_FUNC();
@@ -224,7 +226,7 @@ int main(void)
 		IWonFunc->DisplayRGB(GREEN);
 
 	
-	//tempValueDisplay(0);
+	//IWonFunc->TempValueDisplay(0);
 	IWonFunc->Beep();
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
@@ -248,12 +250,12 @@ int main(void)
 	// 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 	if( AMB < 100 || 500 < AMB )
 	{ 
-		//tempValueDisplay(AMB, false);
+		//IWonFunc->TempValueDisplay(AMB, false);
 		//IWonFunc->Delay_ms(1000);
 		IWonFunc->SystemError();
 	}
 	
-	//tempValueDisplay(AMB, false);
+	//IWonFunc->TempValueDisplay(AMB, false);
 	//IWonFunc->Delay_ms(1000);
 
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1);		
@@ -307,7 +309,7 @@ int main(void)
 				{
 					if(IWonTask->DeviceTestModeValue==1) 
 					{
-						tempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
+						IWonFunc->TempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
 					}
 					IWonTask->DeviceTestModeValue++;
 				}
@@ -317,18 +319,18 @@ int main(void)
 					// 숨은기능 (아래의 SW_PWR_ON 관련) : SW_PWR_ON 을 오래 누르고 있으면 배터리 값이 표시 된다.
 					if(IWonTask->DeviceTestModeValue==1) 
 					{
-						tempValueDisplay(IWonTask->BATmV/100, false);		// <= 배터리 전압값 표시
+						IWonFunc->TempValueDisplay(IWonTask->BATmV/100, false);		// <= 배터리 전압값 표시
 					}
 					else
 					if(IWonTask->DeviceTestModeValue==150) 
 					{
-						tempValueDisplay(AMB);					// 센서 온도값 표시
+						IWonFunc->TempValueDisplay(AMB);					// 센서 온도값 표시
 					}
 					else
 					if(IWonTask->DeviceTestModeValue==300) 
 					{
-						tempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
-						//tempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
+						IWonFunc->TempValueDisplay(IWonTask->Get_NTC_mV(), false);		// <= 센서 온도의 전압 (NTC)
+						//IWonFunc->TempValueDisplay(IWonTask->Get_ADC_CAL(), false);		// <= ADC 보정 값					
 					}
 					else
 					if(IWonTask->DeviceTestModeValue==450)	// - - - 표시
@@ -351,11 +353,12 @@ int main(void)
 			IWonFunc->Delay_ms(10);
 			IWonTask->ClearPowerDown();
 		}
-		tempValueDisplay(0);		
+		IWonFunc->TempValueDisplay(0);		
 	}
 	else 
 	{
 		// 오토 캘리브레이션 동작으로 진입
+		IWonCal = new IWON_TEMP_CAL();
 
 	 	IWonFunc->LCD_clear();
 		IWonFunc->DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
@@ -580,7 +583,7 @@ int main(void)
 								if(!IsAutoCalCompleted)
 								{
 									// 측정 된 온도 값을 받아 CAL
-									IWonFunc->AUTOCAL(IWonTask); // 실제 AUTO CAL 하는 부분
+									IWonCal->AUTOCAL(IWonTask, IWonFunc); // 실제 AUTO CAL 하는 부분
 								}
 								else 
 								{

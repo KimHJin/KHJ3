@@ -1572,6 +1572,9 @@
     <name>$PROJ_DIR$\eeprom.c</name>
   </file>
   <file>
+    <name>$PROJ_DIR$\IWON_CAL.cpp</name>
+  </file>
+  <file>
     <name>$PROJ_DIR$\IWON_FUNC.cpp</name>
   </file>
   <file>

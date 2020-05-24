@@ -561,6 +561,7 @@ void tempValueDisplay(INT16 value, BOOL fillZero)
 	displayNumber(thirdNumber, 2);
 	displayNumber(forthNumber, 3);
 }
+
 void tempValueDisplay(INT16 value)
 {
 	tempValueDisplay(value, true);

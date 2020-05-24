@@ -46,20 +46,12 @@ public:
 	INT8 LowBatteryFlag;
 	INT8 Measure_test_flag;
 	INT8 LastMeasred;
-	
-	INT8 AutoCalStep;
-	
-	BOOL LowHigh_FLag;
-	
-	BOOL passFlag2;
-	BOOL passFlag3;
-	BOOL passFlagHigh;
-	BOOL passFlagLow;
-	
+		
+	BOOL LowHigh_FLag;		
 	BOOL measuredFlag;
-	
+		
 	INT8 AutoCalDelayCount;
-	
+
 	INT16 UnitCalc(INT16 temp, BOOL unit);
 	
 	VOID LowBatteryDisplay_2v0(VOID);
@@ -92,18 +84,17 @@ public:
 	
 	VOID ALLCLEAR(VOID);
 	
-	VOID AUTOCAL(IWON_TEMP_TASK *IWonTask);
-	INT8 GET_AutoCalStep(VOID);
-
 	VOID SuccessDisp(VOID);
 	VOID FailDisp(VOID);
 	VOID BuzzerCMD(BOOL state);
 
+	VOID ClearDisp(VOID);
+
+	VOID TempValueDisplay(INT16 value, BOOL fillZero);
+	VOID TempValueDisplay(INT16 value);
 
 private:   
 	VOID Init(VOID);
-	VOID ClearDisp(VOID);
-
 };
 
 #endif
