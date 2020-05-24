@@ -9,18 +9,24 @@
 
 #include "IWON_ENV.h"
 #include "IWON_FUNC.h"
-//#include "eeprom.h"
+
+
+/**
+ * 오토 캘리브레이션
+ * /
 
 // 오토 캘리브레이션 타겟 온도
 #define AutoCalTemp1 330	/* 첫번째 : 사물온도 33.0 도 */
 //#define AutoCalTemp2 400	/* 두번째 : 사물온도 40.0 도 */
-#define AutoCalTemp2 330	/* 두번째 : 사물온도 40.0 도 */
+#define AutoCalTemp2 330	/* 두번째 : 사물온도 40.0 도 - 테스트를 위해서 */
 
 #define AutoCalTemp3 405
 #define AutoCalTemp4 320 
 #define AutoCalTemp5 440
 
-#define VoltagemV 1175
+#define AutoCalTorn 5		/* 허용오차 */
+
+
 
 // 생성자
 IWON_TEMP_FUNC::IWON_TEMP_FUNC()
@@ -275,6 +281,7 @@ INT16 IWON_TEMP_FUNC::UnitCalc(INT16 temp, BOOL unit)
 }
 
 
+// 배터리 2.0 볼트 이하 , 경고음과 함께 전원을 끈다.
 VOID IWON_TEMP_FUNC::LowBatteryDisplay_2v0(VOID)
 {
 	LowBatteryFlag = 1;
@@ -283,11 +290,13 @@ VOID IWON_TEMP_FUNC::LowBatteryDisplay_2v0(VOID)
 	POWER_DOWN();
 }
 
+// 배터리 2.2 볼트 이하 , 저전압 배터리 아이콘을 깜빡이게 한다.
 VOID IWON_TEMP_FUNC::LowBatteryDisplay_2v2(VOID)
 {
 	LowBatteryFlag = 1;
 }
 
+// 배터리 2.4 볼트 이하 , 저전압 배터리 아이콘을 켠다.
 VOID IWON_TEMP_FUNC::LowBatteryDisplay_2v4(VOID)
 {
 	LCD->X5 = 1;
@@ -422,8 +431,7 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 			caliData_p = -99;
 		  
 		SpecialModeDisp(caliData_p);
-	}
-	
+	}	
 }
 
 VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
@@ -566,6 +574,7 @@ VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
 	  
 	ClearDisp();
 
+	// - - - 표시
 	LCD->G1 = 1;
 	LCD->G2 = 1;
 	LCD->G3 = 1;
@@ -633,7 +642,7 @@ VOID IWON_TEMP_FUNC::AUTOCAL(IWON_TEMP_TASK *IWonTask)
 			// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
 
 		    memTempDataDisplay(20);
-			if(AutoCalTemp2 - 5 <= MeasredTemp && MeasredTemp <= AutoCalTemp2 + 5)
+			if(AutoCalTemp2 - AutoCalTorn <= MeasredTemp && MeasredTemp <= AutoCalTemp2 + AutoCalTorn)
 			{
 				DisplayRGB(GREEN);
 				SuccessDisp();

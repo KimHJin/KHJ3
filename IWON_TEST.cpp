@@ -46,12 +46,12 @@ VOID IWON_TEMP_TEST::SetTestModeFlag(INT8 testModeFlag)
 {
 	TestModeFlag = testModeFlag;
 }
-INT8 IWON_TEMP_TEST::IncTestCount()
+INT8 IWON_TEMP_TEST::IncTestCount(VOID)
 {
 	TestCount++;
 	return TestCount;
 }
-INT8 IWON_TEMP_TEST::DecTestCount()
+INT8 IWON_TEMP_TEST::DecTestCount(VOID)
 {
 	TestCount--;
 	if(TestCount<0) TestCount = 0;

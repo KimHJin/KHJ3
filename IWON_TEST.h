@@ -31,8 +31,8 @@ public:
 	VOID SetTestModeFlag(INT8 testModeFlag);
 
 
-	INT8 IncTestCount();
-	INT8 DecTestCount();
+	INT8 IncTestCount(VOID);
+	INT8 DecTestCount(VOID);
 		
 	VOID VDD_Test(INT16 VDDmV);
 	VOID BAT_Test(INT16 BATmV);
