@@ -63,6 +63,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 		case 1:
 			{
 				// AUTO CAL STEP 1
+				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
 				memTempDataDisplay(AutoCalStep * 10);
 
@@ -95,28 +96,34 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 		case 4:
 		case 5:
 			{
-				// AUTO CAL STEP 2 ~ 5
+				// AUTO CAL STEP 2		: 사물모드
+				// AUTO CAL STEP 3 ~ 5	: 체온모드
 				// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
 				memTempDataDisplay(AutoCalStep * 10);
 
-				INT32 target = AutoCalTemp2;
-				if(AutoCalStep==3) target = AutoCalTemp3;
-				if(AutoCalStep==4) target = AutoCalTemp4;
-				if(AutoCalStep==5) target = AutoCalTemp5;
+				INT32 target = AutoCalTemp2;				// 사물모드
+				if(AutoCalStep==3) target = AutoCalTemp3;	// 체온모드
+				if(AutoCalStep==4) target = AutoCalTemp4;	// 체온모드
+				if(AutoCalStep==5) target = AutoCalTemp5;	// 체온모드
 
 				// 정상 범위 안 : 녹색 램프 => 다음 단계
 				// 정상 범위 바깥 : 적색 램프, 저장된 보정값 삭제 => 전원 OFF
 				if(IS_SUCCESS(target, IWonTask->MeasredTemp))
 				{
 					SUCCESS(IWonFunc);
-
+					
+					if(AutoCalStep==3)
+					{
+						// 인체모드로 변경해야 한다.
+						IWonFunc->MeasureModeTask();
+					}
 					if(AutoCalStep==5)
 					{
 						// 오토 캘리브레이션 완료 저장
 						AutoCaliFlag_p = 1;
 
 						IWonFunc->DisplayRGB(GREEN);
-
+						IWonFunc->OkDisp();
 						IWonFunc->Delay_ms(500);
 						IWonFunc->Beep();
 						IWonFunc->Delay_ms(100);	   

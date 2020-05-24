@@ -65,8 +65,8 @@
 #define SW_PWR_ON    !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
 #define SW_LEFT_ON   !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
 #define SW_RIGHT_ON  !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
-#define LED_ON()      GPIO_LOW(GPIOD, GPIO_Pin_6)  
-#define LED_OFF()     GPIO_HIGH(GPIOD, GPIO_Pin_6)  
+#define BEAM_ON()      GPIO_LOW(GPIOD, GPIO_Pin_6)  
+#define BEAM_OFF()     GPIO_HIGH(GPIOD, GPIO_Pin_6)  
 
 #define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
 

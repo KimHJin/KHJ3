@@ -48,7 +48,6 @@ public:
 	INT8 LastMeasred;
 		
 	BOOL LowHigh_FLag;		
-	BOOL measuredFlag;
 		
 	INT8 AutoCalDelayCount;
 
@@ -86,6 +85,9 @@ public:
 	
 	VOID SuccessDisp(VOID);
 	VOID FailDisp(VOID);
+	VOID OkDisp(VOID);
+	VOID VerDisp(VOID);
+
 	VOID BuzzerCMD(BOOL state);
 
 	VOID ClearDisp(VOID);

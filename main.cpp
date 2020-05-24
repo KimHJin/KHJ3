@@ -10,7 +10,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "stm8l15x.h"
-//#include "lcd_driver.h"
 
 #include "IWON_TASK.h"
 #include "IWON_TEST.h"
@@ -29,7 +28,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 	IWonTask->Time();
 	
 	if(IWonFunc->LowBatteryFlag)
-	    IWonTask->lowBatteryDisp();
+	    IWonTask->LowBatteryDisp();
 
 	//
 	// 필요한 경우 여기에 코드를 넣어서 사용하세요.
@@ -173,7 +172,6 @@ void keyScan()
 				if (delayCount == 350)
 				{
 					// 수동 보정모드 진입시킴
-
 					IWonFunc->Beep();
 					IWonFunc->SpecialModeTask(IWonTask);
 				}
@@ -250,13 +248,9 @@ int main(void)
 	// 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 	if( AMB < 100 || 500 < AMB )
 	{ 
-		//IWonFunc->TempValueDisplay(AMB, false);
-		//IWonFunc->Delay_ms(1000);
 		IWonFunc->SystemError();
 	}
 	
-	//IWonFunc->TempValueDisplay(AMB, false);
-	//IWonFunc->Delay_ms(1000);
 
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1);		
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
@@ -309,7 +303,7 @@ int main(void)
 				{
 					if(IWonTask->DeviceTestModeValue==1) 
 					{
-						IWonFunc->TempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
+						IWonFunc->VerDisp();		// <= 펌웨어 버전 표시
 					}
 					IWonTask->DeviceTestModeValue++;
 				}
@@ -366,6 +360,8 @@ int main(void)
 		
 		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
+
+		IWonFunc->VerDisp();		// <= 펌웨어 버전 표시
 
 		memTempDataDisplay(10);
 	}
@@ -449,25 +445,22 @@ int main(void)
 					IWonFunc->DisplayRGB(GREEN);
 
 				IWonFunc->MeasuringDisp();
-				LED_ON();
+				BEAM_OFF();
 				IWonFunc->Beep();
 			}
-			else if (IWonTask->Measuring)
+			else 
+			if (IWonTask->Measuring)
 			{ // 온도 측정
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
-				if (AMB < 150 || 400 < AMB)
-				{ // 사용 환경의 온도가 15 도 보다 낮고 40 도 보다 높으면 에러를 발생한다.
+				if (AMB < 100 || 500 < AMB)
+				{ // 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 					IWonFunc->SystemError();
-
 					IWonTask->MeasredTemp = 0;
-
-					IWonTask->Measuring = false;
-					IWonTask->Measured = true;
-					IWonTask->MeasredCount1 = 0;
-					IWonTask->MeasredCount2 = 0;
-					LED_OFF();
+					IWonTask->SetMeasredStates();
+					BEAM_OFF();
 				}
-				else if (AMB > 0)
+				else 
+				if (AMB > 0)
 				{
 				    IWonFunc->LowHigh_FLag = 0;
 					if (measureMode_p == 1)
@@ -475,92 +468,76 @@ int main(void)
 						// 인체 측정
 						MEASURED_TEMP = IWonTask->Get_BDY_TEMP();
 
-						if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
-						{ // LOW  Less Than 33.4 C
-							IWonTask->RetryCount++;
-							if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
-							{
-								IWonTask->Measured = false;
-								IWonTask->Measuring = true;
-								IWonTask->MeasredTemp = -100;
-								IWonTask->Clear_AVG();
-								IWonFunc->Delay_ms(300);
-								continue;
-							}
-
+						if (!IsAutoCalCompleted)
+						{
 							IWonTask->MeasredTemp = MEASURED_TEMP;
-							if(IsAutoCalCompleted)
-							{
+
+							// 측정 된 온도 값을 받아 CAL
+							IWonCal->AUTOCAL(IWonTask, IWonFunc); // 실제 AUTO CAL 하는 부분
+
+							IWonTask->SetMeasredStates();
+						}
+						else 
+						{
+							if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
+							{ 
+								// LOW  Less Than 33.4 C
+								IWonTask->RetryCount++;
+								if(IWonTask->RetryCount<3)	// 인체 측정에서 초기 한번 LOW 는 다시 측정 시도한다.
+								{
+									IWonTask->Measured = false;
+									IWonTask->Measuring = true;
+									IWonTask->MeasredTemp = -100;
+									IWonTask->Clear_AVG();
+									IWonFunc->Delay_ms(300);
+									continue;
+								}
+
+								IWonTask->MeasredTemp = MEASURED_TEMP;
+
 								IWonFunc->DisplayRGB(BLUE);
-								LED_OFF();
+								BEAM_OFF();
 								IWonFunc->DisplayLOW();
 								
 								IWonFunc->Beep();
-							}
-							else
-							{
-								IWonFunc->measuredFlag = true;
-							}
-							
-							IWonTask->Measuring = false;
-							IWonTask->Measured = true;
-							IWonTask->MeasredCount1 = 0;
-							IWonTask->MeasredCount2 = 0;
-							
-						}
-						else if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
-						{ // HIGH Greater Than 42.5 C
-							IWonTask->MeasredTemp = MEASURED_TEMP;
-							
-							if(IsAutoCalCompleted)
-							{
-								IWonFunc->DisplayRGB(BLUE);
-								LED_OFF();
-								IWonFunc->DisplayHIGH();
 								
-								IWonFunc->Beep();
+								IWonTask->SetMeasredStates();
 							}
 							else 
-							{
-								IWonFunc->measuredFlag = true;
-							}
-							IWonTask->Measuring = false;
-							IWonTask->Measured = true;
-							IWonTask->MeasredCount1 = 0;
-							IWonTask->MeasredCount2 = 0;
-							
-						}
-						else
-						{
-							if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
-							{
-								TEMP_AVG->Init();
-								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-								IWonTask->MeasredCount1 = 1;
+							if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
+							{ 
+								// HIGH Greater Than 42.5 C
+								IWonTask->MeasredTemp = MEASURED_TEMP;
+								
+								IWonFunc->DisplayRGB(BLUE);
+								BEAM_OFF();
+								IWonFunc->DisplayHIGH();								
+								IWonFunc->Beep();
+								IWonTask->SetMeasredStates();
 							}
 							else
 							{
-								IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
-								IWonTask->MeasredCount1++;
-								IWonTask->MeasredCount2++;
-
-								if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
+								if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
 								{
-								    LED_OFF();
-									if(IsAutoCalCompleted) 
-										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);
-									else 
-										IWonFunc->measuredFlag = true; 		
-									  
-									  
-									IWonTask->Measuring = false;
-									IWonTask->Measured = true;
-									IWonTask->MeasredCount1 = 0;
-									IWonTask->MeasredCount2 = 0;
-									
+									TEMP_AVG->Init();
+									IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+									IWonTask->MeasredCount1 = 1;
+								}
+								else
+								{
+									IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
+									IWonTask->MeasredCount1++;
+									IWonTask->MeasredCount2++;
+
+									if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
+									{
+										BEAM_OFF();
+										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);																				
+										IWonTask->SetMeasredStates();
+									}
 								}
 							}
-						}						
+						}
 					}
 					else
 					{
@@ -587,14 +564,11 @@ int main(void)
 								}
 								else 
 								{
-								    LED_OFF();
+								    BEAM_OFF();
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 								}
 
-								IWonTask->Measuring = false;
-								IWonTask->Measured = true;
-								IWonTask->MeasredCount1 = 0;
-								IWonTask->MeasredCount2 = 0;
+								IWonTask->SetMeasredStates();
 							}
 						}
 					}

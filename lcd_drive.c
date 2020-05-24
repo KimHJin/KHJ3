@@ -1,7 +1,369 @@
 #include "lcd_driver.h"
 
 
-void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
+
+VOID NUMBER_CLEAR(INT8 position)
+{
+	switch(position)
+	{
+		case 1:
+			NUMBER_CLEAR_IN(1);
+			break;
+		case 2:
+			NUMBER_CLEAR_IN(2);
+			break;
+		case 3:
+			NUMBER_CLEAR_IN(3);
+			break;
+		case 4:
+			NUMBER_CLEAR_IN(4);
+			break;
+		case 5:
+			NUMBER_CLEAR_IN(5);
+			break;
+		case 6:
+			NUMBER_CLEAR_IN(6);
+			break;
+		case 7:
+			NUMBER_CLEAR_IN(7);
+			break;
+		case 8:
+			NUMBER_CLEAR_IN(8);
+			break;
+	}
+}	
+
+
+VOID ALL_NUMBER_CLEAR(VOID)
+{
+	NUMBER_CLEAR(1);
+	NUMBER_CLEAR(2);
+	NUMBER_CLEAR(3);
+}
+
+VOID NUMBER_0(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_0_IN(1);
+			break;
+		case 2:
+			NUMBER_0_IN(2);
+			break;
+		case 3:
+			NUMBER_0_IN(3);
+			break;
+		case 4:
+			NUMBER_0_IN(4);
+			break;
+		case 5:
+			NUMBER_0_IN(5);
+			break;
+		case 6:
+			NUMBER_0_IN(6);
+			break;
+		case 7:
+			NUMBER_0_IN(7);
+			break;
+		case 8:
+			NUMBER_0_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_1(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_1_IN(1);
+			break;
+		case 2:
+			NUMBER_1_IN(2);
+			break;
+		case 3:
+			NUMBER_1_IN(3);
+			break;
+		case 4:
+			NUMBER_1_IN(4);
+			break;
+		case 5:
+			NUMBER_1_IN(5);
+			break;
+		case 6:
+			NUMBER_1_IN(6);
+			break;
+		case 7:
+			NUMBER_1_IN(7);
+			break;
+		case 8:
+			NUMBER_1_IN(8);
+			break;
+	}
+}
+
+
+VOID NUMBER_2(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_2_IN(1);
+			break;
+		case 2:
+			NUMBER_2_IN(2);
+			break;
+		case 3:
+			NUMBER_2_IN(3);
+			break;
+		case 4:
+			NUMBER_2_IN(4);
+			break;
+		case 5:
+			NUMBER_2_IN(5);
+			break;
+		case 6:
+			NUMBER_2_IN(6);
+			break;
+		case 7:
+			NUMBER_2_IN(7);
+			break;
+		case 8:
+			NUMBER_2_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_3(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_3_IN(1);
+			break;
+		case 2:
+			NUMBER_3_IN(2);
+			break;
+		case 3:
+			NUMBER_3_IN(3);
+			break;
+		case 4:
+			NUMBER_3_IN(4);
+			break;
+		case 5:
+			NUMBER_3_IN(5);
+			break;
+		case 6:
+			NUMBER_3_IN(6);
+			break;
+		case 7:
+			NUMBER_3_IN(7);
+			break;
+		case 8:
+			NUMBER_3_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_4(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_4_IN(1);
+			break;
+		case 2:
+			NUMBER_4_IN(2);
+			break;
+		case 3:
+			NUMBER_4_IN(3);
+			break;
+		case 4:
+			NUMBER_4_IN(4);
+			break;
+		case 5:
+			NUMBER_4_IN(5);
+			break;
+		case 6:
+			NUMBER_4_IN(6);
+			break;
+		case 7:
+			NUMBER_4_IN(7);
+			break;
+		case 8:
+			NUMBER_4_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_5(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_5_IN(1);
+			break;
+		case 2:
+			NUMBER_5_IN(2);
+			break;
+		case 3:
+			NUMBER_5_IN(3);
+			break;
+		case 4:
+			NUMBER_5_IN(4);
+			break;
+		case 5:
+			NUMBER_5_IN(5);
+			break;
+		case 6:
+			NUMBER_5_IN(6);
+			break;
+		case 7:
+			NUMBER_5_IN(7);
+			break;
+		case 8:
+			NUMBER_5_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_6(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_6_IN(1);
+			break;
+		case 2:
+			NUMBER_6_IN(2);
+			break;
+		case 3:
+			NUMBER_6_IN(3);
+			break;
+		case 4:
+			NUMBER_6_IN(4);
+			break;
+		case 5:
+			NUMBER_6_IN(5);
+			break;
+		case 6:
+			NUMBER_6_IN(6);
+			break;
+		case 7:
+			NUMBER_6_IN(7);
+			break;
+		case 8:
+			NUMBER_6_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_7(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_7_IN(1);
+			break;
+		case 2:
+			NUMBER_7_IN(2);
+			break;
+		case 3:
+			NUMBER_7_IN(3);
+			break;
+		case 4:
+			NUMBER_7_IN(4);
+			break;
+		case 5:
+			NUMBER_7_IN(5);
+			break;
+		case 6:
+			NUMBER_7_IN(6);
+			break;
+		case 7:
+			NUMBER_7_IN(7);
+			break;
+		case 8:
+			NUMBER_7_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_8(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_8_IN(1);
+			break;
+		case 2:
+			NUMBER_8_IN(2);
+			break;
+		case 3:
+			NUMBER_8_IN(3);
+			break;
+		case 4:
+			NUMBER_8_IN(4);
+			break;
+		case 5:
+			NUMBER_8_IN(5);
+			break;
+		case 6:
+			NUMBER_8_IN(6);
+			break;
+		case 7:
+			NUMBER_8_IN(7);
+			break;
+		case 8:
+			NUMBER_8_IN(8);
+			break;
+	}
+}
+
+VOID NUMBER_9(INT8 position)
+{
+	NUMBER_CLEAR(position);
+	switch(position)
+	{
+		case 1:
+			NUMBER_9_IN(1);
+			break;
+		case 2:
+			NUMBER_9_IN(2);
+			break;
+		case 3:
+			NUMBER_9_IN(3);
+			break;
+		case 4:
+			NUMBER_9_IN(4);
+			break;
+		case 5:
+			NUMBER_9_IN(5);
+			break;
+		case 6:
+			NUMBER_9_IN(6);
+			break;
+		case 7:
+			NUMBER_9_IN(7);
+			break;
+		case 8:
+			NUMBER_9_IN(8);
+			break;
+	}
+}
+
+
+VOID LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 {
 	CLK_PeripheralClockConfig(CLK_Peripheral_RTC, ENABLE);
 	CLK_PeripheralClockConfig(CLK_Peripheral_LCD, ENABLE);
@@ -24,9 +386,7 @@ void LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 
 	LCD_Cmd(ENABLE);
 
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+	ALL_NUMBER_CLEAR();
 	
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
@@ -43,484 +403,55 @@ void displayNumber(INT8 number, INT8 position)
 {
 	switch (number)
 	{
-	case -1:
+		case -1:
+			NUMBER_CLEAR(position);
+			break;
 
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-		}
+		case 0:
+			NUMBER_0(position);
+			break;
 
-		break;
+		case 1:
+			NUMBER_1(position);
+			break;
 
-	case 0:
+		case 2:
+			NUMBER_2(position);
+			break;
 
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_0(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_0(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_0(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_0(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_0(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_0(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_0(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_0(8);
-		}
+		case 3:
+			NUMBER_3(position);
+			break;
 
-		break;
+		case 4:
+			NUMBER_4(position);
+			break;
 
-	case 1:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_1(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_1(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_1(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_1(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_1(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_1(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_1(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_1(8);
-		}
+		case 5:
+			NUMBER_5(position);
+			break;
 
-		break;
+		case 6:
+			NUMBER_6(position);
+			break;
 
-	case 2:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_2(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_2(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_2(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_2(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_2(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_2(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_2(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_2(8);
-		}
-		break;
+		case 7:
+			NUMBER_7(position);
+			break;
 
-	case 3:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_3(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_3(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_3(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_3(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_3(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_3(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_3(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_3(8);
-		}
-		break;
+		case 8:
+			NUMBER_8(position);
+			break;
 
-	case 4:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_4(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_4(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_4(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_4(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_4(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_4(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_4(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_4(8);
-		}
-		break;
-
-	case 5:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_5(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_5(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_5(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_5(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_5(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_5(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_5(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_5(8);
-		}
-		break;
-
-	case 6:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_6(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_6(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_6(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_6(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_6(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_6(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_6(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_6(8);
-		}
-		break;
-
-	case 7:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_7(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_7(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_7(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_7(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_7(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_7(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_7(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_7(8);
-		}
-		break;
-
-	case 8:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_8(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_8(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_8(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_8(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_8(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_8(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_8(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_8(8);
-		}
-		break;
-
-	case 9:
-		if (position == 1)
-		{
-			NUMBER_CLEAR(1);
-			NUMBER_9(1);
-		}
-		else if (position == 2)
-		{
-			NUMBER_CLEAR(2);
-			NUMBER_9(2);
-		}
-		else if (position == 3)
-		{
-			NUMBER_CLEAR(3);
-			NUMBER_9(3);
-		}
-		else if (position == 4)
-		{
-			NUMBER_CLEAR(4);
-			NUMBER_9(4);
-		}
-		else if (position == 5)
-		{
-			NUMBER_CLEAR(5);
-			NUMBER_9(5);
-		}
-		else if (position == 6)
-		{
-			NUMBER_CLEAR(6);
-			NUMBER_9(6);
-		}
-		else if (position == 7)
-		{
-			NUMBER_CLEAR(7);
-			NUMBER_9(7);
-		}
-		else if (position == 8)
-		{
-			NUMBER_CLEAR(8);
-			NUMBER_9(8);
-		}
-
-		break;
+		case 9:
+			NUMBER_9(position);
+			break;
 	}
 }
 
 void tempValueDisplay(INT16 value, BOOL fillZero)
 {	
-	NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
+	ALL_NUMBER_CLEAR();
 
 	// 소수점
 	LCD->DP1 = 1;

@@ -57,8 +57,10 @@ public:
 	VOID ClearPowerDown(VOID);
 
 	VOID YellowDisp(VOID);
-	VOID lowBatteryDisp(VOID);
+	VOID LowBatteryDisp(VOID);
 	
+	VOID SetMeasredStates(VOID);
+
 
   	INT16 BATmV;
 	INT16 VDDmV;

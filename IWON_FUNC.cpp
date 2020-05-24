@@ -28,7 +28,6 @@ VOID IWON_TEMP_FUNC::Init(VOID)
 	Measure_test_flag = 0;
 	LastMeasred = 0;  
 	LowHigh_FLag = false;
-	measuredFlag = false;
 
 	AutoCalDelayCount = 0;
 }
@@ -391,6 +390,17 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 {
 	IWonTask->ClearPowerDown();
 
+	if (SW_LEFT_ON)
+	{
+		Delay_ms(400);
+		caliData_p--;
+		
+		if(caliData_p < -99)
+			caliData_p = -99;
+		  
+		SpecialModeDisp(caliData_p);
+	}	
+	else 
 	if (SW_RIGHT_ON)
 	{
 		Delay_ms(400);		
@@ -401,16 +411,6 @@ VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
 
 		SpecialModeDisp(caliData_p);
 	}
-	else if (SW_LEFT_ON)
-	{
-		Delay_ms(400);
-		caliData_p--;
-		
-		if(caliData_p < -99)
-			caliData_p = -99;
-		  
-		SpecialModeDisp(caliData_p);
-	}	
 }
 
 VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
@@ -575,10 +575,7 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 
 VOID IWON_TEMP_FUNC::ClearDisp(VOID)
 {
-    NUMBER_CLEAR(1);
-	NUMBER_CLEAR(2);
-	NUMBER_CLEAR(3);
-	
+	ALL_NUMBER_CLEAR();
 	LCD->DP1 = 0;
 }
 
@@ -613,6 +610,38 @@ VOID IWON_TEMP_FUNC::FailDisp(VOID)
 	LCD->F2 = 1;
 	LCD->G2 = 1;
 }
+
+VOID IWON_TEMP_FUNC::OkDisp(VOID)
+{
+	ClearDisp();
+
+	LCD->C1 = 1; // o
+	LCD->D1 = 1;
+	LCD->E1 = 1;
+	LCD->G1 = 1;
+
+	LCD->B2 = 1; // k
+	LCD->C2 = 1;
+	LCD->D2 = 1;
+	LCD->F2 = 1;
+	LCD->G2 = 1;	
+
+	LCD->B3 = 1; // y
+	LCD->D3 = 1;
+	LCD->E3 = 1;
+	LCD->F3 = 1;
+	LCD->G3 = 1;	
+}
+
+VOID IWON_TEMP_FUNC::VerDisp(VOID)
+{
+	TempValueDisplay(DEFINED_FW_VER, false);		// <= 펌웨어 버전 표시
+
+	LCD->C1 = 1; // (V)ER
+	LCD->D1 = 1;
+	LCD->E1 = 1;
+}
+
 
 VOID IWON_TEMP_FUNC::BuzzerCMD(BOOL state)
 {

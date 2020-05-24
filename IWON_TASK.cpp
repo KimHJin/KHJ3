@@ -282,20 +282,6 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
-		//VreftpcmV = 1105;
-		//if(Vreftpc>0)
-			//VreftpcmV = CALC_TPC_mV(330);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
-
-		//VrefntcmV = 1206;
-		//tempValueDisplay((INT16)VrefbatmV, false);
-
-		//tempValueDisplay((INT16)OFS_VALUE);
-		//tempValueDisplay(-204);
-
-		//tempValueDisplay((INT16)(VreftpcmV - (VreftpcmV/1000)*1000));
-
-		//printf("int=%dmV,vdd=%dmV,bat=%dmV\r\n", (uint16_t)VrefintmV, (uint16_t)VrefvddmV, (uint16_t)VrefbatmV);
-		//printf("ntc=%dmV,tpc=%dmV\r\n\r\n", (uint16_t)VrefntcmV, (uint16_t)VreftpcmV);
 
 		// V0 는 써미스터에 걸리는 전압
 		// R0 는 써미스터와 병렬로 연결된 저항과 병렬 합계 저항 값
@@ -306,17 +292,9 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 		// R3 = ((R2/10)*(R0/10)*10) / (R2-R0);
 		R3 = ((R2/10)*R0) / (R2-R0);
 
-		//tempValueDisplay(R3, false);
-
-		//printf("CAL=%d, VDD=%ld, V0=%ld, R0=%ld, R1=%ld, R2=%ld, R3=%ld\r\n", adcCalValue, VDD, V0, R0, R1, R2, R3);
 		
 		INT32 MRES = R3 * 10;
-		// printf("MRES=%ld\r\n", MRES);		
-		//tempValueDisplay(MRES / 100, false);
-		//Delay_ms(500);
-
 		INT16 ntcIndex = GetNTCIndex(MRES);
-		//tempValueDisplay(ntcIndex, false);
 		if (ntcIndex == 0)
 		{
 			AMB_TEMP = -1; // Low
@@ -346,17 +324,15 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			if (TBL == -1)
 			{
 				BDY_TEMP = -1; // LOW
-											 //printf("BDY_TEMP LOW\r\n");
 			}
-			else if (TBL == -2)
+			else 
+			if (TBL == -2)
 			{
 				BDY_TEMP = -2; // HIGH
-											 //printf("BDY_TEMP HIGH\r\n");
 			}
 			else
 			{
 				BDY_TEMP = OBJ_TEMP + (INT16)TBL;
-				//printf("BDY_TEMP %d.%d\r\n", BDY_TEMP/10, BDY_TEMP%10);
 			}
 		}
 
@@ -560,7 +536,7 @@ VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 	powerDown_msec = 0;
 }
 
-VOID IWON_TEMP_TASK::lowBatteryDisp(VOID)
+VOID IWON_TEMP_TASK::LowBatteryDisp(VOID)
 {
   lowBattery_Count++;
   
@@ -601,3 +577,10 @@ VOID IWON_TEMP_TASK::GPIO_init(VOID)
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
 
+VOID IWON_TEMP_TASK::SetMeasredStates(VOID)
+{
+	this->Measuring = false;
+	this->Measured = true;
+	this->MeasredCount1 = 0;
+	this->MeasredCount2 = 0;
+}
