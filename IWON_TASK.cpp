@@ -320,20 +320,28 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 				}
 			}
 
-			INT8 TBL = GetTBLValue(OBJ_TEMP);
-			if (TBL == -1)
-			{
-				BDY_TEMP = -1; // LOW
-			}
-			else 
-			if (TBL == -2)
-			{
-				BDY_TEMP = -2; // HIGH
-			}
-			else
-			{
-				BDY_TEMP = OBJ_TEMP + (INT16)TBL;
-			}
+				if(DEFINED_USE_BDY_TBL)
+				{
+					// 사물 to 인체 테이블 사용
+					INT8 TBL = GetTBLValue(OBJ_TEMP);
+					if (TBL == -1)
+					{
+						BDY_TEMP = -1; // LOW
+					}
+					else 
+					if (TBL == -2)
+					{
+						BDY_TEMP = -2; // HIGH
+					}
+					else
+					{
+						BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
+					}
+				}
+				else
+				{
+					BDY_TEMP = (INT16)((float)OBJ_TEMP / DEFINED_BDY_EMI);
+				}
 		}
 
 		MGtime = GetTimeOutStartTime();

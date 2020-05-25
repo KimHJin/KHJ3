@@ -26,6 +26,9 @@
 
 #define DEFINED_adcVREFValue 1224
 
+#define DEFINED_USE_BDY_TBL false	/* 사물온도를 인체온도로 변환하는 방식의 선택 */
+#define DEFINED_BDY_EMI 0.97f		/* 인체 방사율 */
+
 #define DEFINED_VDD 3300
 #define DEFINED_R1 100000
 #define DEFINED_R2 200000
