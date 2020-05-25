@@ -615,20 +615,21 @@ VOID IWON_TEMP_FUNC::OkDisp(VOID)
 {
 	ClearDisp();
 
-	LCD->C1 = 1; // o
+	LCD->A1 = 1; // O
+	LCD->B1 = 1;
+	LCD->C1 = 1;
 	LCD->D1 = 1;
 	LCD->E1 = 1;
-	LCD->G1 = 1;
+	LCD->F1 = 1;
 
-	LCD->B2 = 1; // k
+	LCD->A2 = 1; // ㅋ
+	LCD->B2 = 1;
 	LCD->C2 = 1;
-	LCD->D2 = 1;
-	LCD->F2 = 1;
-	LCD->G2 = 1;	
+	LCD->G2 = 1;
 
-	LCD->B3 = 1; // y
+	LCD->A3 = 1; // !
+	LCD->B3 = 1;
 	LCD->D3 = 1;
-	LCD->E3 = 1;
 	LCD->F3 = 1;
 	LCD->G3 = 1;	
 }

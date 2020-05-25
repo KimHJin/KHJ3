@@ -129,6 +129,8 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						IWonFunc->Delay_ms(100);	   
 						IWonFunc->Beep();
 
+						memTempDataDisplay((AutoCalStep-1) * 10);
+
 						AutoCalStep = 0;
 					}
 				}
