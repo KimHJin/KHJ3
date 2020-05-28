@@ -46,8 +46,8 @@ VOID IWON_TEMP_CAL::FAIL(IWON_TEMP_FUNC *IWonFunc)
 	IWonFunc->BeepMode(HIGH_FEVER);
 	IWonFunc->Delay_ms(1000);
 
-	IWonFunc->ALLCLEAR();
-
+	//IWonFunc->ALLCLEAR();
+	AutoCaliFlag_p = 1;
 	AutoCalStep = 0;
 }
 

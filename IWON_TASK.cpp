@@ -245,22 +245,30 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
 {
 	float ambtemp = (float)AMB_TEMP / 10.f;
 
-	const float k = 0.0046f;
-	const float delta = 2.658f;
+	const float k = 0.00066f;
+	const float n = 1.93f;
 	const float reftemp = 25.f;		
-	const float shiftv = 1.02f;
-							
+	const float shiftv = 0.57f;
+	const float A_v = 454.54f;
+	/*						
 	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
 	float v2 = (float)TPCmV / 1000.f + comp - shiftv;			
 	float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp			
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
-
+*/
+	
+	float constant = 1000.f / (A_v * k);
+	float V_tp =  (float)TPCmV / 1000.f - shiftv;
+	float objtemp = pow( ( constant * V_tp + pow( ambtemp, n ) ), 1.f / n );
+	
+	INT16 T_OBJ = (INT16) ( objtemp * 10.f );
+	
 	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 	INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
 	if(T_OBJ-AMBADJ < 0) {
 		T_OBJ = AddTSUMB(0);
 	} else {
-		T_OBJ = AddTSUMB(T_OBJ - AMBADJ);
+		T_OBJ = AddTSUMB(T_OBJ - 300);
 	}
 
 	return T_OBJ;

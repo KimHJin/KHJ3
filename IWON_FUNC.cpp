@@ -568,7 +568,7 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	buzzerState_p  = 1;	// BUZZER ON
 	tempUnit_p 	   = 1;	// 섭씨 모드
 	AutoCaliFlag_p = 0;
-	offSetVolt_p   = 0;	// 자동 보정값 0 으로 저장
+	//offSetVolt_p   = 0;	// 자동 보정값 0 으로 저장
 	
 	TempLogDataClear();
 }

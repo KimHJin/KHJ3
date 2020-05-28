@@ -22,20 +22,20 @@
 // 오토 캘리브레이션 타겟 온도
 #define AutoCalTemp1 330	/* STEP 1 : 사물온도 33.0 도 = 인체 36.5 도 */
 
-//#define AutoCalTemp2 400	/* STEP 2 : 사물온도 40.0 도 = 인체 41.0 도 */
-#define AutoCalTemp2 330	/* STEP 2 : 사물온도 - 개발용 */
+#define AutoCalTemp2 450	/* STEP 2 : 사물온도 40.0 도 = 인체 41.0 도 */
+//#define AutoCalTemp2 330	/* STEP 2 : 사물온도 - 개발용 */
 
-//#define AutoCalTemp3 405	/* STEP 3 : 인체온도 미열 37.1 ~ 38.0 */
+#define AutoCalTemp3 375	/* STEP 3 : 인체온도 미열 37.1 ~ 38.0 */
 //#define AutoCalTemp3 363	/* STEP 3 : 인체온도 미열 - 개발용*/
-#define AutoCalTemp3 338	/* STEP 3 : 인체온도 미열 - 개발용*/
+//#define AutoCalTemp3 338	/* STEP 3 : 인체온도 미열 - 개발용*/
 
-//#define AutoCalTemp4 405	/* STEP 4 : 인체온도 고열 38.1 ~ 42.5 */
+#define AutoCalTemp4 405	/* STEP 4 : 인체온도 고열 38.1 ~ 42.5 */
 //#define AutoCalTemp4 363	/* STEP 4 : 인체온도 고열 - 개발용*/
-#define AutoCalTemp4 338	/* STEP 4 : 인체온도 고열 - 개발용*/
+//#define AutoCalTemp4 338	/* STEP 4 : 인체온도 고열 - 개발용*/
 
-//#define AutoCalTemp5 405	/* STEP 5 : 인체온도 정상 33.0 ~ 37.0 */
+#define AutoCalTemp5 350	/* STEP 5 : 인체온도 정상 33.0 ~ 37.0 */
 //#define AutoCalTemp5 363	/* STEP 5 : 인체온도 정상 - 개발용*/
-#define AutoCalTemp5 338	/* STEP 5 : 인체온도 정상 - 개발용*/
+//#define AutoCalTemp5 338	/* STEP 5 : 인체온도 정상 - 개발용*/
 
 #define AutoCalTorn 5		/* 허용오차 */
 
