@@ -46,8 +46,7 @@ VOID IWON_TEMP_CAL::FAIL(IWON_TEMP_FUNC *IWonFunc)
 	IWonFunc->BeepMode(HIGH_FEVER);
 	IWonFunc->Delay_ms(1000);
 
-	//IWonFunc->ALLCLEAR();
-	AutoCaliFlag_p = 1;
+	IWonFunc->ALLCLEAR();
 	AutoCalStep = 0;
 }
 
@@ -68,6 +67,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				memTempDataDisplay(AutoCalStep * 10);
 
 				INT32 TPCmV = 0;
+				IWonTask->ClearTSUM();
 
 				IWON_TEMP_VAVG *AutoCalAVG = new IWON_TEMP_VAVG(10, 10);
 				while(!AutoCalAVG->IsOC())

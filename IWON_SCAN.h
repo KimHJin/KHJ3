@@ -72,9 +72,10 @@ protected:
 	INT8 GetTBLValue(INT16 T_OBJ);
 
 	// 평균값을 구하는 링 메모리 관련 함수
-	VOID ClearTSUMB();
 	INT16 GetTSUMB();
 	INT16 AddTSUMB(INT16 B);
+
+	VOID ClearTSUMB(VOID);
 };
 
 #endif

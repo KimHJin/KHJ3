@@ -22,11 +22,13 @@
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
 // 버전 1.4 : OPAMP 측정 버그 수정
 // 버전 1.5 : 오토 캘리브레이션 기능 변경, 테스트 전압, 테스트별 램프색상, 펌웨어 버전표시 등
-#define DEFINED_FW_VER 15
+// 버전 1.6 : 새로운 온도 공식 및 오토캘
+// 버전 1.7 : 미듬 보정값 135 개를 필요한 갯수인 136 개로 변경 , 온도 합산을 10개에서 6개로 변경
+#define DEFINED_FW_VER 18
 
 #define DEFINED_adcVREFValue 1224
 
-#define DEFINED_USE_BDY_TBL false	/* 사물온도를 인체온도로 변환하는 방식의 선택 */
+#define DEFINED_USE_BDY_TBL true	/* 사물온도를 인체온도로 변환하는 방식의 선택 */
 #define DEFINED_BDY_EMI 0.97f		/* 인체 방사율 */
 
 #define DEFINED_VDD 3300

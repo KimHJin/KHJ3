@@ -28,6 +28,7 @@ public:
 	~IWON_TEMP_TASK();
 
 	VOID ClearAllTemp(VOID);
+	VOID ClearTSUM(VOID);
 	
 	INT32 CALC_TPC_mV(INT16 ObjTemp);
 	INT16 CALC_OBJTEMP(INT32 TPCmV);

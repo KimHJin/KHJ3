@@ -346,7 +346,10 @@ int main(void)
 			{
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
+
 				IWonTask->Clear_AVG();
+				// IWonTask->ClearTSUM();
+
 				TEMP_AVG->Init();
 
 				IWonFunc->Measure_test_flag = 0;
