@@ -180,7 +180,7 @@ int main(void)
 	}
 	
 
-	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1 || AutoCaliFlag_p==2 || AutoCaliFlag_p==3);		
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0);
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입

@@ -37,7 +37,7 @@ VOID IWON_TEMP_CAL::SUCCESS(IWON_TEMP_FUNC *IWonFunc)
 	AutoCalStep++;
 	IWonFunc->ClearDisp();
 	IWonFunc->DisplayRGB(BLUE);
-	memTempDataDisplay(AutoCalStep*10 + AutoCalFlag);
+	memTempDataDisplay(AutoCalStep*100 + AutoCalFlag);
 }
 
 VOID IWON_TEMP_CAL::TRY(IWON_TEMP_FUNC *IWonFunc)
@@ -75,7 +75,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// AUTO CAL STEP 1
 				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
-				memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
+				memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
 
 				INT32 TPCmV = 0;
 				IWonTask->ClearTSUM();
@@ -110,7 +110,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// AUTO CAL STEP 2		: 사물모드
 				// AUTO CAL STEP 3 ~ 5	: 체온모드
 				// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
-				memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
+				memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
 
 				INT32 target = AutoCalTemp2;				// 사물모드
 				if(AutoCalStep==3) target = AutoCalTemp3;	// 체온모드
@@ -140,22 +140,38 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						IWonFunc->Delay_ms(100);	   
 						IWonFunc->Beep();
 
-						memTempDataDisplay((AutoCalStep-1) * 10 + AutoCalFlag);
+						memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
 
 						AutoCalStep = 0;
 					}
 				}
 				else 
 				{
-					if(AutoCalStep==2 && AutoCalFlag<6)	// 두번째 측정에서 에러가 있으면
+					if(AutoCalStep==2 && AutoCalFlag<31)	// 두번째 측정에서 에러가 있으면
 					{
 						TRY(IWonFunc);
 						IWonTask->Set_OfsValue(0);
 						IWonTask->Set_AdjValue(0);
 						IWonFunc->TempValueDisplay(IWonTask->MeasredTemp, false);
 
-						AutoCalFlag++;
-						memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
+						if(AutoCalFlag==1)
+						{
+							// target : 450
+							if(IWonTask->MeasredTemp > target)
+							{
+								AutoCalFlag = 3;	// 홀수로 시작 (내려가는 방향)
+							}
+							else
+							{
+								AutoCalFlag = 2;	// 짝수로 시작 (올라가는 방향)
+							}													  
+						}
+						else
+						{
+							AutoCalFlag+=2;
+						}
+						
+						memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
 						AutoCalStep = 1;
 					}
 					else

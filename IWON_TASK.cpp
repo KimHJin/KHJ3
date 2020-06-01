@@ -245,31 +245,22 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
 	float ambtemp = (float)AMB_TEMP / 10.f;
 
-	// float k = 0.00066f;
-	float k;
-	switch(caliFlag)
+	const float k = 0.00066f;
+	float n = 1.93f;
+	if(caliFlag>1)
 	{
-		case 1:
-			k = 0.00066f;
-			break;
-		case 2:
-			k = 0.00065f;
-			break;
-		case 3:
-			k = 0.00067f;
-			break;
-		case 4:
-			k = 0.00064f;
-			break;
-		case 5:
-			k = 0.00068f;
-			break;
-		default:
-			k = 0.00066f;
-			break;
+		if(caliFlag%2==0)
+		{
+			// 짝수 : 올라가는 방향
+			n = 1.93f - (0.002f * (float)(caliFlag/2));
+		}
+		else
+		{
+			// 홀수 : 내려가는 방향
+			n = 1.93f + (0.002f * (float)(caliFlag/2));
+		}				
 	}
-
-	const float n = 1.93f;
+	
 	const float shiftv = -0.57f;
 	const float A_v = 454.54f;
 
