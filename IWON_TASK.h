@@ -30,11 +30,11 @@ public:
 	VOID ClearAllTemp(VOID);
 	VOID ClearTSUM(VOID);
 	
-	INT32 CALC_TPC_mV(INT16 ObjTemp);
-	INT16 CALC_OBJTEMP(INT32 TPCmV);
+	INT32 CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag);
+	INT16 CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag);
 
-	BOOL Task(UINT MGInterval, UINT TTInterval);
-	BOOL Task(VOID);
+	BOOL Task(INT8 caliFlag);
+	BOOL Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag);
 	VOID Time(VOID);
 
 	BOOL Was_Calc(VOID);

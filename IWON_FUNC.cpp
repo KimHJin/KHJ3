@@ -443,6 +443,7 @@ VOID IWON_TEMP_FUNC::SpecialModeTask(IWON_TEMP_TASK *IWonTask)
 		{
 			BeepMode(LIGHT_FEVER);
 			ALLCLEAR();
+			IWonTask->
 			POWER_DOWN();
 		}
 	}

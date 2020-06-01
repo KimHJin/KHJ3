@@ -158,12 +158,12 @@ int main(void)
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (INT16 i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{
-		IWonTask->Task();
-		if(IWonTask->Was_Calc()) 
+		IWonTask->Task(AutoCaliFlag_p);
+		if(IWonTask->Was_Calc())
 		{	// ADC 의 기초 계산이 완료되면...
 			for (BYTE i = 0; i < 20; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
-				IWonTask->Task();			  
+				IWonTask->Task(AutoCaliFlag_p);
 				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 			}
 			break;	// 빠져나가게 된다.
@@ -180,7 +180,7 @@ int main(void)
 	}
 	
 
-	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1);		
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p==1 || AutoCaliFlag_p==2 || AutoCaliFlag_p==3);		
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입
@@ -361,7 +361,7 @@ int main(void)
 			IWonTask->Measured = false;
 		}
 
-		if (IWonTask->Task())
+		if (IWonTask->Task(IsAutoCalCompleted ? AutoCaliFlag_p : IWonCal->AutoCalFlag))
 		{
 			if (IWonTask->Measured == false && IWonTask->Measuring == false && IWonTask->MeasredTemp == -100)
 			{ // 온도 측정 시작

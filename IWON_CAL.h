@@ -53,13 +53,15 @@ public:
 	VOID AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc);
 	INT8 GET_AutoCalStep(VOID);
 
+	INT8 AutoCalStep;
+	INT8 AutoCalFlag;
+
 private:   
 	VOID Init(VOID);	
 	VOID SUCCESS(IWON_TEMP_FUNC *IWonFunc);
+	VOID TRY(IWON_TEMP_FUNC *IWonFunc);
 	VOID FAIL(IWON_TEMP_FUNC *IWonFunc);
 	BOOL IS_SUCCESS(INT32 target, INT32 measered);
-
-	INT8 AutoCalStep;
 };
 
 

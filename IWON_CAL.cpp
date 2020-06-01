@@ -25,6 +25,7 @@ IWON_TEMP_CAL::~IWON_TEMP_CAL()
 VOID IWON_TEMP_CAL::Init(VOID)
 {
 	AutoCalStep = 1;	// 오토 캘리브레이션 스탭1 부터 시작
+	AutoCalFlag = 1;
 }
 
 VOID IWON_TEMP_CAL::SUCCESS(IWON_TEMP_FUNC *IWonFunc)
@@ -36,7 +37,17 @@ VOID IWON_TEMP_CAL::SUCCESS(IWON_TEMP_FUNC *IWonFunc)
 	AutoCalStep++;
 	IWonFunc->ClearDisp();
 	IWonFunc->DisplayRGB(BLUE);
-	memTempDataDisplay(AutoCalStep*10);
+	memTempDataDisplay(AutoCalStep*10 + AutoCalFlag);
+}
+
+VOID IWON_TEMP_CAL::TRY(IWON_TEMP_FUNC *IWonFunc)
+{
+	IWonFunc->DisplayRGB(YELLOW);
+	IWonFunc->FailDisp();
+	IWonFunc->BeepMode(LIGHT_FEVER);
+
+	IWonFunc->ALLCLEAR();
+	AutoCalStep = 1;
 }
 
 VOID IWON_TEMP_CAL::FAIL(IWON_TEMP_FUNC *IWonFunc)
@@ -64,7 +75,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// AUTO CAL STEP 1
 				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
-				memTempDataDisplay(AutoCalStep * 10);
+				memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
 
 				INT32 TPCmV = 0;
 				IWonTask->ClearTSUM();
@@ -72,7 +83,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				IWON_TEMP_VAVG *AutoCalAVG = new IWON_TEMP_VAVG(10, 10);
 				while(!AutoCalAVG->IsOC())
 				{
-					if (IWonTask->Task())
+					if (IWonTask->Task(AutoCalFlag))
 					{
 						TPCmV = IWonTask->Get_TPC_mV();
 						TPCmV = AutoCalAVG->AddCalc(TPCmV, 20);
@@ -80,7 +91,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				}
 				delete AutoCalAVG;
 
-				INT32 VoltmV = IWonTask->CALC_TPC_mV(AutoCalTemp1);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
+				INT32 VoltmV = IWonTask->CALC_TPC_mV(AutoCalTemp1, AutoCalFlag);	// 첫번째 기준온도의 TPC 전압을 구해온다. 시간이 걸릴 수 있다.
 
 				INT32 ADJmV = VoltmV - TPCmV;
 				offSetVolt_p = ADJmV;
@@ -99,7 +110,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// AUTO CAL STEP 2		: 사물모드
 				// AUTO CAL STEP 3 ~ 5	: 체온모드
 				// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
-				memTempDataDisplay(AutoCalStep * 10);
+				memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
 
 				INT32 target = AutoCalTemp2;				// 사물모드
 				if(AutoCalStep==3) target = AutoCalTemp3;	// 체온모드
@@ -120,7 +131,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 					if(AutoCalStep==6)
 					{
 						// 오토 캘리브레이션 완료 저장
-						AutoCaliFlag_p = 1;
+						AutoCaliFlag_p = AutoCalFlag;
 
 						IWonFunc->DisplayRGB(GREEN);
 						IWonFunc->OkDisp();
@@ -129,15 +140,32 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						IWonFunc->Delay_ms(100);	   
 						IWonFunc->Beep();
 
-						memTempDataDisplay((AutoCalStep-1) * 10);
+						memTempDataDisplay((AutoCalStep-1) * 10 + AutoCalFlag);
 
 						AutoCalStep = 0;
 					}
 				}
 				else 
 				{
-					FAIL(IWonFunc);
-					IWonFunc->TempValueDisplay(IWonTask->MeasredTemp, false);
+					if(AutoCalStep==2 && AutoCalFlag<6)	// 두번째 측정에서 에러가 있으면
+					{
+						TRY(IWonFunc);
+						IWonTask->Set_OfsValue(0);
+						IWonTask->Set_AdjValue(0);
+						IWonFunc->TempValueDisplay(IWonTask->MeasredTemp, false);
+
+						AutoCalFlag++;
+						memTempDataDisplay(AutoCalStep * 10 + AutoCalFlag);
+						AutoCalStep = 1;
+					}
+					else
+					{
+						FAIL(IWonFunc);
+						IWonTask->Set_OfsValue(0);
+						IWonTask->Set_AdjValue(0);
+						IWonFunc->TempValueDisplay(IWonTask->MeasredTemp, false);
+					}
+					
 				}
 			}
 			break;

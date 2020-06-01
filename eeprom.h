@@ -28,11 +28,9 @@ typedef struct
   INT16 memTempData[32];
   INT16 measureTemp;
 
-  INT8 caliData;
-  
-  INT8 AutoCaliFlag;
-  
-  INT32 offSetVolt;
+  INT8 caliData;  		// 수동 캘리브레이션 값
+  INT8 AutoCaliFlag;	// 0 은 AutoCAL 필요, 1은 첫번째 공식, 2는 두번째 공식, 3은 세번째 공식  
+  INT32 offSetVolt;		// 자동 캘리브레이션 값
 
 } EEROM_TypeDef;
 

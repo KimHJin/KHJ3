@@ -220,37 +220,60 @@ BOOL IWON_TEMP_TASK::IS_BODY_CC(VOID)
 	return (VreftpcAvg->GetCC()>10);
 }
 
-INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp)
+INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 {
 	INT16 t = 0;
 	for(INT32 TPCmV=800; TPCmV<1500; TPCmV++)	// 우선 800mV ~ 1500mV 사이를 찾아본다.
 	{
-		t = CALC_OBJTEMP(TPCmV);
+		t = CALC_OBJTEMP(TPCmV, caliFlag);
 		if(t==ObjTemp) return TPCmV;
 	}
 	for(INT32 TPCmV=800; TPCmV>0; TPCmV--)	// 우선 800mV 이하를 찾아본다
 	{
-		t = CALC_OBJTEMP(TPCmV);
+		t = CALC_OBJTEMP(TPCmV, caliFlag);
 		if(t==ObjTemp) return TPCmV;
 	}
 	for(INT32 TPCmV=1500; TPCmV<3300; TPCmV++)	// 우선 1500mV 이상을 찾아본다
 	{
-		t = CALC_OBJTEMP(TPCmV);
+		t = CALC_OBJTEMP(TPCmV, caliFlag);
 		if(t==ObjTemp) return TPCmV;
 	}
 	return -1;	// 찾지 못한 것이다.
 }
 
-INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
+INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
 	float ambtemp = (float)AMB_TEMP / 10.f;
 
-	// memTempDataDisplay(ambtemp*10);
+	// float k = 0.00066f;
+	float k;
+	switch(caliFlag)
+	{
+		case 1:
+			k = 0.00066f;
+			break;
+		case 2:
+			k = 0.00065f;
+			break;
+		case 3:
+			k = 0.00067f;
+			break;
+		case 4:
+			k = 0.00064f;
+			break;
+		case 5:
+			k = 0.00068f;
+			break;
+		default:
+			k = 0.00066f;
+			break;
+	}
 
-	const float k = 0.00066f;
 	const float n = 1.93f;
 	const float shiftv = -0.57f;
 	const float A_v = 454.54f;
+
+
 	/*						
 	const float reftemp = 25.f;		
 	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
@@ -265,9 +288,8 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
 	
 	INT16 T_OBJ = (INT16) objtemp;
 	
-
-	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 	/*
+	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 	INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
 	if(T_OBJ-AMBADJ < 0) {
 		T_OBJ = AddTSUMB(0);
@@ -275,6 +297,7 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV)
 		T_OBJ = AddTSUMB(T_OBJ-AMBADJ);
 	}
 	*/
+
 	T_OBJ = AddTSUMB(T_OBJ);	
 
 	return T_OBJ;
@@ -286,11 +309,11 @@ VOID IWON_TEMP_TASK::ClearTSUM(VOID)
 }
 
 
-BOOL IWON_TEMP_TASK::Task(VOID)
+BOOL IWON_TEMP_TASK::Task(INT8 caliFlag)
 {
-	return Task(DEFINED_ADC_CALC, DEFINED_ADC_DELAY);
+	return Task(DEFINED_ADC_CALC, DEFINED_ADC_DELAY, caliFlag);
 }
-BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
+BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 { // MGInterval = Measure (200), TTInteval = Take Interval (50)
 
 	if (TimeOut(MGtime, MGInterval) && IS_BODY_CC())
@@ -327,7 +350,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval)
 			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);			
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
 
-			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV);
+			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV, caliFlag);
 
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
