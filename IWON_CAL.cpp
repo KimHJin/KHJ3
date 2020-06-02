@@ -150,6 +150,8 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 					// STEP 2 에서 온도차가 있으면 이를 보정하도록 한다.
 					if(AutoCalStep==2 && AutoCalFlag<31)	// 두번째 측정에서 에러가 있으면
 					{
+						INT16 dist = ABS((INT16)target - IWonTask->MeasredTemp);
+
 						TRY(IWonFunc);
 						IWonTask->Set_OfsValue(0);
 						IWonTask->Set_AdjValue(0);
@@ -168,7 +170,6 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 							}
 						}
 						
-						INT16 dist = ABS(IWonTask->MeasredTemp - target) / 2;
 						dist /= 2;
 						dist *= 2;
 						if(dist<2) dist = 2;
