@@ -62,6 +62,8 @@ public:
 	
 	VOID SetMeasredStates(VOID);
 
+	VOID CheckMedicalTestMode(VOID);
+
 
   	INT16 BATmV;
 	INT16 VDDmV;
@@ -75,6 +77,8 @@ public:
 	INT8 MeasredCount1;
 	INT8 MeasredCount2;
 	INT8 RetryCount;
+
+	INT16 medicalTestTimerCount;	// 의료용 테스트모드 타이머 카운트
 	
 private:
 	VOID Init(VOID);

@@ -377,10 +377,19 @@ int main(void)
 			}
 		}
 
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->medicalTestTimerCount>4000))
 		{
-			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1)
+			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->medicalTestTimerCount>4000)
 			{
+				if(IWonTask->medicalTestTimerCount>0)
+				{
+					IWonTask->medicalTestTimerCount = 1;
+				}
+				else
+				{
+					IWonTask->medicalTestTimerCount = 0;
+				}
+				
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 
@@ -491,6 +500,7 @@ int main(void)
 										BEAM_OFF();
 										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);																				
 										IWonTask->SetMeasredStates();
+										IWonTask->CheckMedicalTestMode();
 									}
 								}
 							}
@@ -538,7 +548,8 @@ int main(void)
 								}
 
 								BEAM_OFF();
-								IWonTask->SetMeasredStates();
+								IWonTask->SetMeasredStates();								
+								IWonTask->CheckMedicalTestMode();
 							}
 						}
 					}

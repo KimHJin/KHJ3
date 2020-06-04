@@ -78,6 +78,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 
 	powerDown_msec = 0;
     lowBattery_Count = 0;
+
+	medicalTestTimerCount = 0;
 }
 
 VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
@@ -163,7 +165,15 @@ DWORD IWON_TEMP_TASK::GetTimeOutStartTime(VOID)
 VOID IWON_TEMP_TASK::Time(VOID)
 {
 	timeStamp++;
-	powerDown_msec++;
+	if(medicalTestTimerCount==0) 
+	{
+		powerDown_msec++;
+	}
+	else 
+	{
+		powerDown_msec = 0;
+		medicalTestTimerCount++;
+	}
 }
 BOOL IWON_TEMP_TASK::TimeOut(DWORD startTime, UINT delayTime)
 {
@@ -625,3 +635,10 @@ VOID IWON_TEMP_TASK::SetMeasredStates(VOID)
 	this->MeasredCount1 = 0;
 	this->MeasredCount2 = 0;
 }
+
+VOID IWON_TEMP_TASK::CheckMedicalTestMode(VOID)
+{
+
+}
+
+
