@@ -26,7 +26,8 @@
 // 버전 1.7 : 미듬 보정값 135 개를 필요한 갯수인 136 개로 변경 , 온도 합산을 10개에서 6개로 변경
 // 버전 2.2 : 센서 보정값 다변화 (n 값)
 // 버전 2.4 : 센서 보정값의 지능화 (STEP 2 의 차이가 나는 온도에 따른 보정값 적용)
-#define DEFINED_FW_VER 24
+// 버전 2.5 : 오토캘 모드에서 왼쪽 오른쪽 버튼 기능 확인, 의료(검증)용 기능 추가, 고열 42.5 => 43.0 으로 수정
+#define DEFINED_FW_VER 25
 
 #define DEFINED_adcVREFValue 1224
 
@@ -55,7 +56,7 @@
 
 // 사물기준   (체온 계산용)
 #define TB_MIN 281
-#define TB_MAX 425
+#define TB_MAX 430
 
 //#define ADC_CONVERT_RATIO	806		/* (3300mV / 0xFFF) x 1000 */
 #define ADC_CONVERT_RATIO 804 /* (3287mV ~ 3300mV / 0xFFF) x 1000 */

@@ -281,17 +281,9 @@ int main(void)
 	{
 		// 오토 캘리브레이션 동작으로 진입
 		IWonCal = new IWON_TEMP_CAL();
-
-	 	IWonFunc->LCD_clear();
-		IWonFunc->DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
-		IWonFunc->ALLCLEAR();
-		
+		IWonFunc->AutoCalDisp();		
 		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
-
-		IWonFunc->VerDisp();		// 오토 캘리브레이션 동작 진입시 펌웨어 버전 표시 (앞에 V 자를 U 자 비슷하게하고 버전 표시함)
-
-		memTempDataDisplay(10);
 	}
 	
 	while (IWonTask->NeedPowerDown() == false)
@@ -329,6 +321,51 @@ int main(void)
 						IWonFunc->Delay_ms(100);	   
 						IWonFunc->POWER_DOWN();						
 					}
+				}
+
+				if(SW_LEFT_ON || SW_RIGHT_ON)
+				{
+					IWonFunc->Delay_ms(150);
+				}
+
+				if(SW_LEFT_ON && !SW_RIGHT_ON)
+				{
+					IWonFunc->Beep();
+					IWonFunc->LeftBtnDisp();
+					IWonFunc->Delay_ms(1000);
+					if(IWonCal->AutoCalBtnTest!=10 && IWonCal->AutoCalBtnTest!=30)
+					{
+						IWonCal->AutoCalBtnTest += 10;
+					}
+					if(IWonCal->AutoCalBtnTest==30)
+					{
+						IWonFunc->AutoCalDisp();
+					}
+					else
+					{
+						IWonFunc->DisplayRGB(WHITE);						
+					}
+					while(SW_LEFT_ON && !SW_RIGHT_ON){};					
+				}
+				else
+				if(!SW_LEFT_ON && SW_RIGHT_ON)
+				{
+					IWonFunc->Beep();
+					IWonFunc->RightBtnDisp();
+					IWonFunc->Delay_ms(1000);
+					if(IWonCal->AutoCalBtnTest!=20 && IWonCal->AutoCalBtnTest!=30)
+					{
+						IWonCal->AutoCalBtnTest += 20;
+					}
+					if(IWonCal->AutoCalBtnTest==30)
+					{
+						IWonFunc->AutoCalDisp();
+					}
+					else
+					{
+						IWonFunc->DisplayRGB(WHITE);						
+					}
+					while(!SW_LEFT_ON && SW_RIGHT_ON){};
 				}
 				
 				IWonFunc->AutoCalDelayCount = 0;
@@ -376,7 +413,7 @@ int main(void)
 					IWonFunc->DisplayRGB(GREEN);
 
 				IWonFunc->MeasuringDisp();
-				BEAM_OFF();
+				BEAM_ON();
 				IWonFunc->Beep();
 			}
 			else 
@@ -385,10 +422,10 @@ int main(void)
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
 				if (AMB < 100 || 500 < AMB)
 				{ // 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
+					BEAM_OFF();
 					IWonFunc->SystemError();
 					IWonTask->MeasredTemp = 0;
 					IWonTask->SetMeasredStates();
-					BEAM_OFF();
 				}
 				else 
 				if (AMB > 0)
@@ -419,16 +456,14 @@ int main(void)
 
 								IWonFunc->DisplayRGB(BLUE);
 								BEAM_OFF();
-								IWonFunc->DisplayLOW();
-								
-								IWonFunc->Beep();
-								
+								IWonFunc->DisplayLOW();								
+								IWonFunc->Beep();								
 								IWonTask->SetMeasredStates();
 							}
 							else 
-							if (MEASURED_TEMP == -2 || MEASURED_TEMP > 425)
+							if (MEASURED_TEMP == -2 || MEASURED_TEMP > TB_MAX)
 							{ 
-								// HIGH Greater Than 42.5 C
+								// HIGH Greater Than 43.0 C  (42.5 => 43.0 으로 변경 2020.06.04)
 								IWonTask->MeasredTemp = MEASURED_TEMP;
 								
 								IWonFunc->DisplayRGB(BLUE);
@@ -463,8 +498,6 @@ int main(void)
 
 						if (!IsAutoCalCompleted && (IWonTask->Measured || IWonCal->GET_AutoCalStep()==0))
 						{
-							BEAM_OFF();
-
 							if(IWonCal->GET_AutoCalStep()>2)
 							{
 							    IWonFunc->Delay_ms(2000);
@@ -472,7 +505,7 @@ int main(void)
 
 							// 측정 된 온도 값을 받아 CAL
 							IWonCal->AUTOCAL(IWonTask, IWonFunc); // 실제 AUTO CAL 하는 부분
-
+							BEAM_OFF();
 							IWonTask->SetMeasredStates();
 						}
 					}
@@ -501,10 +534,10 @@ int main(void)
 								}
 								else 
 								{
-								    BEAM_OFF();
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 								}
 
+								BEAM_OFF();
 								IWonTask->SetMeasredStates();
 							}
 						}

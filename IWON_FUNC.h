@@ -88,6 +88,11 @@ public:
 	VOID OkDisp(VOID);
 	VOID VerDisp(VOID);
 
+	VOID LeftBtnDisp(VOID);
+	VOID RightBtnDisp(VOID);
+
+	VOID AutoCalDisp(VOID);
+	
 	VOID BuzzerCMD(BOOL state);
 
 	VOID ClearDisp(VOID);

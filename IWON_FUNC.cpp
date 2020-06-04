@@ -506,7 +506,7 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 }
 VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
 {
-	if (temp >= 381 && temp <= 425)
+	if (temp >= 381 && temp <= 430)	// 42.5 => 43.0 으로 변경 (2020.06.04)
 	{ // HIGH FEVER
 		DisplayRGB(RED);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
@@ -553,10 +553,48 @@ VOID IWON_TEMP_FUNC::MeasuringDisp(VOID)
 	  
 	ClearDisp();
 
-	// - - - 표시
+	// - - - 표시 (--- 표시)
 	LCD->G1 = 1;
 	LCD->G2 = 1;
 	LCD->G3 = 1;
+}
+
+VOID IWON_TEMP_FUNC::LeftBtnDisp(VOID)
+{  
+  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
+	  
+	ClearDisp();
+
+	// |- 표시
+	LCD->A1 = 1;
+	LCD->F1 = 1;
+	LCD->E1 = 1;
+	LCD->D1 = 1;
+	LCD->G2 = 1;
+}
+VOID IWON_TEMP_FUNC::RightBtnDisp(VOID)
+{  
+  	LCD->X9 = 0;	// 맨 앞의 1 자리 꺼지는것
+	  
+	ClearDisp();
+
+	// -| 표시
+	LCD->A3 = 1;
+	LCD->B3 = 1;
+	LCD->C3 = 1;
+	LCD->D3 = 1;
+	LCD->G2 = 1;
+}
+
+VOID IWON_TEMP_FUNC::AutoCalDisp(VOID)
+{  
+	LCD_clear();
+	DisplayRGB(MAGENTA);	// 오토 캘리브레이션 모드는 MEGENTA 으로 시작
+	ALLCLEAR();
+
+	VerDisp();		// 오토 캘리브레이션 동작 진입시 펌웨어 버전 표시 (앞에 V 자를 U 자 비슷하게하고 버전 표시함)
+
+	memTempDataDisplay(10);
 }
 
 VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
