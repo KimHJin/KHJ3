@@ -42,6 +42,10 @@
 #define DEFINED_ADC_DELAY 20
 #define DEFINED_ADC_SUM_C 2
 
+// 의료용 테스트 모드 연속 측정 인터벌
+#define DEFINED_MEDICAL_TEST_INTEVAL 4000
+// 의료용 테스트 모드 진입의 버튼 누르고 있는 시간 약 15초 이상
+#define DEFINED_MEDICAL_TEST_BTN_TIME 1900
 
 #define HAL_ADC_MODULE_ENABLED
 

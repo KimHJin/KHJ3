@@ -119,6 +119,16 @@ void keyScan()
 		}
 		IWonFunc->Delay_ms(10);
 	}
+
+	if(IWonTask->medicalTestMode!=0)
+	{
+		if(SW_PWR_ON)
+		{
+			IWonFunc->Beep();
+			IWonFunc->Delay_ms(10);
+			IWonFunc->CheckMedicalTestMode(IWonTask);
+		}
+	}
 }
 
 /*********************************************/
@@ -286,11 +296,18 @@ int main(void)
 		IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 	}
 	
-	while (IWonTask->NeedPowerDown() == false)
+	while (IWonTask->medicalTestMode!=0 || IWonTask->NeedPowerDown() == false)
 	{
-		INT16 MEASURED_TEMP = 0;
-	  
+		INT16 MEASURED_TEMP = 0;	  
 		INT8 testModeFlag = (IWonTest==NULL) ? 0 : IWonTest->GetTestModeFlag();
+
+		// 의료용 테스트모드에서 BEAM LED 를 계속 켜놓는 모드
+		if(IWonTask->medicalTestMode==2)
+		{
+			BEAM_ON();
+			keyScan();
+			continue;
+		}
 
 		if (IWonTask->Measuring == false)
 		{
@@ -332,6 +349,7 @@ int main(void)
 				{
 					IWonFunc->Beep();
 					IWonFunc->LeftBtnDisp();
+					IWonFunc->DisplayRGB(GREEN);
 					IWonFunc->Delay_ms(1000);
 					if(IWonCal->AutoCalBtnTest!=10 && IWonCal->AutoCalBtnTest!=30)
 					{
@@ -352,6 +370,7 @@ int main(void)
 				{
 					IWonFunc->Beep();
 					IWonFunc->RightBtnDisp();
+					IWonFunc->DisplayRGB(GREEN);
 					IWonFunc->Delay_ms(1000);
 					if(IWonCal->AutoCalBtnTest!=20 && IWonCal->AutoCalBtnTest!=30)
 					{
@@ -377,18 +396,12 @@ int main(void)
 			}
 		}
 
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->medicalTestTimerCount>4000))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
 		{
-			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->medicalTestTimerCount>4000)
+			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
 			{
-				if(IWonTask->medicalTestTimerCount>0)
-				{
-					IWonTask->medicalTestTimerCount = 1;
-				}
-				else
-				{
-					IWonTask->medicalTestTimerCount = 0;
-				}
+				// IWonTask->medicalTestMode 값이 0 이 아니라는 것은 의료용 테스트 모드인 것이다.
+				IWonTask->medicalTestTimerCount = 0;
 				
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
@@ -468,6 +481,7 @@ int main(void)
 								IWonFunc->DisplayLOW();								
 								IWonFunc->Beep();								
 								IWonTask->SetMeasredStates();
+								IWonFunc->CheckMedicalTestMode(IWonTask);
 							}
 							else 
 							if (MEASURED_TEMP == -2 || MEASURED_TEMP > TB_MAX)
@@ -480,6 +494,7 @@ int main(void)
 								IWonFunc->DisplayHIGH();								
 								IWonFunc->Beep();
 								IWonTask->SetMeasredStates();
+								IWonFunc->CheckMedicalTestMode(IWonTask);
 							}
 							else
 							{
@@ -500,7 +515,7 @@ int main(void)
 										BEAM_OFF();
 										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);																				
 										IWonTask->SetMeasredStates();
-										IWonTask->CheckMedicalTestMode();
+										IWonFunc->CheckMedicalTestMode(IWonTask);
 									}
 								}
 							}
@@ -549,7 +564,7 @@ int main(void)
 
 								BEAM_OFF();
 								IWonTask->SetMeasredStates();								
-								IWonTask->CheckMedicalTestMode();
+								IWonFunc->CheckMedicalTestMode(IWonTask);
 							}
 						}
 					}

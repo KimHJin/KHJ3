@@ -706,3 +706,39 @@ VOID IWON_TEMP_FUNC::TempValueDisplay(INT16 value)
 	TempValueDisplay(value, true);
 }
 
+VOID IWON_TEMP_FUNC::CheckMedicalTestMode(IWON_TEMP_TASK *IWonTask)
+{
+	INT16 count = 0;
+	while(SW_PWR_ON)
+	{
+		Delay_ms(10);
+		count++;
+		if(count>DEFINED_MEDICAL_TEST_BTN_TIME)
+		{
+			Beep();
+			Delay_ms(100);
+			Beep();
+
+			// 의료용 테스트 모드로 전환
+			IWonTask->medicalTestMode++;
+			IWonTask->medicalTestTimerCount = DEFINED_MEDICAL_TEST_INTEVAL;
+			if(IWonTask->medicalTestMode==2) 
+			{
+				BEAM_ON();
+			}
+			if(IWonTask->medicalTestMode>2) 
+			{
+				BEAM_OFF();
+				IWonTask->medicalTestMode = 0;
+				IWonTask->medicalTestTimerCount = 0;
+				IWonTask->ClearPowerDown();
+				Delay_ms(100);
+				Beep();
+			}
+
+			Delay_ms(2000);
+			return;
+		}
+	}
+	return;
+}

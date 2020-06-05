@@ -79,6 +79,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	powerDown_msec = 0;
     lowBattery_Count = 0;
 
+	medicalTestMode = 0;
 	medicalTestTimerCount = 0;
 }
 
@@ -165,7 +166,7 @@ DWORD IWON_TEMP_TASK::GetTimeOutStartTime(VOID)
 VOID IWON_TEMP_TASK::Time(VOID)
 {
 	timeStamp++;
-	if(medicalTestTimerCount==0) 
+	if(medicalTestMode==0) 
 	{
 		powerDown_msec++;
 	}
@@ -492,7 +493,6 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
 					if(VrefntcAvg->IsOC()) break;
 					ADC_SoftwareStartConv(ADC1);
-					//Delay_ms(5);
 				}								
 				VrefntcAvg->SetOC();
 			}
@@ -636,9 +636,9 @@ VOID IWON_TEMP_TASK::SetMeasredStates(VOID)
 	this->MeasredCount2 = 0;
 }
 
-VOID IWON_TEMP_TASK::CheckMedicalTestMode(VOID)
+BOOL IWON_TEMP_TASK::IsMedicalTestModeAction(VOID)
 {
-
+	if(medicalTestMode==0) return false;
+	return (medicalTestTimerCount>DEFINED_MEDICAL_TEST_INTEVAL);
 }
-
 
