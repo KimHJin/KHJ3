@@ -26,7 +26,6 @@ VOID IWON_TEMP_CAL::Init(VOID)
 {
 	AutoCalStep = 1;	// 오토 캘리브레이션 스탭1 부터 시작
 	AutoCalFlag = 1;
-	AutoCalBtnTest = 0;	// 왼쪽 버튼 +10, 오른쪽 버튼 +20
 }
 
 VOID IWON_TEMP_CAL::SUCCESS(IWON_TEMP_FUNC *IWonFunc)
@@ -77,15 +76,6 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
 				memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
-
-				if(AutoCalBtnTest!=30)	// 아직 왼쪽 오른쪽 버튼을 테스트 하지 않은 상태이다.
-				{
-					IWonFunc->DisplayRGB(WHITE);
-					IWonFunc->Beep();
-					IWonFunc->Delay_ms(600);
-					IWonFunc->Beep();
-					break;
-				}
 
 				INT32 TPCmV = 0;
 				IWonTask->ClearTSUM();

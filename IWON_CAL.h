@@ -55,8 +55,6 @@ public:
 
 	INT8 AutoCalStep;
 	INT8 AutoCalFlag;
-
-	INT8 AutoCalBtnTest;	// 오토캘리브레이션 시작시 왼쪽 오른쪽 버튼 동작 테스트 값 (왼쪽 +10, 오른쪽 +20) 왼쪽 오른쪽 모두 체크되면 30 이됨
 private:   
 	VOID Init(VOID);	
 	VOID SUCCESS(IWON_TEMP_FUNC *IWonFunc);

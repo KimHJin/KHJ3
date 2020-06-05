@@ -725,10 +725,12 @@ VOID IWON_TEMP_FUNC::CheckMedicalTestMode(IWON_TEMP_TASK *IWonTask)
 			if(IWonTask->medicalTestMode==2) 
 			{
 				BEAM_ON();
+				MeasuringDisp();
 			}
 			if(IWonTask->medicalTestMode>2) 
 			{
 				BEAM_OFF();
+				ClearDisp();
 				IWonTask->medicalTestMode = 0;
 				IWonTask->medicalTestTimerCount = 0;
 				IWonTask->ClearPowerDown();

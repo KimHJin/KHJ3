@@ -349,42 +349,20 @@ int main(void)
 				{
 					IWonFunc->Beep();
 					IWonFunc->LeftBtnDisp();
-					IWonFunc->DisplayRGB(GREEN);
+					IWonFunc->DisplayRGB(WHITE);
 					IWonFunc->Delay_ms(1000);
-					if(IWonCal->AutoCalBtnTest!=10 && IWonCal->AutoCalBtnTest!=30)
-					{
-						IWonCal->AutoCalBtnTest += 10;
-					}
-					if(IWonCal->AutoCalBtnTest==30)
-					{
-						IWonFunc->AutoCalDisp();
-					}
-					else
-					{
-						IWonFunc->DisplayRGB(WHITE);						
-					}
 					while(SW_LEFT_ON && !SW_RIGHT_ON){};					
+					IWonFunc->AutoCalDisp();
 				}
 				else
 				if(!SW_LEFT_ON && SW_RIGHT_ON)
 				{
 					IWonFunc->Beep();
 					IWonFunc->RightBtnDisp();
-					IWonFunc->DisplayRGB(GREEN);
+					IWonFunc->DisplayRGB(WHITE);
 					IWonFunc->Delay_ms(1000);
-					if(IWonCal->AutoCalBtnTest!=20 && IWonCal->AutoCalBtnTest!=30)
-					{
-						IWonCal->AutoCalBtnTest += 20;
-					}
-					if(IWonCal->AutoCalBtnTest==30)
-					{
-						IWonFunc->AutoCalDisp();
-					}
-					else
-					{
-						IWonFunc->DisplayRGB(WHITE);						
-					}
 					while(!SW_LEFT_ON && SW_RIGHT_ON){};
+					IWonFunc->AutoCalDisp();
 				}
 				
 				IWonFunc->AutoCalDelayCount = 0;
