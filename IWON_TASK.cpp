@@ -295,7 +295,7 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	if(AMB_REF!=AMB_TEMP)
 	{
 		INT16 AMBADJ = AMB_TEMP - AMB_REF;
-		T_OBJ += AMBADJ / 3;
+		T_OBJ += AMBADJ / 2;
 	}
 
 	// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.

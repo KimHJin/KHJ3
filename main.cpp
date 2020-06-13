@@ -165,7 +165,11 @@ int main(void)
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
-	if(IWonTask->AMB_REF<10 || IWonTask->AMB_REF>40)
+	
+	//IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
+	//IWonFunc->Delay_ms(3000);
+
+	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
 	{
 		// 만약 없으면 생산이 대략 23.0 도에서 생산하고 있다.
 		ambRef_p = 230;
@@ -392,9 +396,10 @@ int main(void)
 			}
 		}
 
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
+		BOOL IS_SW_PWR_ON = SW_PWR_ON;
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((IS_SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
 		{
-			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
+			if (IS_SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
 			{
 				// IWonTask->medicalTestMode 값이 0 이 아니라는 것은 의료용 테스트 모드인 것이다.
 				IWonTask->medicalTestTimerCount = 0;
@@ -409,9 +414,13 @@ int main(void)
 
 				IWonFunc->Measure_test_flag = 0;
 				IWonTask->RetryCount = 0;
+
+				// 측정할 때마다 주변온도 표시
+				// INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
+				// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 			}
 		}
-		if (IWonTask->Measuring == false && IWonTask->Measured && SW_PWR_ON == false)
+		if (IWonTask->Measuring == false && IWonTask->Measured && !IS_SW_PWR_ON)
 		{
 			IWonTask->Measured = false;
 		}
