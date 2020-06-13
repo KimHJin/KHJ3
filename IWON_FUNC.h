@@ -101,7 +101,6 @@ public:
 	VOID TempValueDisplay(INT16 value);
 
 	VOID CheckMedicalTestMode(IWON_TEMP_TASK *IWonTask);
-
 private:   
 	VOID Init(VOID);
 };

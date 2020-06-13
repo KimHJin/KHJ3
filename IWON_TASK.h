@@ -33,6 +33,8 @@ public:
 	INT32 CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag);
 	INT16 CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag);
 
+	VOID InitNTC(VOID);
+
 	BOOL Task(INT8 caliFlag);
 	BOOL Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag);
 	VOID Time(VOID);

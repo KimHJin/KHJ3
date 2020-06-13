@@ -76,6 +76,24 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
 
+				IWonTask->InitNTC();
+				
+				// 약간의 시간을 준다...
+				IWonFunc->Delay_ms(300);
+				for (BYTE i = 0; i < 150; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+				{
+					IWonTask->Task(AutoCalFlag);
+					IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
+					if(IWonTask->Was_Calc()) break;
+				}
+				IWonFunc->Delay_ms(200);
+				for (BYTE i = 0; i < 40; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+				{
+					IWonTask->Task(AutoCalFlag);
+					IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
+				}
+
+
 				ambRef_p = IWonTask->Get_AMB_TEMP();
 				IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
 				memTempDataDisplay(IWonTask->AMB_REF);	// 측정할 때의 AMB 값을 표시한다.
@@ -115,6 +133,17 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// 특정 온도를 측정하여 해당 오차 범위안에 있는지 확인한다.
 				memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
 
+				if(AutoCalStep==2)
+				{
+					// 약간의 시간을 준다...
+					IWonFunc->Delay_ms(500);
+					for (BYTE i = 0; i < 40; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+					{
+						IWonTask->Task(AutoCalFlag);
+						IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
+					}
+				}
+
 				INT32 target = AutoCalTemp2;				// 사물모드
 				if(AutoCalStep==3) target = AutoCalTemp3;	// 체온모드
 				if(AutoCalStep==4) target = AutoCalTemp4;	// 체온모드
@@ -153,7 +182,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 					// STEP 2 에서 온도차가 있으면 이를 보정하도록 한다.
 					if(AutoCalStep==2 && AutoCalFlag<31)	// 두번째 측정에서 에러가 있으면
 					{
-						INT16 dist = ABS((INT16)target - IWonTask->MeasredTemp);
+						INT16 dist = ABS16((INT16)target - IWonTask->MeasredTemp);
 
 						TRY(IWonFunc);
 						IWonTask->Set_OfsValue(0);

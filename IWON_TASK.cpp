@@ -291,16 +291,12 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	INT16 T_OBJ = (INT16) objtemp;	
 	
 	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
-	if(AMB_REF==AMB_TEMP)
+	T_OBJ = AddTSUMB(T_OBJ);	
+	if(AMB_REF!=AMB_TEMP)
 	{
-		T_OBJ = AddTSUMB(T_OBJ);	
+		INT16 AMBADJ = AMB_TEMP - AMB_REF;
+		T_OBJ += AMBADJ / 3;
 	}
-	else
-	{
-		const float reftemp = (float)AMB_REF / 10.0f;
-		INT16 AMBADJ = (INT16)((ambtemp-reftemp) * 10.f);
-		T_OBJ = AddTSUMB(T_OBJ + (AMBADJ / 2));
-	}	
 
 	// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 
@@ -310,6 +306,19 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 VOID IWON_TEMP_TASK::ClearTSUM(VOID)
 {
 	ClearTSUMB();
+}
+
+VOID IWON_TEMP_TASK::InitNTC(VOID)
+{
+	VrefntcAvg->Init();
+	VreftpcAvg->Init();
+
+	DISABLE_ALL_ADC();
+	ADC_ChannelCmd(ADC1, ADC_Channel_5, ENABLE);				// NTC
+	ADC_SoftwareStartConv(ADC1);
+	tCC = 4;
+	TTtime = GetTimeOutStartTime();
+	MGtime = GetTimeOutStartTime();
 }
 
 
@@ -360,7 +369,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			if (BB != -999)
 			{
 				BB = BB - OBJ_TEMP;
-				if (ABS(BB) > 15)
+				if (ABS16(BB) > 15)
 				{
 					ClearTSUMB();
 				}
@@ -474,12 +483,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 				VrefbatAvg->SetOC();
 			}
-
-			DISABLE_ALL_ADC();
-			ADC_ChannelCmd(ADC1, ADC_Channel_5, ENABLE);				// NTC
-			ADC_SoftwareStartConv(ADC1);
-			tCC++;
-			TTtime = GetTimeOutStartTime();
+			InitNTC();
 			return FALSE;
 		}
 
@@ -515,7 +519,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		        for(INT8 i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 40);
 					ADC_SoftwareStartConv(ADC1);
 					if(IS_BODY_CC()) break;
 				}

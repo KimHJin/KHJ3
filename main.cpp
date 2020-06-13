@@ -38,6 +38,16 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 	TIM4_ClearITPendingBit(TIM4_IT_Update);
 }
 /************************************************************************/
+INT16 ABS16(INT16 a)
+{
+	if(a<0) return a * -1;
+	return a;
+}
+INT32 ABS32(INT32 a)
+{
+	if(a<0) return a * -1;
+	return a;
+}
 
 void keyScan()
 {
@@ -524,7 +534,7 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						if (IWonTask->MeasredCount1 > 0 && ABS(MEASURED_TEMP - IWonTask->MeasredTemp) > 3)
+						if (IWonTask->MeasredCount1 > 0 && ABS16(MEASURED_TEMP - IWonTask->MeasredTemp) > 3)
 						{
 							TEMP_AVG->Init();
 							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);

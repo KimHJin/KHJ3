@@ -461,7 +461,7 @@ void tempValueDisplay(INT16 value, BOOL fillZero)
 		//LCD->DP1 = 0;
 
 	// 음수도 양수로 처리 (마이너스는 위해서 표시됨)
-	if(value<0) value = ABS(value);
+	if(value<0) value = ABS16(value);
 
 	INT8 forthNumber = (INT8)(value % 10);
 	INT8 thirdNumber = (INT8)((value / 10) % 10);
