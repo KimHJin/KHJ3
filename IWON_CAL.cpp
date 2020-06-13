@@ -75,7 +75,10 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				// AUTO CAL STEP 1
 				// 사물모드
 				// 특정 온도를 측정하여 측정된 전압과 기준이 되는 전압 차이를 offSetVolt_p 에 저장한다.
-				memTempDataDisplay(AutoCalStep * 100 + AutoCalFlag);
+
+				ambRef_p = IWonTask->Get_AMB_TEMP();
+				IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
+				memTempDataDisplay(IWonTask->AMB_REF);	// 측정할 때의 AMB 값을 표시한다.
 
 				INT32 TPCmV = 0;
 				IWonTask->ClearTSUM();

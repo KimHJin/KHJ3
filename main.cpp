@@ -154,6 +154,14 @@ int main(void)
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
+	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
+	if(IWonTask->AMB_REF<10 || IWonTask->AMB_REF>40)
+	{
+		// 만약 없으면 생산이 대략 23.0 도에서 생산하고 있다.
+		ambRef_p = 230;
+		IWonTask->AMB_REF = ambRef_p;
+	}
+
 	// 인체 모드일때 BLUE 배경
 	// 사물 모드일때 GREEN 배경
 	if (measureMode_p)
@@ -171,7 +179,7 @@ int main(void)
 		IWonTask->Task(AutoCaliFlag_p);
 		if(IWonTask->Was_Calc())
 		{	// ADC 의 기초 계산이 완료되면...
-			for (BYTE i = 0; i < 20; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+			for (BYTE i = 0; i < 40; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task(AutoCaliFlag_p);
 				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
@@ -491,7 +499,7 @@ int main(void)
 									if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
 									{
 										BEAM_OFF();
-										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp);																				
+										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp, IsAutoCalCompleted);																				
 										IWonTask->SetMeasredStates();
 										IWonFunc->CheckMedicalTestMode(IWonTask);
 									}

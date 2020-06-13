@@ -283,24 +283,26 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp			
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
 	*/
-	
+
 	float constant = 1000.f / (A_v * k);
 	float V_tp =  (float)TPCmV / 1000.f + shiftv;
 	float objtemp = pow( ( constant * V_tp + pow( ambtemp, n ) ), 1.f / n ) * 10.f - 300;
 	
-	INT16 T_OBJ = (INT16) objtemp;
+	INT16 T_OBJ = (INT16) objtemp;	
 	
-	/*
 	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
-	INT16 AMBADJ = (INT16)((ambtemp - reftemp) * 10.f);
-	if(T_OBJ-AMBADJ < 0) {
-		T_OBJ = AddTSUMB(0);
-	} else {
-		T_OBJ = AddTSUMB(T_OBJ-AMBADJ);
+	if(AMB_REF==AMB_TEMP)
+	{
+		T_OBJ = AddTSUMB(T_OBJ);	
 	}
-	*/
+	else
+	{
+		const float reftemp = (float)AMB_REF / 10.0f;
+		INT16 AMBADJ = (INT16)((ambtemp-reftemp) * 10.f);
+		T_OBJ = AddTSUMB(T_OBJ + (AMBADJ / 2));
+	}	
 
-	T_OBJ = AddTSUMB(T_OBJ);	
+	// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 
 	return T_OBJ;
 }
@@ -414,7 +416,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			{
 				//printf("VrefintAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+				Vrefint = VrefintAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 				// return FALSE;
 			}
 
@@ -433,7 +435,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			if (!VrefvddAvg->IsOC())
 			{
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+				Vrefvdd = VrefvddAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 				VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 				//printf("VrefvddAvg VrefvddmV=%ld\r\n", VrefvddmV);
 				if(VrefvddmV>1600) {
@@ -469,7 +471,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			{
 				//printf("VrefbatAvg\r\n");
 		        while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 				VrefbatAvg->SetOC();
 			}
 
@@ -490,7 +492,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		        for(INT8 i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
+					Vrefntc = VrefntcAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 					if(VrefntcAvg->IsOC()) break;
 					ADC_SoftwareStartConv(ADC1);
 				}								
@@ -513,7 +515,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		        for(INT8 i=0;i<30;i++)
 				{
 			  		while (ADC_GetFlagStatus(ADC1, ADC_FLAG_EOC) == RESET){}
-					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 50);
+					Vreftpc = VreftpcAvg->AddCalc(ADC_GetConversionValue(ADC1), 30);
 					ADC_SoftwareStartConv(ADC1);
 					if(IS_BODY_CC()) break;
 				}

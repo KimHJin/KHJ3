@@ -76,7 +76,7 @@ public:
 	VOID SaveTemp(INT16 temp);
 
 	VOID ObjTempDisp(INT16 temp);
-	VOID BdyTempDisp(INT16 temp);
+	VOID BdyTempDisp(INT16 temp, BOOL IsAutoCalCompleted);
 
 	VOID SystemError(VOID);
 	VOID MeasuringDisp(VOID);

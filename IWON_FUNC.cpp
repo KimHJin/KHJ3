@@ -504,27 +504,29 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 		SaveTemp(temp);
 	}
 }
-VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp)
+VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp, BOOL IsAutoCalCompleted)
 {
 	if (temp >= 381 && temp <= 430)	// 42.5 => 43.0 으로 변경 (2020.06.04)
 	{ // HIGH FEVER
 		DisplayRGB(RED);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
-		BeepMode(HIGH_FEVER);
+		if(IsAutoCalCompleted) BeepMode(HIGH_FEVER);
 	}
 	else if (temp >= 371 && temp <= 380)
 	{ // LIGHT FEVER
 		DisplayRGB(YELLOW);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
-		BeepMode(LIGHT_FEVER);
+		if(IsAutoCalCompleted) BeepMode(LIGHT_FEVER);
 	}
 	else if (temp >= 334 && temp <= 370)
 	{ // NORMAL
 		DisplayRGB(BLUE);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
-		BeepMode(NORMAL);
+		if(IsAutoCalCompleted) BeepMode(NORMAL);
 	}
 
+	if(!IsAutoCalCompleted) BeepMode(NORMAL);
+	
 	SaveTemp(temp);
 }
 

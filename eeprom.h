@@ -17,6 +17,7 @@
 #define memTemp_p(num) __EEPROM->memTempData[num]
 #define AutoCaliFlag_p __EEPROM->AutoCaliFlag
 #define offSetVolt_p   __EEPROM->offSetVolt
+#define ambRef_p       __EEPROM->ambRef
 
 typedef struct
 {
@@ -31,6 +32,8 @@ typedef struct
   INT8 caliData;  		// 수동 캘리브레이션 값
   INT8 AutoCaliFlag;	// 0 은 AutoCAL 필요, 1은 첫번째 공식, 2는 두번째 공식, 3은 세번째 공식  
   INT32 offSetVolt;		// 자동 캘리브레이션 값
+
+  INT16 ambRef;			// AutoCal 할 때 센서의 AMB 온도
 
 } EEROM_TypeDef;
 
