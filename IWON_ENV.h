@@ -28,8 +28,9 @@
 // 버전 2.4 : 센서 보정값의 지능화 (STEP 2 의 차이가 나는 온도에 따른 보정값 적용)
 // 버전 2.5 : 오토캘 모드에서 왼쪽 오른쪽 버튼 기능 확인, 의료(검증)용 기능 추가, 고열 42.5 => 43.0 으로 수정
 // 버전 2.6 : LEFT, RIGHT 버튼 테스트 완료하지 않아도 오토캘 가능하도록 함.
-// 버전 3.7 : AMB 보정, 오토캘에서 미열, 고열 일때 시간 세이브
-#define DEFINED_FW_VER 37
+// 버전 3.8 : AMB 보정, 오토캘에서 미열, 고열 일때 시간 세이브, 오토캘리브레이션 버전 저장
+#define DEFINED_FW_VER 38
+#define DEFINED_CALI_VER 38
 
 #define DEFINED_adcVREFValue 1224
 

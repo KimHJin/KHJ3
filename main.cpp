@@ -212,7 +212,8 @@ int main(void)
 	}
 	
 
-	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0);
+	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입
@@ -351,6 +352,7 @@ int main(void)
 					{
 						// 오토 캘리브레이션 모드에서 LEFT+RIGHT 버튼을 5초 이상 누르고 있으면 오토캘리브레이션 모드를 빠져나오게 된다.
 						AutoCaliFlag_p = 1;
+						AutoCaliVer_p = DEFINED_CALI_VER;
 
 						// 이때 오토옵셋값 하고 수동보정값을 0 으로 저장된다.
 						offSetVolt_p = 0;

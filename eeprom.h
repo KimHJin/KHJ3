@@ -18,6 +18,7 @@
 #define AutoCaliFlag_p __EEPROM->AutoCaliFlag
 #define offSetVolt_p   __EEPROM->offSetVolt
 #define ambRef_p       __EEPROM->ambRef
+#define AutoCaliVer_p  __EEPROM->AutoCaliVer
 
 typedef struct
 {
@@ -35,6 +36,8 @@ typedef struct
 
   INT16 ambRef;			// AutoCal 할 때 센서의 AMB 온도
 
+  INT16 AutoCaliVer;	// AutoCal Version. 이 값이 다르면 무조건 자동 캘리브레이션 모드로 들어간다.
+  
 } EEROM_TypeDef;
 
 void EEPROM_init(void);
