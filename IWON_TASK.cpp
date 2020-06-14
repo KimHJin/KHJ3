@@ -291,14 +291,27 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	INT16 T_OBJ = (INT16) objtemp;	
 	
 	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
-	T_OBJ = AddTSUMB(T_OBJ);	
 	if(AMB_REF!=AMB_TEMP)
 	{
-		INT16 AMBADJ = AMB_TEMP - AMB_REF;
-		T_OBJ += AMBADJ / 2;
+		INT16 AMBADJ = 0;
+		if(AMB_TEMP > AMB_REF)
+		{
+			AMBADJ = AMB_TEMP - AMB_REF;
+			T_OBJ = AddTSUMB(T_OBJ) + (AMBADJ / 2);
+		}
+		else
+		{
+			AMBADJ = AMB_REF - AMB_TEMP;
+			T_OBJ = AddTSUMB(T_OBJ) - (AMBADJ / 2);
+		}
+	}
+	else
+	{
+		T_OBJ = AddTSUMB(T_OBJ);
 	}
 
-	// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+	//memTempDataDisplay(T_OBJ);	// 측정할 때의 AMB 값을 표시한다.
+	//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 
 	return T_OBJ;
 }
@@ -369,38 +382,37 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			if (BB != -999)
 			{
 				BB = BB - OBJ_TEMP;
-				if (ABS16(BB) > 15)
+				if (BB > 15 || BB < -15)
 				{
 					ClearTSUMB();
 				}
 			}
 
-				if(DEFINED_USE_BDY_TBL)
+			if(DEFINED_USE_BDY_TBL)
+			{
+				// 사물 to 인체 테이블 사용
+				INT8 TBL = GetTBLValue(OBJ_TEMP);
+				if (TBL == -1)
 				{
-					// 사물 to 인체 테이블 사용
-					INT8 TBL = GetTBLValue(OBJ_TEMP);
-					if (TBL == -1)
-					{
-						BDY_TEMP = -1; // LOW
-					}
-					else 
-					if (TBL == -2)
-					{
-						BDY_TEMP = -2; // HIGH
-					}
-					else
-					{
-						BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
-					}
+					BDY_TEMP = -1; // LOW
+				}
+				else 
+				if (TBL == -2)
+				{
+					BDY_TEMP = -2; // HIGH
 				}
 				else
 				{
-					BDY_TEMP = (INT16)((float)OBJ_TEMP / DEFINED_BDY_EMI);
+					BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
 				}
+			}
+			else
+			{
+				BDY_TEMP = (INT16)((float)OBJ_TEMP / DEFINED_BDY_EMI);
+			}
 		}
 
 		MGtime = GetTimeOutStartTime();
-
 		return (TSUMC>=DEFINED_ADC_SUM_C);
 	}
 	else if (TimeOut(TTtime, TTInterval))

@@ -135,7 +135,4 @@ typedef const BYTE *LPCBYTE;
 #define CRLF "\r\n"
 #define CRLFSP "     \r\n"
 
-INT16 ABS16(INT16 a);
-INT32 ABS32(INT32 a);
-
 #endif

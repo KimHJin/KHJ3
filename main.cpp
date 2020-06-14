@@ -38,17 +38,6 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 	TIM4_ClearITPendingBit(TIM4_IT_Update);
 }
 /************************************************************************/
-INT16 ABS16(INT16 a)
-{
-	if(a<0) return a * -1;
-	return a;
-}
-INT32 ABS32(INT32 a)
-{
-	if(a<0) return a * -1;
-	return a;
-}
-
 void keyScan()
 {
 	if (SW_LEFT_ON) // SW_LEFT
@@ -213,7 +202,8 @@ int main(void)
 	
 
 	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
-	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
+	// BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0);
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입
@@ -398,10 +388,9 @@ int main(void)
 			}
 		}
 
-		BOOL IS_SW_PWR_ON = SW_PWR_ON;
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((IS_SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
 		{
-			if (IS_SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
+			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
 			{
 				// IWonTask->medicalTestMode 값이 0 이 아니라는 것은 의료용 테스트 모드인 것이다.
 				IWonTask->medicalTestTimerCount = 0;
@@ -422,7 +411,7 @@ int main(void)
 				// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 			}
 		}
-		if (IWonTask->Measuring == false && IWonTask->Measured && !IS_SW_PWR_ON)
+		if (IWonTask->Measuring == false && IWonTask->Measured && !SW_PWR_ON)
 		{
 			IWonTask->Measured = false;
 		}
