@@ -383,39 +383,38 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			{
 				INT16 CC = BB - OBJ_TEMP;
 				if (CC < 0) CC = OBJ_TEMP - BB;
-				if (CC > 15)	// TODO : 여기가 계속 걸릴때 에러 처리 해야함.
+				if (CC > 15)
 				{
-					//memTempDataDisplay(CC);	// 측정할 때의 AMB 값을 표시한다.
 					ClearTSUMB();
+					TSUMBerrCount++;
 				}
 			}
 
-			if(DEFINED_USE_BDY_TBL)
+			// 사물 to 인체 테이블 사용
+			INT8 TBL = GetTBLValue(OBJ_TEMP);
+			if (TBL == -1)
 			{
-				// 사물 to 인체 테이블 사용
-				INT8 TBL = GetTBLValue(OBJ_TEMP);
-				if (TBL == -1)
-				{
-					BDY_TEMP = -1; // LOW
-				}
-				else 
-				if (TBL == -2)
-				{
-					BDY_TEMP = -2; // HIGH
-				}
-				else
-				{
-					BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
-				}
+				BDY_TEMP = -1; // LOW
+			}
+			else 
+			if (TBL == -2)
+			{
+				BDY_TEMP = -2; // HIGH
 			}
 			else
 			{
-				BDY_TEMP = (INT16)((float)OBJ_TEMP / DEFINED_BDY_EMI);
+				BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
 			}
 		}
 
 		MGtime = GetTimeOutStartTime();
-		return (TSUMC>=DEFINED_ADC_SUM_C);
+
+		if(TSUMC>=DEFINED_ADC_SUM_C)
+		{
+			TSUMBerrCount = 0;
+			return true;
+		}
+		return false;
 	}
 	else if (TimeOut(TTtime, TTInterval))
 	{
