@@ -86,14 +86,13 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 					IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 					if(IWonTask->Was_Calc()) break;
 				}
-				IWonFunc->Delay_ms(200);
-				for (BYTE i = 0; i < 40; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+				IWonFunc->Delay_ms(100);
+				for (BYTE i = 0; i < 20; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 				{
 					IWonTask->Task(AutoCalFlag);
 					IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 				}
-
-
+				
 				ambRef_p = IWonTask->Get_AMB_TEMP();
 				IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
 				memTempDataDisplay(IWonTask->AMB_REF);	// 측정할 때의 AMB 값을 표시한다.

@@ -381,9 +381,11 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
 			{
-				BB = BB - OBJ_TEMP;
-				if (BB > 15 || BB < -15)
+				INT16 CC = BB - OBJ_TEMP;
+				if (CC < 0) CC = OBJ_TEMP - BB;
+				if (CC > 15)	// TODO : 여기가 계속 걸릴때 에러 처리 해야함.
 				{
+					//memTempDataDisplay(CC);	// 측정할 때의 AMB 값을 표시한다.
 					ClearTSUMB();
 				}
 			}

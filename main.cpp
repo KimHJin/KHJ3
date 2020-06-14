@@ -407,8 +407,8 @@ int main(void)
 				IWonTask->RetryCount = 0;
 
 				// 측정할 때마다 주변온도 표시
-				// INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
-				// memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+				//INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
+				//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 			}
 		}
 		if (IWonTask->Measuring == false && IWonTask->Measured && !SW_PWR_ON)
@@ -534,7 +534,14 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						if (IWonTask->MeasredCount1 > 0 && ABS16(MEASURED_TEMP - IWonTask->MeasredTemp) > 3)
+						
+						INT16 MT = MEASURED_TEMP - IWonTask->MeasredTemp;
+						if(MT<0)
+						{
+							MT = IWonTask->MeasredTemp - MEASURED_TEMP;
+						}
+
+						if (IWonTask->MeasredCount1 > 0 && MT > 3)
 						{
 							TEMP_AVG->Init();
 							IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
