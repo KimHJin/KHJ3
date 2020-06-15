@@ -154,16 +154,25 @@ int main(void)
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
-	
+	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
+	{
+		if(IWonTask->SENSOR_TYPE==1)
+		{
+			// 공식 산출시 27.1도 였다.
+			ambRef_p = 271;
+			IWonTask->AMB_REF = ambRef_p;
+		}
+		else
+		{
+			// 만약 없으면 생산이 대략 24.0 도에서 생산하고 있다.
+			ambRef_p = 240;
+			IWonTask->AMB_REF = ambRef_p;
+		}
+	}
+
 	//IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
 	//IWonFunc->Delay_ms(3000);
 
-	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
-	{
-		// 만약 없으면 생산이 대략 23.0 도에서 생산하고 있다.
-		ambRef_p = 230;
-		IWonTask->AMB_REF = ambRef_p;
-	}
 
 	// 인체 모드일때 BLUE 배경
 	// 사물 모드일때 GREEN 배경
@@ -200,6 +209,9 @@ int main(void)
 		IWonFunc->SystemError();
 	}
 	
+	IWonFunc->TempValueDisplay(AMB, false);
+	IWonFunc->Delay_ms(3000);
+
 
 	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
@@ -347,6 +359,7 @@ int main(void)
 						// 이때 오토옵셋값 하고 수동보정값을 0 으로 저장된다.
 						offSetVolt_p = 0;
 						caliData_p = 0;
+						ambRef_p = 0;
 						
 						IWonFunc->Beep();
 						IWonFunc->Delay_ms(100);	   

@@ -610,7 +610,8 @@ VOID IWON_TEMP_FUNC::ALLCLEAR(VOID)
 	AutoCaliFlag_p = 0;
 	AutoCaliVer_p  = 0;	// 자동 캘리브레이션 버전 (이값이 작으면 무조건 오토 캘리브레이션 모드로 들어간다)
 	offSetVolt_p   = 0;	// 자동 보정값 0 으로 저장
-	
+	ambRef_p       = 0; // 자동 보정시 저장되는 AMBTEMP 를 0 으로 저장한다.
+
 	TempLogDataClear();
 }
 

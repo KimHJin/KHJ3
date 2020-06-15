@@ -83,6 +83,7 @@ public:
 	BOOL IsMedicalTestModeAction(VOID);	// 의료용 테스트 모드 이면서 타이머 카운트가 넘어섰는지
 	
 	INT16 AMB_REF;	// 오토캘 할때 센서 자체온도 보관
+	INT8 SENSOR_TYPE;	// 센서 타임	0:가장초기에했던 1:독일(HMS J11 F5.5 & HMS K11 F5.5)
 private:
 	VOID Init(VOID);
 

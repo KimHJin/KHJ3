@@ -81,6 +81,8 @@ VOID IWON_TEMP_TASK::Init(VOID)
 
 	medicalTestMode = 0;
 	medicalTestTimerCount = 0;
+
+	SENSOR_TYPE = 1;
 }
 
 VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
@@ -254,10 +256,13 @@ INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 
 INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
-	float ambtemp = (float)AMB_TEMP / 10.f;
-
-	const float k = 0.00066f;
+	float k = 0.00066f;
 	float n = 1.93f;
+	if(SENSOR_TYPE==1)
+	{
+		k = 0.001f;
+		n = 1.698f;
+	}
 	if(caliFlag>1)
 	{
 		if(caliFlag%2==0)
@@ -272,37 +277,60 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		}				
 	}
 	
-	const float shiftv = -0.57f;
-	const float A_v = 454.54f;
-
+	const float A_v = 454.54f;	// OPAMP 증폭도
+	float Koffset = -0.57f;		// Koffset	
+	float Tamb = (float)AMB_TEMP / 10.f;
+	if(SENSOR_TYPE==1)
+	{
+		Koffset = -0.77f;
+		//Tamb = 27.1f;
+	}
 
 	/*						
+	float ambtemp = (float)AMB_TEMP / 10.f;
 	const float reftemp = 25.f;		
 	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
-	float v2 = (float)TPCmV / 1000.f + comp - shiftv;			
+	float v2 = (float)TPCmV / 1000.f + comp - Koffset;			
 	float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp			
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
 	*/
 
 	float constant = 1000.f / (A_v * k);
-	float V_tp =  (float)TPCmV / 1000.f + shiftv;
-	float objtemp = pow( ( constant * V_tp + pow( ambtemp, n ) ), 1.f / n ) * 10.f - 300;
+	float V_tp =  (float)TPCmV / 1000.f + Koffset;
+	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - 300;
 	
 	INT16 T_OBJ = (INT16) objtemp;	
-	
-	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
+
+	AMB_REF = 251;
+	AMB_REF = AMB_TEMP;
+
 	if(AMB_REF!=AMB_TEMP)
 	{
 		INT16 AMBADJ = 0;
 		if(AMB_TEMP > AMB_REF)
 		{
 			AMBADJ = AMB_TEMP - AMB_REF;
-			T_OBJ = AddTSUMB(T_OBJ) + (AMBADJ / 2);
+			if(SENSOR_TYPE==1)
+			{
+				T_OBJ = AddTSUMB(T_OBJ) + AMBADJ;
+			}
+			else
+			{
+				T_OBJ = AddTSUMB(T_OBJ) + (AMBADJ / 2);
+			}
+			
 		}
 		else
 		{
 			AMBADJ = AMB_REF - AMB_TEMP;
-			T_OBJ = AddTSUMB(T_OBJ) - (AMBADJ / 2);
+			if(SENSOR_TYPE==1)
+			{
+				T_OBJ = AddTSUMB(T_OBJ) - AMBADJ;
+			}
+			else
+			{
+				T_OBJ = AddTSUMB(T_OBJ) - (AMBADJ / 2);
+			}
 		}
 	}
 	else
@@ -377,7 +405,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
 
 			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV, caliFlag);
-
+/*
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
 			{
@@ -390,7 +418,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 					TSUMBerrCount++;
 				}
 			}
-
+*/
 			// 사물 to 인체 테이블 사용
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
 			if (TBL == -1)
