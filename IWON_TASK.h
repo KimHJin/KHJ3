@@ -76,7 +76,7 @@ public:
 	INT8 MeasredCount1;
 	INT8 MeasredCount2;
 	INT8 RetryCount;
-	INT8 TSUMBerrCount;
+	INT16 TSUMBerrCount;
 
 	INT8 medicalTestMode;			// 의료용 테스트 모드
 	INT16 medicalTestTimerCount;	// 의료용 테스트 모드 타이머 카운트

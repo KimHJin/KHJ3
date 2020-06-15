@@ -579,7 +579,7 @@ int main(void)
 		{
 			// memTempDataDisplay(IWonTask->TSUMBerrCount);
 			// 센서의 자체 온도가 급격하게 바뀌거나 (냉동 혹은 가열) 시 측정키(POWER키) 동작 안하는 행업 걸릴때
-			if(IWonTask->TSUMBerrCount>100)
+			if(IWonTask->TSUMBerrCount>200)
 			{
 				IWonFunc->SystemError();
 			}

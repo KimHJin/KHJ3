@@ -383,7 +383,8 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			{
 				INT16 CC = BB - OBJ_TEMP;
 				if (CC < 0) CC = OBJ_TEMP - BB;
-				if (CC > 15)
+				//if (CC > 15)
+				if (CC > 25)	// 센서 악조건 속에서 온도차가 너무 변하는 경우 발생 (2020.06.15)
 				{
 					ClearTSUMB();
 					TSUMBerrCount++;
