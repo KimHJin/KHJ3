@@ -310,8 +310,10 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		//Tamb = 27.1f;
 	}
 
+
 	/*						
 	float ambtemp = (float)AMB_TEMP / 10.f;
+
 	const float reftemp = 25.f;		
 	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
 	float v2 = (float)TPCmV / 1000.f + comp - Koffset;			
@@ -324,6 +326,8 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - 300;
 	
 	INT16 T_OBJ = (INT16) objtemp;	
+	
+	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
 	if(AMB_REF!=AMB_TEMP)
 	{
 		INT16 AMBADJ = 0;
@@ -332,24 +336,23 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 			AMBADJ = AMB_TEMP - AMB_REF;
 			if(SENSOR_TYPE==1)
 			{
-				T_OBJ = AddTSUMB(T_OBJ) + AMBADJ;
+				T_OBJ = AddTSUMB(T_OBJ + AMBADJ);
 			}
 			else
 			{
-				T_OBJ = AddTSUMB(T_OBJ) + (AMBADJ / 2);
+				T_OBJ = AddTSUMB(T_OBJ + (AMBADJ / 2));
 			}
-			
 		}
 		else
 		{
 			AMBADJ = AMB_REF - AMB_TEMP;
 			if(SENSOR_TYPE==1)
 			{
-				T_OBJ = AddTSUMB(T_OBJ) - AMBADJ;
+				T_OBJ = AddTSUMB(T_OBJ - AMBADJ);
 			}
 			else
 			{
-				T_OBJ = AddTSUMB(T_OBJ) - (AMBADJ / 2);
+				T_OBJ = AddTSUMB(T_OBJ - (AMBADJ / 2));
 			}
 		}
 	}
@@ -425,20 +428,21 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			AMB_TEMP = (((INT16)NTC_MIN + (ntcIndex * (INT16)NTC_STEP)) * 100 - (PR * (INT16)NTC_STEP)) / 10;
 
 			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV, caliFlag);
-/*
+
+
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
 			{
 				INT16 CC = BB - OBJ_TEMP;
 				if (CC < 0) CC = OBJ_TEMP - BB;
-				//if (CC > 15)
-				if (CC > 35)	// 센서 악조건 속에서 온도차가 너무 변하는 경우 발생 (2020.06.15)
+				//if (CC > 35)	// 센서 악조건 속에서 온도차가 너무 변하는 경우 발생 (2020.06.15)
+				if (CC > 15) // 충분한 테스트 필요
 				{
 					ClearTSUMB();
 					TSUMBerrCount++;
 				}
 			}
-*/
+
 			// 사물 to 인체 테이블 사용
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
 			if (TBL == -1)

@@ -153,13 +153,6 @@ int main(void)
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
-#ifdef MYTEST
-	if(IS_MEDICAL_VER)
-	{
-		ambRef_p = 251; // 테스트용
-	}
-#endif
-
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
 	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
 	{
@@ -195,8 +188,8 @@ int main(void)
 	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
 	if(IS_MEDICAL_VER)
 	{
-		IWonTask->HWVersion = 0x01;
-		IWonTask->SetSensorType(1);	// 독일센서
+		//IWonTask->HWVersion = 0x01;
+		//IWonTask->SetSensorType(1);	// 독일센서
 	}
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
@@ -218,7 +211,7 @@ int main(void)
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
 	// 사용 환경의 온도가 11 도 보다 낮고 80 도 보다 높으면 에러를 발생한다.
-	if( AMB < 10 || 800 < AMB )
+	if( AMB < 10 || 500 < AMB )
 	{ 
 		IWonFunc->SystemError();
 	}
@@ -424,7 +417,7 @@ int main(void)
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 
-#ifdef MYTEST
+				// 측정 할 때마다 NTC 를 측정한다.
 				if(IsAutoCalCompleted)
 				{
 					IWonTask->InitNTC();
@@ -439,12 +432,13 @@ int main(void)
 					}
 
 					AMB = IWonTask->Get_AMB_TEMP();
-					if( AMB < 10 || 800 < AMB )
+					if( AMB < 10 || 500 < AMB )
 					{ 
+						BEAM_OFF();
 						IWonFunc->SystemError();
 					}
 				}
-#endif
+
 				IWonTask->Clear_AVG();
 				// IWonTask->ClearTSUM();
 				IWonTask->TSUMBerrCount = 0;
@@ -454,11 +448,9 @@ int main(void)
 				IWonFunc->Measure_test_flag = 0;
 				IWonTask->RetryCount = 0;
 
-#ifdef MYTEST
 				// 측정할 때마다 주변온도 표시
-				INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
-				memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
-#endif
+				//INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
+				//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
 			}
 		}
 		if (IWonTask->Measuring == false && IWonTask->Measured && !SW_PWR_ON)
@@ -553,7 +545,10 @@ int main(void)
 							}
 							else
 							{
-								if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && (MEASURED_TEMP - IWonTask->MeasredTemp > 3 || MEASURED_TEMP - IWonTask->MeasredTemp < -3))
+								INT16 MT = MEASURED_TEMP - IWonTask->MeasredTemp;
+								if(MT<0) MT = IWonTask->MeasredTemp - MEASURED_TEMP;
+
+								if (IWonTask->MeasredCount1 > 0 && IWonTask->MeasredCount2 < 50 && MT > 3)
 								{
 									TEMP_AVG->Init();
 									IWonTask->MeasredTemp = TEMP_AVG->AddCalc(MEASURED_TEMP);
@@ -565,7 +560,7 @@ int main(void)
 									IWonTask->MeasredCount1++;
 									IWonTask->MeasredCount2++;
 
-									if (IWonTask->MeasredCount1 > 10 || IWonTask->MeasredCount2 >= 20)
+									if (IWonTask->MeasredCount1 > 5 || IWonTask->MeasredCount2 > 10)
 									{
 										BEAM_OFF();
 										IWonFunc->BdyTempDisp(IWonTask->MeasredTemp, IsAutoCalCompleted);																				
@@ -595,10 +590,7 @@ int main(void)
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
 						
 						INT16 MT = MEASURED_TEMP - IWonTask->MeasredTemp;
-						if(MT<0)
-						{
-							MT = IWonTask->MeasredTemp - MEASURED_TEMP;
-						}
+						if(MT<0) MT = IWonTask->MeasredTemp - MEASURED_TEMP;
 
 						if (IWonTask->MeasredCount1 > 0 && MT > 3)
 						{
@@ -614,6 +606,8 @@ int main(void)
 
 							if (IWonTask->MeasredCount1 > 5 || IWonTask->MeasredCount2 > 10)
 							{
+								BEAM_OFF();
+
 								if(!IsAutoCalCompleted)
 								{
 									// 측정 된 온도 값을 받아 CAL
@@ -624,7 +618,6 @@ int main(void)
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 								}
 
-								BEAM_OFF();
 								IWonTask->SetMeasredStates();								
 								IWonFunc->CheckMedicalTestMode(IWonTask);
 							}
@@ -637,7 +630,7 @@ int main(void)
 		{
 			// memTempDataDisplay(IWonTask->TSUMBerrCount);
 			// 센서의 자체 온도가 급격하게 바뀌거나 (냉동 혹은 가열) 시 측정키(POWER키) 동작 안하는 행업 걸릴때
-			if(IWonTask->TSUMBerrCount>200)
+			if(IWonTask->TSUMBerrCount>120)
 			{
 				IWonFunc->SystemError();
 			}
