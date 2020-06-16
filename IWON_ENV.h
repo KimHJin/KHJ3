@@ -30,12 +30,12 @@
 // 버전 2.4 : 센서 보정값의 지능화 (STEP 2 의 차이가 나는 온도에 따른 보정값 적용)
 // 버전 2.5 : 오토캘 모드에서 왼쪽 오른쪽 버튼 기능 확인, 의료(검증)용 기능 추가, 고열 42.5 => 43.0 으로 수정
 // 버전 2.6 : LEFT, RIGHT 버튼 테스트 완료하지 않아도 오토캘 가능하도록 함.
-// 버전 3.8 : AMB 보정, 오토캘에서 미열, 고열 일때 시간 세이브, 오토캘리브레이션 버전 저장
-// 버전 3.9 : 센서 노이즈로 인하여 15 오차에서 35 로 변경
-// 버전 4.0 : TAMB 차이를 TSUM 내부에 입력 (15로 재조정), 여기까지 DEFINED_CALI_VER 값 39
+// 버전 3.8 : AMB 보정, 오토캘에서 미열, 고열 일때 시간 세이브, 오토캘리브레이션 버전 저장, DEFINED_CALI_VER 값 38
+// 버전 3.9 : 센서 노이즈로 인하여 15 오차에서 35 로 변경, DEFINED_CALI_VER 값 38
+// 버전 4.0 : TAMB 차이를 TSUM 내부에 입력 (15로 재조정), 여기까지 DEFINED_CALI_VER 값 38
 // 버전 4.1 : 독일센서 추가
 #define DEFINED_FW_VER 40
-#define DEFINED_CALI_VER 39
+#define DEFINED_CALI_VER 38
 
 #define DEFINED_adcVREFValue 1224
 
