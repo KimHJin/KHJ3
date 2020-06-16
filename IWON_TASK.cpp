@@ -82,7 +82,23 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	medicalTestMode = 0;
 	medicalTestTimerCount = 0;
 
-	SENSOR_TYPE = 1;
+	SetSensorType(0);
+}
+VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
+{
+	SENSOR_TYPE = TYPE;
+	if(SENSOR_TYPE==1)
+	{
+		NTC_MIN = -30;
+		NTC_MAX = 120;
+		NTC_STEP = 5;	// 간격이 5도 단위
+	}
+	else
+	{
+		NTC_MIN = -40;
+		NTC_MAX = 125;
+		NTC_STEP = 1;	// 간격이 1도 단위
+	}	
 }
 
 VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
@@ -390,7 +406,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 
 		
 		INT32 MRES = R3 * 10;
-		INT16 ntcIndex = GetNTCIndex(MRES);
+		INT16 ntcIndex = GetNTCIndex(MRES, SENSOR_TYPE);
 		if (ntcIndex == 0)
 		{
 			AMB_TEMP = -1; // Low
@@ -401,8 +417,8 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		}
 		else
 		{
-			INT16 PR = GetNTCValueRatio(MRES, ntcIndex);			
-			AMB_TEMP = ((NTC_MIN + ntcIndex) * 100 - PR) / 10;
+			INT16 PR = GetNTCValueRatio(MRES, ntcIndex, SENSOR_TYPE);			
+			AMB_TEMP = (((INT16)NTC_MIN + (ntcIndex * (INT16)NTC_STEP)) * 100 - (PR * (INT16)NTC_STEP)) / 10;
 
 			OBJ_TEMP = CALC_OBJTEMP(VreftpcmV, caliFlag);
 /*
@@ -672,7 +688,11 @@ VOID IWON_TEMP_TASK::GPIO_init(VOID)
 	GPIO_Init(GPIOA, GPIO_Pin_2, GPIO_Mode_In_FL_No_IT); // TEST_MODE
 	
 	GPIO_Init(GPIOD, GPIO_Pin_6, GPIO_Mode_Out_PP_High_Fast); // RESERVED_LED
-	
+
+
+    GPIO_Init(GPIOC, GPIO_Pin_0, GPIO_Mode_In_FL_No_IT); // HW VER BIT_0	: R9
+    GPIO_Init(GPIOC, GPIO_Pin_1, GPIO_Mode_In_FL_No_IT); // HW VER BIT_1	: R6
+
 	GPIO_HIGH(GPIOD, GPIO_Pin_7);
 }
 

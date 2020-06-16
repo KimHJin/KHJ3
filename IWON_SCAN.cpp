@@ -180,6 +180,42 @@ const static INT32 NTC_TBL[] = {
 		2561		 // 125
 };
 
+// 독일센서 (HMS J11 F5.5 & HMS K11 F5.5) 써미스터 특성
+const static INT32 NTC_TBL1[] = {
+1655000,	//-30
+1291850,	//-25
+928700,		//-20
+733600,		//-15
+538500,		//-10
+430100,		//-5
+321700,		//0
+259750,		//5
+197800,		//10
+161300,		//15
+124800,		//20
+100000,		//25
+80630,		//30
+66970,		//35
+53310,		//40
+44645,		//45
+35980,		//50
+30365,		//55
+24750,		//60
+21045,		//65
+17340,		//70
+14845,		//75
+12350,		//80
+10640,		//85
+8930,		//90
+7741,		//95
+6551,		//100
+5823,		//105
+5094,		//110
+4366,		//115
+3637		//120
+};
+
+
 // 28.1 ~ 41.5 (사물온도 기준)
 // 33.4 ~ 42.5 (체온 기준)
 // 테이블값 수정 (기본이된 중국 소스에 오류 있음) - 2020.05.23
@@ -226,12 +262,6 @@ const static INT8 TB_TBL[] = {
 // 생성자
 IWON_TEMP_SCAN::IWON_TEMP_SCAN()
 {
-  /*
-	TADJ0 = DEFINED_TADJ0;
-	VADJ1 = DEFINED_VADJ1;
-	VADJ2 = DEFINED_VADJ2;
-  */
-
 	TSUMN = DEFINED_TSUMN; // 온도 평균값을 만들기 위하여 몇개의 방을 써야할지 결정
 	TSUMC = 0;
 	TSUMB = NULL;
@@ -240,12 +270,6 @@ IWON_TEMP_SCAN::IWON_TEMP_SCAN()
 }
 IWON_TEMP_SCAN::IWON_TEMP_SCAN(INT8 tsumn)
 {
-  /*
-	TADJ0 = DEFINED_TADJ0;
-	VADJ1 = DEFINED_VADJ1;
-	VADJ2 = DEFINED_VADJ2;
-  */
-
 	TSUMN = tsumn; // 온도 평균값을 만들기 위하여 몇개의 방을 써야할지 결정
 	TSUMC = 0;
 	TSUMB = NULL;
@@ -268,53 +292,35 @@ VOID IWON_TEMP_SCAN::InitTSUMB(VOID)
 	TSUMB = (INT16 *)malloc(sizeof(INT16) * TSUMN);
 }
 
-/*
-// TOBJ 를 이 값만큼 빼준다.
-VOID IWON_TEMP_SCAN::SetTADJ0(INT16 tadj0)
-{
-	TADJ0 = tadj0;
-}
-INT16 IWON_TEMP_SCAN::GetTADJ0(VOID)
-{
-	return TADJ0;
-}
-
-// delta 값 변경
-VOID IWON_TEMP_SCAN::SetVADJ1(INT16 vadj1)
-{
-	VADJ1 = vadj1;
-}
-INT16 IWON_TEMP_SCAN::GetVADJ1(VOID)
-{
-	return VADJ1;
-}
-
-// shaft v 값
-VOID IWON_TEMP_SCAN::SetVADJ2(INT16 vadj2)
-{
-	VADJ2 = vadj2;
-}
-INT16 IWON_TEMP_SCAN::GetVADJ2(VOID)
-{
-	return VADJ2;
-}
-*/
-
 //-----------------------------------------------------------------------------
 // NTC 기준 테이블 인덱스 넘버를 찾는다.
 // 입력 : MRES = 센서의 써미스터 저항 값
 // 출력 : MRES 가 위치하는 NTC 테이블 인덱스 위치
 //-----------------------------------------------------------------------------
-INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES)
+INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES, INT8 SENSOR_TYPE)
 {
 	INT16 index = -1;
-	INT16 tbl_count = (sizeof(NTC_TBL) / sizeof(INT32)) - 1;
+	INT16 tbl_count;
+	INT32 *ntc_tbl;
+	if(SENSOR_TYPE==1)
+	{
+		// 독일센서
+		tbl_count = (sizeof(NTC_TBL1) / sizeof(INT32)) - 1;
+		ntc_tbl = (INT32*)&NTC_TBL1[0];
+	}
+	else
+	{
+		// 초기에 사용한 중국 막센서
+		tbl_count = (sizeof(NTC_TBL) / sizeof(INT32)) - 1;
+		ntc_tbl = (INT32*)&NTC_TBL[0];
+	}
+	
 	for (;;)
 	{
 		index++;
 		if (index == tbl_count)
 			break;
-		if (MRES > NTC_TBL[index])
+		if (MRES > *(ntc_tbl+index))
 			return index;
 	}
 	return -1;
@@ -326,10 +332,21 @@ INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES)
 // 입력 : MRES 센서의 써미스터 저항 값
 //       MRES 의 index 해당 NTC 인덱스 위치 값
 // 출력 : 해당 NTC 구간의 입력된 MRES 의 위치 퍼센트 값
-INT16 IWON_TEMP_SCAN::GetNTCValueRatio(INT32 MRES, INT16 index)
+INT16 IWON_TEMP_SCAN::GetNTCValueRatio(INT32 MRES, INT16 index, INT8 SENSOR_TYPE)
 {
-	INT32 NTCRL = NTC_TBL[index];
-	INT32 NTCRH = NTC_TBL[index - 1];
+	INT32 NTCRL;
+	INT32 NTCRH;
+
+	if(SENSOR_TYPE==1)
+	{
+		NTCRL = NTC_TBL1[index];
+		NTCRH = NTC_TBL1[index - 1];
+	}
+	else
+	{
+		NTCRL = NTC_TBL[index];
+		NTCRH = NTC_TBL[index - 1];
+	}
 
 	INT32 RM = MRES - NTCRL;
 	INT32 RD = NTCRH - NTCRL;

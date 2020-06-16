@@ -185,6 +185,13 @@ int main(void)
 	//IWonFunc->TempValueDisplay(0);
 	IWonFunc->Beep();
 
+	if(IS_MEDICAL_VER)
+	{
+		IWonFunc->Delay_ms(100);
+		IWonFunc->Beep();
+		IWonTask->SetSensorType(1);	// 독일센서
+	}
+
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (INT16 i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
 	{

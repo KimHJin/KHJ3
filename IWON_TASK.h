@@ -34,6 +34,7 @@ public:
 	INT16 CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag);
 
 	VOID InitNTC(VOID);
+	VOID SetSensorType(INT8 TYPE);
 
 	BOOL Task(INT8 caliFlag);
 	BOOL Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag);
@@ -78,12 +79,19 @@ public:
 	INT8 RetryCount;
 	INT16 TSUMBerrCount;
 
-	INT8 medicalTestMode;			// 의료용 테스트 모드
-	INT16 medicalTestTimerCount;	// 의료용 테스트 모드 타이머 카운트
+	INT8 medicalTestMode;				// 의료용 테스트 모드
+	INT16 medicalTestTimerCount;		// 의료용 테스트 모드 타이머 카운트
 	BOOL IsMedicalTestModeAction(VOID);	// 의료용 테스트 모드 이면서 타이머 카운트가 넘어섰는지
 	
-	INT16 AMB_REF;	// 오토캘 할때 센서 자체온도 보관
-	INT8 SENSOR_TYPE;	// 센서 타임	0:가장초기에했던 1:독일(HMS J11 F5.5 & HMS K11 F5.5)
+	INT16 AMB_REF;		// 오토캘 할때 센서 자체온도 보관
+	INT8 SENSOR_TYPE;	// 센서 타입	0:가장초기에했던 1:독일(HMS J11 F5.5 & HMS K11 F5.5)
+
+	//#define NTC_MIN -40
+	//#define NTC_MAX 125
+	INT8 NTC_MIN;
+	INT8 NTC_MAX;
+	INT8 NTC_STEP;
+
 private:
 	VOID Init(VOID);
 

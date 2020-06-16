@@ -22,28 +22,8 @@ public:
 
 	// 소멸자
 	~IWON_TEMP_SCAN();
-
-/*
-	// TOBJ 를 이 값만큼 빼준다.
-	VOID SetTADJ0(INT16 tadj0);
-	INT16 GetTADJ0(VOID);
-
-	// delta 값 변경
-	VOID SetVADJ1(INT16 vadj1);
-	INT16 GetVADJ1(void);
-
-	// shaft v 값
-	VOID SetVADJ2(INT16 vadj2);
-	INT16 GetVADJ2(VOID);
-*/
 	
 protected:
-/*
-	INT16 TADJ0;
-	INT16 VADJ1;
-	INT16 VADJ2;
-*/
-
 	INT8 TSUMN;
 	INT8 TSUMC;
 	INT16 *TSUMB;
@@ -55,7 +35,7 @@ protected:
 	// 입력 : MRES = 센서의 써미스터 저항 값
 	// 출력 : MRES 가 위치하는 NTC 테이블 인덱스 위치
 	//-----------------------------------------------------------------------------
-	INT16 GetNTCIndex(INT32 MRES);
+	INT16 GetNTCIndex(INT32 MRES, INT8 SENSOR_TYPE);
 
 	// NTC 기준 인덱스 번호화 실측된 값을 이용해서 해당 구간내의 보정 위치의 퍼센트를 계산한다.
 	// 그 이유는 실제 측정된 온도값의 저항값의 인덱스는 해당 NTC 구간의 1도 분해능이기 때문에
@@ -63,7 +43,7 @@ protected:
 	// 입력 : MRES 센서의 써미스터 저항 값
 	//       MRES 의 index 해당 NTC 인덱스 위치 값
 	// 출력 : 해당 NTC 구간의 입력된 MRES 의 위치 퍼센트 값
-	INT16 GetNTCValueRatio(INT32 MRES, INT16 index);
+	INT16 GetNTCValueRatio(INT32 MRES, INT16 index, INT8 SENSOR_TYPE);
 
 	// 사물 온도를 인체 온도로 변환
 	// 입력 : T_OBJ 는 측정된 사물 온도를 10 배수한 정수이다.

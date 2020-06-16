@@ -57,10 +57,7 @@
 
 #define DEFINED_TSUMN 10
 
-#define NTC_MIN -40
-#define NTC_MAX 125
-
-// 사물기준   (체온 계산용)
+// 사물기준 (체온 계산용)
 #define TB_MIN 281
 #define TB_MAX 430
 
@@ -80,8 +77,17 @@
 #define SW_PWR_ON    !GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_5)
 #define SW_LEFT_ON   !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_6)
 #define SW_RIGHT_ON  !GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_7)
-#define BEAM_ON()      GPIO_LOW(GPIOD, GPIO_Pin_6)  
-#define BEAM_OFF()     GPIO_HIGH(GPIOD, GPIO_Pin_6)  
+#define BEAM_ON()     GPIO_LOW(GPIOD, GPIO_Pin_6)  
+#define BEAM_OFF()    GPIO_HIGH(GPIOD, GPIO_Pin_6)  
+
+// R15 => 0 오옴
+#define HW_VER_BIT0  GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0)
+// R8 => 0 오옴
+#define HW_VER_BIT1  GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_1)
+
+// 의료용(독일센서)은 R9 를 장착한다.
+#define IS_MEDICAL_VER (HW_VER_BIT0 && !HW_VER_BIT1)
+
 
 #define TEST_MODE_ON !GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_2)
 
