@@ -153,6 +153,13 @@ int main(void)
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
+#ifdef MYTEST
+	if(IS_MEDICAL_VER)
+	{
+		ambRef_p = 251; // 테스트용
+	}
+#endif
+
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
 	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
 	{
@@ -198,7 +205,7 @@ int main(void)
 		IWonTask->Task(AutoCaliFlag_p);
 		if(IWonTask->Was_Calc())
 		{	// ADC 의 기초 계산이 완료되면...
-			for (BYTE i = 0; i < 40; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
+			for (BYTE i = 0; i < 15; i++)	// 추가 계산을 위해서 충분한 루프를 돌리고
 			{
 				IWonTask->Task(AutoCaliFlag_p);
 				IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
@@ -417,6 +424,27 @@ int main(void)
 				IWonTask->ClearPowerDown();
 				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
 
+#ifdef MYTEST
+				if(IsAutoCalCompleted)
+				{
+					IWonTask->InitNTC();
+					while(1)
+					{
+						IWonTask->Task(AutoCaliFlag_p);
+						if(IWonTask->Was_Calc())
+						{	
+							break;	// 빠져나가게 된다.
+						}
+						IWonFunc->Delay_ms(50);
+					}
+
+					AMB = IWonTask->Get_AMB_TEMP();
+					if( AMB < 10 || 800 < AMB )
+					{ 
+						IWonFunc->SystemError();
+					}
+				}
+#endif
 				IWonTask->Clear_AVG();
 				// IWonTask->ClearTSUM();
 				IWonTask->TSUMBerrCount = 0;
@@ -426,9 +454,11 @@ int main(void)
 				IWonFunc->Measure_test_flag = 0;
 				IWonTask->RetryCount = 0;
 
+#ifdef MYTEST
 				// 측정할 때마다 주변온도 표시
-				//INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
-				//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+				INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
+				memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+#endif
 			}
 		}
 		if (IWonTask->Measuring == false && IWonTask->Measured && !SW_PWR_ON)
@@ -513,7 +543,6 @@ int main(void)
 								IWonTask->MeasredTemp = MEASURED_TEMP;
 								
 								BEAM_OFF();
-
 
 								// 의료용의 HIGH 는 GREEN 바탕
 								IWonFunc->DisplayRGB(IWonTask->IsMedicalVer() ? GREEN : BLUE);

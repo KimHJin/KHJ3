@@ -278,6 +278,8 @@ INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 
 INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
+	const float A_v = 454.54f;	// OPAMP 증폭도
+
 	float k = 0.00066f;
 	float n = 1.93f;
 	if(SENSOR_TYPE==1)
@@ -287,19 +289,19 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	}
 	if(caliFlag>1)
 	{
+		float x = 0.002f * (float)(caliFlag/2);
 		if(caliFlag%2==0)
 		{
 			// 짝수 : 올라가는 방향
-			n = 1.93f - (0.002f * (float)(caliFlag/2));
+			n -= x;
 		}
 		else
 		{
 			// 홀수 : 내려가는 방향
-			n = 1.93f + (0.002f * (float)(caliFlag/2));
+			n += x;
 		}				
 	}
 	
-	const float A_v = 454.54f;	// OPAMP 증폭도
 	float Koffset = -0.57f;		// Koffset	
 	float Tamb = (float)AMB_TEMP / 10.f;
 	if(SENSOR_TYPE==1)
@@ -322,10 +324,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - 300;
 	
 	INT16 T_OBJ = (INT16) objtemp;	
-
-	AMB_REF = 251;
-	AMB_REF = AMB_TEMP;
-
 	if(AMB_REF!=AMB_TEMP)
 	{
 		INT16 AMBADJ = 0;
