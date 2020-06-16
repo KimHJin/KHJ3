@@ -185,10 +185,10 @@ int main(void)
 	//IWonFunc->TempValueDisplay(0);
 	IWonFunc->Beep();
 
+	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
 	if(IS_MEDICAL_VER)
 	{
-		IWonFunc->Delay_ms(100);
-		IWonFunc->Beep();
+		IWonTask->HWVersion = 0x01;
 		IWonTask->SetSensorType(1);	// 독일센서
 	}
 
@@ -210,15 +210,14 @@ int main(void)
 	
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
-	// 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-	if( AMB < 100 || 500 < AMB )
+	// 사용 환경의 온도가 11 도 보다 낮고 80 도 보다 높으면 에러를 발생한다.
+	if( AMB < 10 || 800 < AMB )
 	{ 
 		IWonFunc->SystemError();
 	}
 	
-	IWonFunc->TempValueDisplay(AMB, false);
-	IWonFunc->Delay_ms(3000);
-
+	//IWonFunc->TempValueDisplay(AMB, false);
+	//IWonFunc->Delay_ms(3000);
 
 	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
@@ -446,10 +445,15 @@ int main(void)
 				IWonTask->MeasredCount1 = 0;
 				IWonTask->MeasredCount2 = 0;
 
-				if (measureMode_p)
-					IWonFunc->DisplayRGB(BLUE);
-				else 
+				if(IWonTask->IsMedicalVer())
+				{
+					// 의료용은 측정시 무조건 녹색 바탕이다. (측정시 배경색은 사물/인체 구분이 없다.)
 					IWonFunc->DisplayRGB(GREEN);
+				}
+				else
+				{
+					IWonFunc->DisplayRGB((measureMode_p)?BLUE:GREEN);
+				}
 
 				IWonFunc->MeasuringDisp();
 				BEAM_ON();
@@ -492,9 +496,11 @@ int main(void)
 								}
 
 								IWonTask->MeasredTemp = MEASURED_TEMP;
-
-								IWonFunc->DisplayRGB(BLUE);
+								
 								BEAM_OFF();
+
+								// 의료용의 LOW 는 GREEN 바탕
+								IWonFunc->DisplayRGB(IWonTask->IsMedicalVer() ? GREEN : BLUE);
 								IWonFunc->DisplayLOW();								
 								IWonFunc->Beep();								
 								IWonTask->SetMeasredStates();
@@ -506,8 +512,11 @@ int main(void)
 								// HIGH Greater Than 43.0 C  (42.5 => 43.0 으로 변경 2020.06.04)
 								IWonTask->MeasredTemp = MEASURED_TEMP;
 								
-								IWonFunc->DisplayRGB(BLUE);
 								BEAM_OFF();
+
+
+								// 의료용의 HIGH 는 GREEN 바탕
+								IWonFunc->DisplayRGB(IWonTask->IsMedicalVer() ? GREEN : BLUE);
 								IWonFunc->DisplayHIGH();								
 								IWonFunc->Beep();
 								IWonTask->SetMeasredStates();

@@ -41,6 +41,8 @@ public:
 	VOID Time(VOID);
 
 	BOOL Was_Calc(VOID);
+	BOOL IsMedicalVer(VOID);
+
 
 	INT16 Get_AMB_TEMP(VOID);
 	INT16 Get_OBJ_TEMP(VOID);
@@ -78,6 +80,8 @@ public:
 	INT8 MeasredCount2;
 	INT8 RetryCount;
 	INT16 TSUMBerrCount;
+
+	INT8 HWVersion;						// HW 버전 : 0x00=일반용, 0x01=의료용
 
 	INT8 medicalTestMode;				// 의료용 테스트 모드
 	INT16 medicalTestTimerCount;		// 의료용 테스트 모드 타이머 카운트

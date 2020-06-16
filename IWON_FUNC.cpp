@@ -507,19 +507,19 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp, BOOL IsAutoCalCompleted)
 {
 	if (temp >= 381 && temp <= 430)	// 42.5 => 43.0 으로 변경 (2020.06.04)
-	{ // HIGH FEVER
+	{ // HIGH FEVER (고열)
 		DisplayRGB(RED);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		if(IsAutoCalCompleted) BeepMode(HIGH_FEVER);
 	}
 	else if (temp >= 371 && temp <= 380)
-	{ // LIGHT FEVER
+	{ // LIGHT FEVER (미열)
 		DisplayRGB(YELLOW);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		if(IsAutoCalCompleted) BeepMode(LIGHT_FEVER);
 	}
 	else if (temp >= 334 && temp <= 370)
-	{ // NORMAL
+	{ // NORMAL (정상)
 		DisplayRGB(BLUE);
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		if(IsAutoCalCompleted) BeepMode(NORMAL);

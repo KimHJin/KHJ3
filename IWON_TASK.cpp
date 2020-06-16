@@ -82,6 +82,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	medicalTestMode = 0;
 	medicalTestTimerCount = 0;
 
+	HWVersion = 0;
 	SetSensorType(0);
 }
 VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
@@ -99,6 +100,11 @@ VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 		NTC_MAX = 125;
 		NTC_STEP = 1;	// 간격이 1도 단위
 	}	
+}
+
+BOOL IWON_TEMP_TASK::IsMedicalVer(VOID)
+{
+	return HWVersion==0x01;
 }
 
 VOID IWON_TEMP_TASK::ClearAllTemp(VOID)
