@@ -696,7 +696,11 @@ VOID IWON_TEMP_TASK::SetMeasredStates(VOID)
 
 BOOL IWON_TEMP_TASK::IsMedicalTestModeAction(VOID)
 {
+#ifdef JIG
+	return (medicalTestTimerCount>DEFINED_JIG_TEST_INTEVAL);
+#else
 	if(medicalTestMode==0) return false;
 	return (medicalTestTimerCount>DEFINED_MEDICAL_TEST_INTEVAL);
+#endif
 }
 

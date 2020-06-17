@@ -225,6 +225,13 @@ int main(void)
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
 		// 기본 동작모드 진입
+
+		// 지그용 온도계
+		#ifdef JIG
+		IWonTask->medicalTestMode = 1;
+		IWonTask->medicalTestTimerCount = DEFINED_JIG_TEST_INTEVAL;
+		#endif
+		
 		
 		// 가장 마지막 측정 값
 		if(TEMP>0 && TEMP<800) 
@@ -444,6 +451,10 @@ int main(void)
 						BEAM_OFF();
 						IWonFunc->SystemError();
 					}
+
+					#ifdef JIG	
+					memTempDataDisplay(AMB);
+					#endif
 				}
 
 				IWonTask->Clear_AVG();
@@ -489,9 +500,14 @@ int main(void)
 					IWonFunc->DisplayRGB((measureMode_p)?BLUE:GREEN);
 				}
 
+				#ifdef JIG
+				BEAM_ON();
+				IWonFunc->Beep();
+				#else
 				IWonFunc->MeasuringDisp();
 				BEAM_ON();
 				IWonFunc->Beep();
+				#endif
 			}
 			else 
 			if (IWonTask->Measuring)

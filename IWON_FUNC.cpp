@@ -473,14 +473,14 @@ VOID IWON_TEMP_FUNC::TempLogDataClear(VOID)
 VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
 {
 	LastMeasred = 1;
-
 	TEMP = temp;
-
 	memNumber_p = 32;
 
+#ifndef JIG
 	TempLogDataSave(temp);
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
+#endif
 }
 
 VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)

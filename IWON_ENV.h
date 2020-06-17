@@ -20,6 +20,8 @@
 
 
 // #define MYTEST
+// #define JIG
+#define DEFINED_JIG_TEST_INTEVAL 500
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
 // 버전 1.4 : OPAMP 측정 버그 수정
