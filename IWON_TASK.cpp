@@ -325,36 +325,19 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float V_tp =  (float)TPCmV / 1000.f + Koffset;
 	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - 300;
 	
-	INT16 T_OBJ = (INT16) objtemp;	
+	INT16 T_OBJ = (INT16)objtemp;	
 	
-	// TODO : - 값 고민 대상, 연산 속도 무지 느림.
-	if(AMB_REF!=AMB_TEMP)
+	INT16 AMBADJ = 0;
+	if(AMB_TEMP > AMB_REF)
 	{
-		INT16 AMBADJ = 0;
-		if(AMB_TEMP > AMB_REF)
-		{
-			AMBADJ = AMB_TEMP - AMB_REF;
-			if(SENSOR_TYPE==1)
-			{
-				T_OBJ = AddTSUMB(T_OBJ + AMBADJ);
-			}
-			else
-			{
-				T_OBJ = AddTSUMB(T_OBJ + (AMBADJ / 2));
-			}
-		}
-		else
-		{
-			AMBADJ = AMB_REF - AMB_TEMP;
-			if(SENSOR_TYPE==1)
-			{
-				T_OBJ = AddTSUMB(T_OBJ - AMBADJ);
-			}
-			else
-			{
-				T_OBJ = AddTSUMB(T_OBJ - (AMBADJ / 2));
-			}
-		}
+		AMBADJ = AMB_TEMP - AMB_REF;
+		T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
+	}
+	else
+	if(AMB_TEMP < AMB_REF)
+	{
+		AMBADJ = AMB_REF - AMB_TEMP;
+		T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
 	}
 	else
 	{
@@ -384,7 +367,6 @@ VOID IWON_TEMP_TASK::InitNTC(VOID)
 	TTtime = GetTimeOutStartTime();
 	MGtime = GetTimeOutStartTime();
 }
-
 
 BOOL IWON_TEMP_TASK::Task(INT8 caliFlag)
 {
@@ -433,10 +415,10 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			INT16 BB = GetTSUMB();
 			if (BB != -999)
 			{
-				INT16 CC = BB - OBJ_TEMP;
-				if (CC < 0) CC = OBJ_TEMP - BB;
+				INT16 CC = DIST(BB, OBJ_TEMP);
 				//if (CC > 35)	// 센서 악조건 속에서 온도차가 너무 변하는 경우 발생 (2020.06.15)
-				if (CC > 15) // 충분한 테스트 필요
+				//if (CC > 15)
+				if (CC > 10) // 오토캘 주변온도 편차를 TSUMB 계산에 넣었기 때문에 오히려 10로 내려서 정확성 향상 (2020.06.17), TODO : 충분한 테스트 필요 (테스트됨)
 				{
 					ClearTSUMB();
 					TSUMBerrCount++;

@@ -83,9 +83,9 @@
 #define BEAM_ON()     GPIO_LOW(GPIOD, GPIO_Pin_6)  
 #define BEAM_OFF()    GPIO_HIGH(GPIOD, GPIO_Pin_6)  
 
-// R15 => 0 오옴
+// R9 => 100K (저항 삽입하면 TRUE 저항 없으면 FALSE)
 #define HW_VER_BIT0  GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_0)
-// R8 => 0 오옴
+// R6 => 100K (저항 삽입하면 TRUE 저항 없으면 FALSE)
 #define HW_VER_BIT1  GPIO_ReadInputDataBit(GPIOC, GPIO_Pin_1)
 
 // 의료용(독일센서)은 R9 를 장착한다.
@@ -144,5 +144,6 @@ typedef const BYTE *LPCBYTE;
 #define CRLFSP "     \r\n"
 
 #define ABS(x) ((x > 0) ? x : -x)
+#define DIST(a,b) ((a > b) ? a-b : b-a)
 
 #endif

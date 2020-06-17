@@ -188,8 +188,8 @@ int main(void)
 	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
 	if(IS_MEDICAL_VER)
 	{
-		//IWonTask->HWVersion = 0x01;
-		//IWonTask->SetSensorType(1);	// 독일센서
+		IWonTask->HWVersion = 0x01; // 01: 의료용
+		IWonTask->SetSensorType(1);	// 1: 독일센서
 	}
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
@@ -211,7 +211,7 @@ int main(void)
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
 	// 사용 환경의 온도가 11 도 보다 낮고 80 도 보다 높으면 에러를 발생한다.
-	if( AMB < 10 || 500 < AMB )
+	if( AMB < 0 || 500 < AMB )
 	{ 
 		IWonFunc->SystemError();
 	}
@@ -420,19 +420,26 @@ int main(void)
 				// 측정 할 때마다 NTC 를 측정한다.
 				if(IsAutoCalCompleted)
 				{
+					INT16 PREAMB = IWonTask->Get_AMB_TEMP();
+
 					IWonTask->InitNTC();
 					while(1)
 					{
 						IWonTask->Task(AutoCaliFlag_p);
 						if(IWonTask->Was_Calc())
-						{	
-							break;	// 빠져나가게 된다.
+						{
+							AMB = IWonTask->Get_AMB_TEMP();
+							if(DIST(PREAMB,AMB)<10)
+							{
+								break;	// 빠져나가게 된다.
+							}
+							IWonTask->InitNTC();
+							PREAMB = AMB;
 						}
 						IWonFunc->Delay_ms(50);
 					}
 
-					AMB = IWonTask->Get_AMB_TEMP();
-					if( AMB < 10 || 500 < AMB )
+					if( AMB < 0 || 500 < AMB )
 					{ 
 						BEAM_OFF();
 						IWonFunc->SystemError();
@@ -440,7 +447,10 @@ int main(void)
 				}
 
 				IWonTask->Clear_AVG();
+
+				// TODO : 이곳 결정 필요
 				// IWonTask->ClearTSUM();
+
 				IWonTask->TSUMBerrCount = 0;
 
 				TEMP_AVG->Init();
@@ -448,9 +458,11 @@ int main(void)
 				IWonFunc->Measure_test_flag = 0;
 				IWonTask->RetryCount = 0;
 
+#ifdef MYTEST				
 				// 측정할 때마다 주변온도 표시
-				//INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
-				//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+				INT32 AMB_TEMP = IWonTask->Get_AMB_TEMP();
+				memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+#endif				
 			}
 		}
 		if (IWonTask->Measuring == false && IWonTask->Measured && !SW_PWR_ON)
@@ -485,7 +497,7 @@ int main(void)
 			if (IWonTask->Measuring)
 			{ // 온도 측정
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
-				if (AMB < 100 || 500 < AMB)
+				if (AMB < 0 || 500 < AMB)
 				{ // 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 					BEAM_OFF();
 					IWonFunc->SystemError();
