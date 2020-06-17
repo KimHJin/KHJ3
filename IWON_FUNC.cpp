@@ -712,12 +712,33 @@ VOID IWON_TEMP_FUNC::TempValueDisplay(INT16 value)
 
 VOID IWON_TEMP_FUNC::CheckMedicalTestMode(IWON_TEMP_TASK *IWonTask)
 {
+	if(!IWonTask->IsMedicalVer()) return;
+
 	INT16 count = 0;
 	while(SW_PWR_ON)
 	{
 		Delay_ms(10);
 		count++;
-		if(count>DEFINED_MEDICAL_TEST_BTN_TIME)
+
+		// 의료용 배터리 체크 시간
+		if(count==DEFINED_MEDICAL_BATCHK_TIME)
+		{
+			Beep();
+			Delay_ms(100);
+			float batper = (float)IWonTask->BATmV / 3000.f * 1000.f;
+			INT16 BP = (INT16)batper;
+			// 100 퍼센트를 넘길수 없다. 배터리 1.5볼트 2개 3.0볼트인데 실제로는 3.2볼트 정도부터 시작한다.
+			// 위에서 공식적으로는 3000 으로 계산하기 때문에 100 퍼센트가 넘어갈 수 있다. 이를 100 퍼센트로 표시한다.
+			if(BP>1000) BP = 1000;	
+			TempValueDisplay(BP);
+
+			// 배터리 아이콘 표시 -- 배터리 아이콘이 반쪽짜리라 표시하면 소비자 혼동이 있을 수 있다.
+			// LowBatteryDisplay_2v4();
+		}
+
+		#ifdef DEFINED_MEDICAL_TEST_ENABLE
+		// 의료용 테스트 모드 기능이 활성화되어 컴파일 되는 경우 해당 버튼 시간을 체크하여 동작하도록 한다.
+		if(count==DEFINED_MEDICAL_TEST_BTN_TIME)
 		{
 			Beep();
 			Delay_ms(100);
@@ -745,6 +766,9 @@ VOID IWON_TEMP_FUNC::CheckMedicalTestMode(IWON_TEMP_TASK *IWonTask)
 			Delay_ms(2000);
 			return;
 		}
+		#endif
+
 	}
+
 	return;
 }
