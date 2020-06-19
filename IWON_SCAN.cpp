@@ -302,7 +302,7 @@ INT16 IWON_TEMP_SCAN::GetNTCIndex(INT32 MRES, INT8 SENSOR_TYPE)
 	INT16 index = -1;
 	INT16 tbl_count;
 	INT32 *ntc_tbl;
-	if(SENSOR_TYPE==1)
+	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		// 독일센서
 		tbl_count = (sizeof(NTC_TBL1) / sizeof(INT32)) - 1;
@@ -337,7 +337,7 @@ INT16 IWON_TEMP_SCAN::GetNTCValueRatio(INT32 MRES, INT16 index, INT8 SENSOR_TYPE
 	INT32 NTCRL;
 	INT32 NTCRH;
 
-	if(SENSOR_TYPE==1)
+	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		NTCRL = NTC_TBL1[index];
 		NTCRH = NTC_TBL1[index - 1];

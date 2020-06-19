@@ -63,7 +63,11 @@ VOID IWON_TEMP_CAL::FAIL(IWON_TEMP_FUNC *IWonFunc)
 
 BOOL IWON_TEMP_CAL::IS_SUCCESS(INT32 target, INT32 measered)
 {
-	return (target - AutoCalTorn <= measered && measered <= target + AutoCalTorn);
+	if(AutoCalStep==2)
+	{
+		return (DIST(target,measered)<=2);
+	}
+	return (DIST(target,measered)<=AutoCalTorn);
 }
 
 VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)

@@ -37,7 +37,7 @@
 //#define AutoCalTemp5 363	/* STEP 5 : 인체온도 정상 - 개발용*/
 //#define AutoCalTemp5 338	/* STEP 5 : 인체온도 정상 - 개발용*/
 
-#define AutoCalTorn 5		/* 허용오차 */
+#define AutoCalTorn 4		/* 허용오차 */
 
 
 

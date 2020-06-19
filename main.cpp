@@ -145,6 +145,7 @@ int main(void)
 	EEPROM_init();
 	LCD_Display_init(IWonFunc);
 
+
 	// 수동 캘리브레이션 저장소의 값이 허용되는 이외의 값은 0 값으로 바꿔준다.
 	if (caliData_p > 99 || caliData_p < -99)
 		caliData_p = 0;
@@ -153,13 +154,20 @@ int main(void)
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
 
+	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
+	if(IS_MEDICAL_VER)
+	{
+		IWonTask->HWVersion = 0x01; // 01: 의료용
+		IWonTask->SetSensorType(1);	// 1: 독일센서
+	}
+
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
 	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
 	{
-		if(IWonTask->SENSOR_TYPE==1)
+		if(IWonTask->SENSOR_TYPE==1)	// 독일센서
 		{
-			// 공식 산출시 27.1도 였다.
-			ambRef_p = 271;
+			// 공식 산출시 25.0도 였다.
+			ambRef_p = 250;
 			IWonTask->AMB_REF = ambRef_p;
 		}
 		else
@@ -170,9 +178,8 @@ int main(void)
 		}
 	}
 
-	//IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
-	//IWonFunc->Delay_ms(3000);
-
+//	IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
+//	IWonFunc->Delay_ms(3000);
 
 	// 인체 모드일때 BLUE 배경
 	// 사물 모드일때 GREEN 배경
@@ -181,16 +188,10 @@ int main(void)
 	else 
 		IWonFunc->DisplayRGB(GREEN);
 
-	
+
+
 	//IWonFunc->TempValueDisplay(0);
 	IWonFunc->Beep();
-
-	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
-	if(IS_MEDICAL_VER)
-	{
-		IWonTask->HWVersion = 0x01; // 01: 의료용
-		IWonTask->SetSensorType(1);	// 1: 독일센서
-	}
 
 	// 전원 진입 초기에 ADC 의 기본 동작이 되도록 Task 루프를 처리한다.
 	for (INT16 i = 0; i < 200; i++)	// 200 값은 충분한 값이다. 중간에 완료되면 Was_Calc 에 의해서 빠져 나간다.
@@ -210,14 +211,17 @@ int main(void)
 	
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
-	// 사용 환경의 온도가 11 도 보다 낮고 80 도 보다 높으면 에러를 발생한다.
+#ifdef MYTEST	
+	IWonFunc->TempValueDisplay(AMB, false);
+	IWonFunc->Delay_ms(3000);
+#endif
+
+	// 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 	if( AMB < 0 || 500 < AMB )
 	{ 
 		IWonFunc->SystemError();
 	}
 	
-	//IWonFunc->TempValueDisplay(AMB, false);
-	//IWonFunc->Delay_ms(3000);
 
 	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
 	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);

@@ -19,8 +19,8 @@
 #define IWON_TEMP_VAR_H
 
 
-// #define MYTEST
-// #define JIG
+#define MYTEST
+//#define JIG
 #define DEFINED_JIG_TEST_INTEVAL 500
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
@@ -50,14 +50,14 @@
 #define DEFINED_ADC_SUM_C 2
 
 // 의료용 테스트모드를 지원하는 테스트 코드 DEFINE (양산용은 주석처리해야 한다.)
-// #define DEFINED_MEDICAL_TEST_ENABLE
+#define DEFINED_MEDICAL_TEST_ENABLE
 // 의료용 테스트 모드 연속 측정 인터벌
 #define DEFINED_MEDICAL_TEST_INTEVAL 4000
 // 의료용 테스트 모드 진입의 버튼 누르고 있는 시간 약 15초 이상
 #define DEFINED_MEDICAL_TEST_BTN_TIME 1900
 
 // 의료용 배터리 표시의 버튼 누르는 시간
-#define DEFINED_MEDICAL_BATCHK_TIME 600
+#define DEFINED_MEDICAL_BATCHK_TIME 6000
 
 
 

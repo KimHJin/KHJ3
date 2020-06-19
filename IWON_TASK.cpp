@@ -88,7 +88,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
 VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 {
 	SENSOR_TYPE = TYPE;
-	if(SENSOR_TYPE==1)
+	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		NTC_MIN = -30;
 		NTC_MAX = 120;
@@ -278,16 +278,28 @@ INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 
 INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
-	const float A_v = 454.54f;	// OPAMP 증폭도
+	float A_v = 454.54f;	// OPAMP 증폭도
+	
+	float Tamb = (float)AMB_TEMP / 10.f;
 
 	float k = 0.00066f;
 	float n = 1.93f;
-	if(SENSOR_TYPE==1)
+	float Koffset = -0.57f;
+	float Yoffset = 300.f;
+	if(SENSOR_TYPE==1)	// 독일센서
 	{
-		k = 0.001f;
-		n = 1.698f;
+		A_v = 666.66f;	// OPAMP 증폭도
+
+		k = 0.000364f;
+		n = 1.93f;
+		Koffset = -0.652f;
+		Yoffset = 300.f;
+
+		//AMB_REF = 250;
 	}
-	if(caliFlag>1)
+
+	//if(caliFlag>1)
+	if(SENSOR_TYPE==0 && caliFlag>1)
 	{
 		float x = 0.002f * (float)(caliFlag/2);
 		if(caliFlag%2==0)
@@ -302,15 +314,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		}				
 	}
 	
-	float Koffset = -0.57f;		// Koffset	
-	float Tamb = (float)AMB_TEMP / 10.f;
-	if(SENSOR_TYPE==1)
-	{
-		Koffset = -0.77f;
-		//Tamb = 27.1f;
-	}
-
-
 	/*						
 	float ambtemp = (float)AMB_TEMP / 10.f;
 
@@ -323,29 +326,51 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 
 	float constant = 1000.f / (A_v * k);
 	float V_tp =  (float)TPCmV / 1000.f + Koffset;
-	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - 300;
+	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;
 	
 	INT16 T_OBJ = (INT16)objtemp;	
 	
+	AMB_REF = 235;
+
 	INT16 AMBADJ = 0;
 	if(AMB_TEMP > AMB_REF)
 	{
 		AMBADJ = AMB_TEMP - AMB_REF;
-		T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
+		if(SENSOR_TYPE==1)
+		{
+			//T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / 2.0f - (float)AMBADJ * 0.104f));
+			//T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / (n + 0.8f)));
+			T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ * 4.5f));
+		}
+		else
+		{
+			T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
+		}		
 	}
 	else
 	if(AMB_TEMP < AMB_REF)
 	{
 		AMBADJ = AMB_REF - AMB_TEMP;
-		T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
+		if(SENSOR_TYPE==1)
+		{
+			//T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / (n + 0.8f)));
+			T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ * 4.5f));
+		}
+		else
+		{
+			T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
+		}		
 	}
 	else
 	{
 		T_OBJ = AddTSUMB(T_OBJ);
 	}
 
-	//memTempDataDisplay(T_OBJ);	// 측정할 때의 AMB 값을 표시한다.
-	//memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+#ifdef MYTEST
+	powerDown_msec = 0;
+	tempValueDisplay(T_OBJ, false);
+	memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
+#endif
 
 	return T_OBJ;
 }
@@ -531,7 +556,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 				Vrefbat = VrefbatAvg->AddCalc(ADC_GetConversionValue(ADC1), 20);
 				VrefbatAvg->SetOC();
 			}
-			InitNTC();
+			InitNTC();	// NTC
 			return FALSE;
 		}
 
