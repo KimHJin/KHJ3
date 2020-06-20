@@ -19,7 +19,7 @@
 #define IWON_TEMP_VAR_H
 
 
-#define MYTEST
+//#define MYTEST
 //#define JIG
 #define DEFINED_JIG_TEST_INTEVAL 500
 
@@ -35,7 +35,7 @@
 // 버전 3.8 : AMB 보정, 오토캘에서 미열, 고열 일때 시간 세이브, 오토캘리브레이션 버전 저장, DEFINED_CALI_VER 값 38
 // 버전 3.9 : 센서 노이즈로 인하여 15 오차에서 35 로 변경, DEFINED_CALI_VER 값 38
 // 버전 4.0 : TAMB 차이를 TSUM 내부에 입력 (15로 재조정), 여기까지 DEFINED_CALI_VER 값 38
-// 버전 4.1 : 독일센서 추가
+// 버전 4.1 : 의료용, 독일센서 추가 (아직 개발 중...)
 #define DEFINED_FW_VER 40
 #define DEFINED_CALI_VER 38
 

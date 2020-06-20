@@ -280,26 +280,33 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
 	float A_v = 454.54f;	// OPAMP 증폭도
 	
+	//AMB_TEMP = 344;
+	//TPCmV = 1052;
+
 	float Tamb = (float)AMB_TEMP / 10.f;
+	
 
 	float k = 0.00066f;
 	float n = 1.93f;
 	float Koffset = -0.57f;
 	float Yoffset = 300.f;
+	float ta = 0.0f;
 	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		A_v = 666.66f;	// OPAMP 증폭도
 
-		k = 0.000364f;
-		n = 1.93f;
-		Koffset = -0.652f;
-		Yoffset = 300.f;
+		k = 0.00312f;
+		n = 1.46f;
+		Koffset = -0.521f;
+		Yoffset = 300.f + 20.f;
 
-		//AMB_REF = 250;
+		AMB_REF = 275;
+
+		ta = pow((Tamb - (float)AMB_REF/10.f), 2) * 0.21f;
 	}
 
-	//if(caliFlag>1)
-	if(SENSOR_TYPE==0 && caliFlag>1)
+	//if(SENSOR_TYPE==0 && caliFlag>1)
+	if(caliFlag>1)
 	{
 		float x = 0.002f * (float)(caliFlag/2);
 		if(caliFlag%2==0)
@@ -326,51 +333,25 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 
 	float constant = 1000.f / (A_v * k);
 	float V_tp =  (float)TPCmV / 1000.f + Koffset;
-	float objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;
-	
-	INT16 T_OBJ = (INT16)objtemp;	
-	
-	AMB_REF = 235;
-
 	INT16 AMBADJ = 0;
-	if(AMB_TEMP > AMB_REF)
+	float objtemp = pow( ( constant * V_tp + ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
+	INT16 T_OBJ = (INT16)objtemp;	
+
+	if(SENSOR_TYPE==0 && AMB_TEMP > AMB_REF)
 	{
 		AMBADJ = AMB_TEMP - AMB_REF;
-		if(SENSOR_TYPE==1)
-		{
-			//T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / 2.0f - (float)AMBADJ * 0.104f));
-			//T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / (n + 0.8f)));
-			T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ * 4.5f));
-		}
-		else
-		{
-			T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
-		}		
+		T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
 	}
 	else
-	if(AMB_TEMP < AMB_REF)
+	if(SENSOR_TYPE==0 && AMB_TEMP < AMB_REF)
 	{
 		AMBADJ = AMB_REF - AMB_TEMP;
-		if(SENSOR_TYPE==1)
-		{
-			//T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / (n + 0.8f)));
-			T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ * 4.5f));
-		}
-		else
-		{
-			T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
-		}		
+		T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
 	}
 	else
 	{
 		T_OBJ = AddTSUMB(T_OBJ);
 	}
-
-#ifdef MYTEST
-	powerDown_msec = 0;
-	tempValueDisplay(T_OBJ, false);
-	memTempDataDisplay(AMB_TEMP);	// 측정할 때의 AMB 값을 표시한다.
-#endif
 
 	return T_OBJ;
 }

@@ -166,8 +166,8 @@ int main(void)
 	{
 		if(IWonTask->SENSOR_TYPE==1)	// 독일센서
 		{
-			// 공식 산출시 25.0도 였다.
-			ambRef_p = 250;
+			// 공식 산출시 25.2도 였다.
+			ambRef_p = 252;
 			IWonTask->AMB_REF = ambRef_p;
 		}
 		else
@@ -647,7 +647,12 @@ int main(void)
 								}
 								else 
 								{
+									#ifdef JIG	
+									//IWonFunc->ObjTempDisp(AMB);	
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
+									#else
+									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
+									#endif									
 								}
 
 								IWonTask->SetMeasredStates();								
