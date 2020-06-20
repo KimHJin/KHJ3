@@ -91,7 +91,7 @@ VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		NTC_MIN = -30;
-		NTC_MAX = 120;
+		NTC_MAX = 100;
 		NTC_STEP = 5;	// 간격이 5도 단위
 	}
 	else
@@ -404,11 +404,12 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		INT16 ntcIndex = GetNTCIndex(MRES, SENSOR_TYPE);
 		if (ntcIndex == 0)
 		{
-			AMB_TEMP = -1; // Low
+			AMB_TEMP = -110; // Low
 		}
-		else if (ntcIndex == -1)
+		else 
+		if (ntcIndex == -1)
 		{
-			AMB_TEMP = -2; // High
+			AMB_TEMP = -120; // High
 		}
 		else
 		{
@@ -433,14 +434,14 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 
 			// 사물 to 인체 테이블 사용
 			INT8 TBL = GetTBLValue(OBJ_TEMP);
-			if (TBL == -1)
+			if (TBL == -110)
 			{
-				BDY_TEMP = -1; // LOW
+				BDY_TEMP = -110; // LOW
 			}
 			else 
-			if (TBL == -2)
+			if (TBL == -120)
 			{
-				BDY_TEMP = -2; // HIGH
+				BDY_TEMP = -120; // HIGH
 			}
 			else
 			{
@@ -710,3 +711,7 @@ BOOL IWON_TEMP_TASK::IsMedicalTestModeAction(VOID)
 #endif
 }
 
+BOOL IWON_TEMP_TASK::IsBadAMB(INT32 AMB)
+{
+	return (AMB < 0 || 500 < AMB);
+}

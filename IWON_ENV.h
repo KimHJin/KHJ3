@@ -19,7 +19,7 @@
 #define IWON_TEMP_VAR_H
 
 
-//#define MYTEST
+#define MYTEST
 //#define JIG
 #define DEFINED_JIG_TEST_INTEVAL 500
 
@@ -55,17 +55,10 @@
 #define DEFINED_MEDICAL_TEST_INTEVAL 4000
 // 의료용 테스트 모드 진입의 버튼 누르고 있는 시간 약 15초 이상
 #define DEFINED_MEDICAL_TEST_BTN_TIME 1900
-
 // 의료용 배터리 표시의 버튼 누르는 시간
 #define DEFINED_MEDICAL_BATCHK_TIME 6000
 
-
-
 #define HAL_ADC_MODULE_ENABLED
-
-#define DEFINED_TADJ0 0
-#define DEFINED_VADJ1 0
-#define DEFINED_VADJ2 0
 
 #define DEFINED_TSUMN 10
 

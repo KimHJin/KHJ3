@@ -67,6 +67,8 @@ public:
 	
 	VOID SetMeasredStates(VOID);
 
+	BOOL IsBadAMB(INT32 AMB);
+
   	INT16 BATmV;
 	INT16 VDDmV;
 

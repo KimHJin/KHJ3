@@ -217,7 +217,7 @@ int main(void)
 #endif
 
 	// 사용 환경의 온도가 0 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
-	if( AMB < 0 || 500 < AMB )
+	if (IWonTask->IsBadAMB(AMB))
 	{ 
 		IWonFunc->SystemError();
 	}
@@ -418,7 +418,7 @@ int main(void)
 			}
 		}
 
-		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -100 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
+		if (IWonTask->Measuring == false && IWonTask->Measured == false && IWonTask->MeasredTemp != -1000 && ((SW_PWR_ON && testModeFlag==0) || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction()))
 		{
 			if (SW_PWR_ON || IWonFunc->Measure_test_flag==1 || IWonTask->IsMedicalTestModeAction())
 			{
@@ -426,7 +426,7 @@ int main(void)
 				IWonTask->medicalTestTimerCount = 0;
 				
 				IWonTask->ClearPowerDown();
-				IWonTask->MeasredTemp = -100; // 온도측정하라는 값
+				IWonTask->MeasredTemp = -1000; // 온도측정하라는 값
 
 				// 측정 할 때마다 NTC 를 측정한다.
 				if(IsAutoCalCompleted)
@@ -440,9 +440,9 @@ int main(void)
 						if(IWonTask->Was_Calc())
 						{
 							AMB = IWonTask->Get_AMB_TEMP();
-							if(DIST(PREAMB,AMB)<10)
+							if(DIST(PREAMB,AMB)<5)
 							{
-								break;	// 빠져나가게 된다.
+								break;	// 차이가 0.5도 미만이면 빠져나가게 된다.
 							}
 							IWonTask->InitNTC();
 							PREAMB = AMB;
@@ -450,7 +450,7 @@ int main(void)
 						IWonFunc->Delay_ms(50);
 					}
 
-					if( AMB < 0 || 500 < AMB )
+					if (IWonTask->IsBadAMB(AMB))
 					{ 
 						BEAM_OFF();
 						IWonFunc->SystemError();
@@ -487,7 +487,7 @@ int main(void)
 
 		if (IWonTask->Task(IsAutoCalCompleted ? AutoCaliFlag_p : IWonCal->AutoCalFlag))
 		{
-			if (IWonTask->Measured == false && IWonTask->Measuring == false && IWonTask->MeasredTemp == -100)
+			if (IWonTask->Measured == false && IWonTask->Measuring == false && IWonTask->MeasredTemp == -1000)
 			{ // 온도 측정 시작
 				IWonTask->Measuring = true;
 				IWonTask->Measured = false;
@@ -517,7 +517,7 @@ int main(void)
 			if (IWonTask->Measuring)
 			{ // 온도 측정
 				INT32 AMB = IWonTask->Get_AMB_TEMP();
-				if (AMB < 0 || 500 < AMB)
+				if (IWonTask->IsBadAMB(AMB))
 				{ // 사용 환경의 온도가 10 도 보다 낮고 50 도 보다 높으면 에러를 발생한다.
 					BEAM_OFF();
 					IWonFunc->SystemError();
@@ -535,7 +535,8 @@ int main(void)
 
 						if (IsAutoCalCompleted || (IWonCal!=NULL && IWonTask->Measured==false && IWonCal->GET_AutoCalStep()>0))
 						{
-							if (MEASURED_TEMP != -2 && MEASURED_TEMP < 334)
+							// -120 은 HI 를 뜻함.
+							if (MEASURED_TEMP != -120 && MEASURED_TEMP < 334)
 							{ 
 								// LOW  Less Than 33.4 C
 								IWonTask->RetryCount++;
@@ -543,7 +544,7 @@ int main(void)
 								{
 									IWonTask->Measured = false;
 									IWonTask->Measuring = true;
-									IWonTask->MeasredTemp = -100;
+									IWonTask->MeasredTemp = -1000;
 									IWonTask->Clear_AVG();
 									IWonFunc->Delay_ms(300);
 									continue;
@@ -561,7 +562,7 @@ int main(void)
 								IWonFunc->CheckMedicalTestMode(IWonTask);
 							}
 							else 
-							if (MEASURED_TEMP == -2 || MEASURED_TEMP > TB_MAX)
+							if (MEASURED_TEMP == -120 || MEASURED_TEMP > TB_MAX)
 							{ 
 								// HIGH Greater Than 43.0 C  (42.5 => 43.0 으로 변경 2020.06.04)
 								IWonTask->MeasredTemp = MEASURED_TEMP;
