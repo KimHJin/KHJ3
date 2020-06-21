@@ -21,6 +21,7 @@
 
 //#define MYTEST
 //#define JIG
+#define NEWCALMODE
 #define DEFINED_JIG_TEST_INTEVAL 500
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
@@ -36,8 +37,15 @@
 // 버전 3.9 : 센서 노이즈로 인하여 15 오차에서 35 로 변경, DEFINED_CALI_VER 값 38
 // 버전 4.0 : TAMB 차이를 TSUM 내부에 입력 (15로 재조정), 여기까지 DEFINED_CALI_VER 값 38
 // 버전 4.1 : 의료용, 독일센서 추가 (아직 개발 중...), DEFINED_MEDICAL_TEST_ENABLE
+// 버전 4.11 : 새로운 캘리브레이션 모드 (NEWCALMODE) <= 의료용 부터 시작이다...
 #define DEFINED_FW_VER 41
+
+#ifdef NEWCALMODE
+#define DEFINED_CALI_VER 39
+#else
 #define DEFINED_CALI_VER 38
+#endif
+
 
 #define DEFINED_adcVREFValue 1224
 

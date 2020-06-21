@@ -295,7 +295,7 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		A_v = 666.66f;	// OPAMP 증폭도
-
+		Yoffset = 300.f;
 		k = 0.00091f;
 
 		// n = 1.725f;
@@ -303,15 +303,19 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		// B : 1759
 		// C : 1751
 		// D : 1761
+		// tambx = 18.5f;
 
-		n = 1.760f;	// => 1.725 값으로 두고 오토캘 할 때 현재 온도만 저장하는것.
-
+#ifdef NEWCALMODE
+		n = 1.725f;
 		Koffset = -0.62;
-		Yoffset = 300.f;
-
+		tambx = 18.0f;
+#else
+		n = 1.760f;
+		Koffset = -0.62;
+		tambx = 13.5f;
+#endif
+		
 		// AMB_REF = 244;
-
-		tambx = 13.5f; // => 14.5 로 바꾸는것?
 		ta = (Tamb - (float)AMB_REF/10.f) * tambx;
 	}
 

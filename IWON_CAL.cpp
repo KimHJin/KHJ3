@@ -158,6 +158,28 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				{
 					SUCCESS(IWonFunc);
 					
+#ifdef NEWCALMODE
+					if(AutoCalStep==3)
+					{
+						// 인체모드로 변경해야 한다.
+						IWonFunc->MeasureModeTask();
+
+						// 오토 캘리브레이션 완료 저장
+						AutoCaliFlag_p = AutoCalFlag;
+						AutoCaliVer_p = DEFINED_CALI_VER;
+
+						IWonFunc->DisplayRGB(GREEN);
+						IWonFunc->OkDisp();
+						IWonFunc->Delay_ms(500);
+						IWonFunc->Beep();
+						IWonFunc->Delay_ms(100);	   
+						IWonFunc->Beep();
+
+						memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
+
+						AutoCalStep = 0;
+					}
+#else
 					if(AutoCalStep==3)
 					{
 						// 인체모드로 변경해야 한다.
@@ -180,6 +202,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 
 						AutoCalStep = 0;
 					}
+#endif
 				}
 				else 
 				{
