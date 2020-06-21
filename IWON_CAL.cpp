@@ -184,7 +184,7 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				else 
 				{
 					// STEP 2 에서 온도차가 있으면 이를 보정하도록 한다.
-					if(AutoCalStep==2 && AutoCalFlag<31)	// 두번째 측정에서 에러가 있으면
+					if(AutoCalStep==2 && AutoCalFlag<51)	// 두번째 측정에서 에러가 있으면
 					{
 						TRY(IWonFunc);
 						IWonTask->Set_OfsValue(0);

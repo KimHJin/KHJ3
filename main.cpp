@@ -167,7 +167,7 @@ int main(void)
 		if(IWonTask->SENSOR_TYPE==1)	// 독일센서
 		{
 			// 공식 산출시 25.2도 였다.
-			ambRef_p = 252;
+			ambRef_p = 244;
 			IWonTask->AMB_REF = ambRef_p;
 		}
 		else
@@ -265,6 +265,20 @@ int main(void)
 		{
 			if(IWonTask->DeviceTestModeWait>500)
 			{
+				if(!SW_LEFT_ON && !SW_RIGHT_ON)  // 배터리 레벨 체크
+				{
+					if(IWonTask->IsMedicalVer())
+					{
+						if(IWonTask->DeviceTestModeValue == 1)
+						{
+							IWonFunc->Beep();
+							IWonFunc->LCD_clear();
+							IWonFunc->BetteryPercentDisp(IWonTask);
+						}					
+						IWonTask->DeviceTestModeValue++;
+					}
+				}
+				else
 				if(SW_LEFT_ON && SW_RIGHT_ON)  // LCD 테스트 등의 Test Mode 진입
 				{
 					if(IWonTask->DeviceTestModeValue == 1)
@@ -327,6 +341,8 @@ int main(void)
 			IWonFunc->Delay_ms(10);
 			IWonTask->ClearPowerDown();
 		}
+
+		LCD_Display_init(IWonFunc);
 		IWonFunc->TempValueDisplay(0);		
 	}
 	else 

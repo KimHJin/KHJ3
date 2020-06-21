@@ -291,21 +291,30 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float Koffset = -0.57f;
 	float Yoffset = 300.f;
 	float ta = 0.0f;
+	float tambx = 0.0f;
 	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		A_v = 666.66f;	// OPAMP 증폭도
 
-		k = 0.00312f;
-		n = 1.46f;
-		Koffset = -0.521f;
-		Yoffset = 300.f + 20.f;
+		k = 0.00091f;
 
-		AMB_REF = 275;
+		// n = 1.725f;
+		// 독일센서 n 값.
+		// B : 1759
+		// C : 1751
+		// D : 1761
 
-		ta = pow((Tamb - (float)AMB_REF/10.f), 2) * 0.21f;
+		n = 1.760f;
+
+		Koffset = -0.62;
+		Yoffset = 300.f;
+
+		// AMB_REF = 244;
+
+		tambx = 13.5f;
+		ta = (Tamb - (float)AMB_REF/10.f) * tambx;
 	}
 
-	//if(SENSOR_TYPE==0 && caliFlag>1)
 	if(caliFlag>1)
 	{
 		float x = 0.002f * (float)(caliFlag/2);
@@ -320,6 +329,10 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 			n += x;
 		}				
 	}
+
+
+	//tempValueDisplay((INT16)(n*1000.0f), false);
+	//while(1);
 	
 	/*						
 	float ambtemp = (float)AMB_TEMP / 10.f;
