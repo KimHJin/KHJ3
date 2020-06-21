@@ -304,14 +304,14 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		// C : 1751
 		// D : 1761
 
-		n = 1.760f;
+		n = 1.760f;	// => 1.725 값으로 두고 오토캘 할 때 현재 온도만 저장하는것.
 
 		Koffset = -0.62;
 		Yoffset = 300.f;
 
 		// AMB_REF = 244;
 
-		tambx = 13.5f;
+		tambx = 13.5f; // => 14.5 로 바꾸는것?
 		ta = (Tamb - (float)AMB_REF/10.f) * tambx;
 	}
 
