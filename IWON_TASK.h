@@ -98,7 +98,7 @@ public:
 	INT8 NTC_MAX;
 	INT8 NTC_STEP;
 
-	float AMB_X;
+	float AMB_X;	// 센서의 온도특성 관련 값 (센서 자체온도 특성에 따른 값)
 
 private:
 	VOID Init(VOID);
