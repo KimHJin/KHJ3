@@ -98,6 +98,8 @@ public:
 	INT8 NTC_MAX;
 	INT8 NTC_STEP;
 
+	float AMB_X;
+
 private:
 	VOID Init(VOID);
 

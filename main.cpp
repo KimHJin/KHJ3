@@ -73,7 +73,12 @@ void keyScan()
 		if (delayCount < 100) // SHORT_PRESS
 		{
 			IWonFunc->Beep();
+#ifdef MYTEST
+			IWonTask->tambx -= 0.1f;
+			IWonFunc->TempValueDisplay((INT16)(IWonTask->tambx*10.f), false);
+#else
 			IWonFunc->TempLogDataTask(); // memory Data
+#endif			
 		}
 		IWonFunc->Delay_ms(10);
 	}
@@ -113,7 +118,12 @@ void keyScan()
 
 		if (delayCount < 100) // SHORT_PRESS
 		{
+#ifdef MYTEST
+			IWonTask->tambx += 0.1f;
+			IWonFunc->TempValueDisplay((INT16)(IWonTask->tambx*10.f), false);
+#else
 			IWonFunc->BuzzerStateTask(); // buzzer On / Off
+#endif			
 			IWonFunc->Beep();
 		}
 		IWonFunc->Delay_ms(10);
@@ -208,6 +218,7 @@ int main(void)
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
 
 #ifdef MYTEST	
+	// 센서 자체온도 표시
 	IWonFunc->TempValueDisplay(AMB, false);
 	IWonFunc->Delay_ms(3000);
 #endif

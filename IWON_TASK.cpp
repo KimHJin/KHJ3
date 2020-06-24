@@ -93,12 +93,14 @@ VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 		NTC_MIN = -30;
 		NTC_MAX = 100;
 		NTC_STEP = 5;	// 간격이 5도 단위
+		AMB_X = 13.0f;	// 독일센서 A 로 테스트 함 (드라이기로 40도 넘어까지, 식히면서 30도대, 20도대, 냉장고 이용 18도 이하)
 	}
 	else
 	{
 		NTC_MIN = -40;
 		NTC_MAX = 125;
 		NTC_STEP = 1;	// 간격이 1도 단위
+		AMB_X = 0.f;
 	}	
 }
 
@@ -285,13 +287,11 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 
 	float Tamb = (float)AMB_TEMP / 10.f;
 	
-
 	float k = 0.00066f;
 	float n = 1.93f;
 	float Koffset = -0.57f;
 	float Yoffset = 300.f;
-	float ta = 0.0f;
-	float tambx = 0.0f;
+	float ta = 0.0f;	
 	if(SENSOR_TYPE==1)	// 독일센서
 	{
 		A_v = 666.66f;	// OPAMP 증폭도
@@ -303,22 +303,13 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		// B : 1759
 		// C : 1751
 		// D : 1761
-		// tambx = 18.5f;
+		// AMB_X = 18.5f;
 
-#ifdef NEWCALMODE
 		n = 1.725f;
 		Koffset = -0.62;
-		tambx = 18.0f;
-#else
-		n = 1.725f;
-		Koffset = -0.62;
-		tambx = 14.4f;
-#endif
-		
-		// AMB_REF = 244;
-		ta = (Tamb - (float)AMB_REF/10.f) * tambx;
-		// tb = (Tamb - (float)AMB_REF/10.f) * tambx;
 	}
+	
+
 
 	if(caliFlag>1)
 	{
@@ -361,12 +352,31 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
 	*/
 
+
+
 	float constant = 1000.f / (A_v * k);
 	float V_tp =  (float)TPCmV / 1000.f + Koffset;
-	INT16 AMBADJ = 0;
-	float objtemp = pow( ( constant * V_tp + ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
+
+	float objtemp;
+	if(SENSOR_TYPE==1 && AMB_TEMP > AMB_REF)
+	{
+		ta = (Tamb - (float)AMB_REF/10.f) * AMB_X;
+		objtemp = pow( ( constant * V_tp + ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
+	}
+	else
+	if(SENSOR_TYPE==1 && AMB_TEMP < AMB_REF)
+	{
+		ta = ((float)AMB_REF/10.f - Tamb) * AMB_X;
+		objtemp = pow( ( constant * V_tp - ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
+	}
+	else
+	{
+		objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
+	}
+
 	INT16 T_OBJ = (INT16)objtemp;	
 
+	INT16 AMBADJ = 0;
 	if(SENSOR_TYPE==0 && AMB_TEMP > AMB_REF)
 	{
 		AMBADJ = AMB_TEMP - AMB_REF;

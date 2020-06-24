@@ -42,7 +42,8 @@
 //           LED 램프 색상 조정
 //			 인체모드 : 녹색, 결과 : 정상 녹색, 미열 황색, 고열 적색, 에러 적색
 //           사물모드 : 청색, 결과 : 청색
-#define DEFINED_FW_VER 42
+// 버전 4.3 : 센서 AMB 온도 테스트, AMB_X 13.0 
+#define DEFINED_FW_VER 43
 
 #ifdef NEWCALMODE
 #define DEFINED_CALI_VER 39
