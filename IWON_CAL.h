@@ -23,9 +23,9 @@
 #define AutoCalTemp1 330	/* STEP 1 : 사물온도 33.0 도 = 인체 36.5 도 */
 
 #ifdef NEWCALMODE
-#define AutoCalTemp2 600	/* STEP 2 : 사물온도 40.0 도 = 인체 41.0 도 */
+#define AutoCalTemp2 600	/* STEP 2 : 사물온도 60.0 도 */
 #else
-#define AutoCalTemp2 450	/* STEP 2 : 사물온도 40.0 도 = 인체 41.0 도 */
+#define AutoCalTemp2 450	/* STEP 2 : 사물온도 45.0 도 */
 #endif
 
 #define AutoCalTemp3 375	/* STEP 3 : 인체온도 미열 37.1 ~ 38.0 */

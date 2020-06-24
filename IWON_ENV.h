@@ -21,7 +21,7 @@
 
 //#define MYTEST
 //#define JIG
-#define NEWCALMODE
+//#define NEWCALMODE
 #define DEFINED_JIG_TEST_INTEVAL 500
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
