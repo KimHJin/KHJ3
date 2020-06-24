@@ -280,7 +280,11 @@ VOID IWON_TEMP_FUNC::LowBatteryDisplay_2v4(VOID)
 	LCD->X5 = 1;
 }
 
-
+// 저전압 배터리 아이콘을 끈다.
+VOID IWON_TEMP_FUNC::LowBatteryDisplay_Off(VOID)
+{
+	LCD->X5 = 0;
+}
 
 VOID IWON_TEMP_FUNC::TempLogDataTask(VOID)
 {
@@ -764,4 +768,7 @@ VOID IWON_TEMP_FUNC::BetteryPercentDisp(IWON_TEMP_TASK *IWonTask)
 	// 위에서 공식적으로는 3000 으로 계산하기 때문에 100 퍼센트가 넘어갈 수 있다. 이를 100 퍼센트로 표시한다.
 	if(BP>1000) BP = 1000;	
 	TempValueDisplay(BP,false);
+
+	// 버전 4.2 버전부터 배터리 잔량 표시 할 때는 배터리 아이콘을 표시한다.
+	LowBatteryDisplay_2v4();	
 }

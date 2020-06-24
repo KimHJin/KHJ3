@@ -56,6 +56,7 @@ public:
 	VOID LowBatteryDisplay_2v0(VOID);
 	VOID LowBatteryDisplay_2v2(VOID);
 	VOID LowBatteryDisplay_2v4(VOID);
+	VOID LowBatteryDisplay_Off(VOID);
 	
 	
 	VOID BuzzerStateTask(VOID);

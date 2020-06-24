@@ -38,7 +38,11 @@
 // 버전 4.0 : TAMB 차이를 TSUM 내부에 입력 (15로 재조정), 여기까지 DEFINED_CALI_VER 값 38
 // 버전 4.1 : 의료용, 독일센서 추가 (아직 개발 중...), DEFINED_MEDICAL_TEST_ENABLE
 // 버전 4.11 : 새로운 캘리브레이션 모드 (NEWCALMODE) <= 의료용 부터 시작이다...
-#define DEFINED_FW_VER 41
+// 버전 4.2 : 배터리 레벨(퍼센트) 표시할 때 배터리 아이콘 표시, 
+//           LED 램프 색상 조정
+//			 인체모드 : 녹색, 결과 : 정상 녹색, 미열 황색, 고열 적색, 에러 적색
+//           사물모드 : 청색, 결과 : 청색
+#define DEFINED_FW_VER 42
 
 #ifdef NEWCALMODE
 #define DEFINED_CALI_VER 39

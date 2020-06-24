@@ -247,18 +247,9 @@ int main(void)
 			}
 			IWonFunc->LastMeasred = 0;
 		}
-	  	  
+	  	  		
 		IWonTask->BATmV = IWonTask->Get_BAT_mV();
 		IWonTask->VDDmV = IWonTask->Get_VDD_mV();
-		
-		// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
-		if(IWonTask->BATmV/100 <= 20)
-			IWonFunc->LowBatteryDisplay_2v0();
-		else if(IWonTask->BATmV/100 < 22)
-			IWonFunc->LowBatteryDisplay_2v2();
-		else if(IWonTask->BATmV/100 < 24)
-			IWonFunc->LowBatteryDisplay_2v4();
-		
 		
 		// 초기에 전원 버튼과 함께 왼쪽 혹은 오른쪽 버튼을 약 6초 이상 누르고 있으면 확인용 값이 표시된다.
 		while (SW_PWR_ON) 
@@ -344,6 +335,15 @@ int main(void)
 
 		LCD_Display_init(IWonFunc);
 		IWonFunc->TempValueDisplay(0);		
+
+		// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
+		if(IWonTask->BATmV/100 <= 20)
+			IWonFunc->LowBatteryDisplay_2v0();
+		else if(IWonTask->BATmV/100 < 22)
+			IWonFunc->LowBatteryDisplay_2v2();
+		else if(IWonTask->BATmV/100 < 24)
+			IWonFunc->LowBatteryDisplay_2v4();
+		else IWonFunc->LowBatteryDisplay_Off();
 	}
 	else 
 	{
