@@ -166,7 +166,7 @@ int main(void)
 	{
 		if(IWonTask->SENSOR_TYPE==1)	// 독일센서
 		{
-			// 공식 산출시 25.2도 였다.
+			// 공식 산출시 24.4도 였다.
 			ambRef_p = 244;
 			IWonTask->AMB_REF = ambRef_p;
 		}
@@ -181,14 +181,9 @@ int main(void)
 //	IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
 //	IWonFunc->Delay_ms(3000);
 
-	// 인체 모드일때 BLUE 배경
-	// 사물 모드일때 GREEN 배경
-	if (measureMode_p)
-		IWonFunc->DisplayRGB(BLUE);
-	else 
-		IWonFunc->DisplayRGB(GREEN);
-
-
+	// 인체 모드일때 BLUE 배경	=> 버전 4.2 부터 GREEN 으로 바뀜
+	// 사물 모드일때 GREEN 배경	=> 버전 4.2 부터 BLUE 로 바뀜
+	IWonFunc->DisplayRGB((measureMode_p==1)?GREEN:BLUE);	// 인체 | 사물
 
 	//IWonFunc->TempValueDisplay(0);
 	IWonFunc->Beep();
@@ -211,6 +206,7 @@ int main(void)
 	
 	// 초기에 센서의 온도를 측정하게 된다.
 	INT32 AMB = IWonTask->Get_AMB_TEMP();
+
 #ifdef MYTEST	
 	IWonFunc->TempValueDisplay(AMB, false);
 	IWonFunc->Delay_ms(3000);
@@ -510,15 +506,8 @@ int main(void)
 				IWonTask->MeasredCount1 = 0;
 				IWonTask->MeasredCount2 = 0;
 
-				if(IWonTask->IsMedicalVer())
-				{
-					// 의료용은 측정시 무조건 녹색 바탕이다. (측정시 배경색은 사물/인체 구분이 없다.)
-					IWonFunc->DisplayRGB(GREEN);
-				}
-				else
-				{
-					IWonFunc->DisplayRGB((measureMode_p)?BLUE:GREEN);
-				}
+				// 버전 4.2 부터 측정시 별도 배경색을 처리 안하고, 인체모드=GREEN 사물모드=BLUE 로 한다.
+				IWonFunc->DisplayRGB((measureMode_p==1)?GREEN:BLUE);	// 인체 | 사물
 
 				#ifdef JIG
 				BEAM_ON();
@@ -552,6 +541,10 @@ int main(void)
 						if (IsAutoCalCompleted || (IWonCal!=NULL && IWonTask->Measured==false && IWonCal->GET_AutoCalStep()>0))
 						{
 							// -120 은 HI 를 뜻함.
+							if(MEASURED_TEMP==-120 && IWonTask->Get_TPC_mV()<900)
+							{
+								MEASURED_TEMP = -110;
+							}
 							if (MEASURED_TEMP != -120 && MEASURED_TEMP < 334)
 							{ 
 								// LOW  Less Than 33.4 C
@@ -637,10 +630,8 @@ int main(void)
 					{
 						// 사물 측정
 						MEASURED_TEMP = IWonTask->Get_OBJ_TEMP();
-						
-						INT16 MT = MEASURED_TEMP - IWonTask->MeasredTemp;
-						if(MT<0) MT = IWonTask->MeasredTemp - MEASURED_TEMP;
 
+						INT16 MT = DIST(MEASURED_TEMP, IWonTask->MeasredTemp);
 						if (IWonTask->MeasredCount1 > 0 && MT > 3)
 						{
 							TEMP_AVG->Init();
@@ -668,6 +659,11 @@ int main(void)
 									//IWonFunc->ObjTempDisp(AMB);	
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 									#else
+									if(IWonTask->MeasredTemp>850 && IWonTask->Get_TPC_mV()<900)
+									{
+										MEASURED_TEMP = -120;
+										IWonTask->MeasredTemp = MEASURED_TEMP;
+									}
 									IWonFunc->ObjTempDisp(IWonTask->MeasredTemp);	
 									#endif									
 								}

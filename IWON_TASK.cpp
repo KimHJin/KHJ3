@@ -406,6 +406,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
+		// VreftpcmV = 500; // HI 로 표시되는 이유가...
 
 		// V0 는 써미스터에 걸리는 전압
 		// R0 는 써미스터와 병렬로 연결된 저항과 병렬 합계 저항 값

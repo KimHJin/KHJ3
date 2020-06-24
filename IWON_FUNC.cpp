@@ -302,20 +302,14 @@ VOID IWON_TEMP_FUNC::TempLogDataTask(VOID)
 VOID IWON_TEMP_FUNC::BuzzerStateTask(VOID)
 {
 	buzzerState_p ^= 1;
-
 	BuzzerCMD(buzzerState_p);
 }
 
 VOID IWON_TEMP_FUNC::MeasureModeTask(VOID)
 {
 	measureMode_p ^= 1;
-
-	measureModeSet(measureMode_p);
-
-	if (measureMode_p)
-		DisplayRGB(BLUE);
-	else
-		DisplayRGB(GREEN);
+	measureModeSet(measureMode_p==1);
+	DisplayRGB(measureMode_p==1?GREEN:BLUE);	// 인체 | 사물
 }
 
 INT8 IWON_TEMP_FUNC::TempUnitTask(BOOL inv)
@@ -378,16 +372,13 @@ VOID IWON_TEMP_FUNC::CaliDone(IWON_TEMP_TASK *IWonTask)
 
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(UnitCalc(__EEPROM->memTempData[memNumber_p - 1], tempUnit_p));
-	measureModeSet(measureMode_p);
+	measureModeSet(measureMode_p==1);
 	BuzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
 
 	LCD->X8 = 1; // Display "LOG"
 
-	if (measureMode_p)
-		DisplayRGB(BLUE);
-	else
-		DisplayRGB(GREEN);	
+	DisplayRGB(measureMode_p==1?GREEN:BLUE);	// 인체 | 사물
 }
 
 VOID IWON_TEMP_FUNC::SpecialMode(IWON_TEMP_TASK *IWonTask)
@@ -490,7 +481,7 @@ VOID IWON_TEMP_FUNC::SaveTemp(INT16 temp)
 VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 {
 	Beep();								
-	DisplayRGB(GREEN);
+	DisplayRGB(BLUE);	// 버전 4.2 부터 사물결과 BLUE 로 한다.
 	
 	if(temp < 0) // 사물 온도 모드에서 0도 미만
 	{
@@ -501,7 +492,7 @@ VOID IWON_TEMP_FUNC::ObjTempDisp(INT16 temp)
 	{
 		DisplayHIGH();
 	}
-	else
+	else	
 	{
 		TempValueDisplay(UnitCalc(temp, tempUnit_p));
 	
@@ -524,7 +515,7 @@ VOID IWON_TEMP_FUNC::BdyTempDisp(INT16 temp, BOOL IsAutoCalCompleted)
 	}
 	else if (temp >= 334 && temp <= 370)
 	{ // NORMAL (정상)
-		DisplayRGB(BLUE);
+		DisplayRGB(GREEN);	// 버전 4.2 부터 인체모드 결과 정상 체온 GREEN 으로 한다.
 		TempValueDisplay(UnitCalc(temp, tempUnit_p)); // temp Display
 		if(IsAutoCalCompleted) BeepMode(NORMAL);
 	}

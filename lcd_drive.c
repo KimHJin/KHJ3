@@ -390,7 +390,7 @@ VOID LCD_Display_init(IWON_TEMP_FUNC *IWonFunc)
 	
 	memNumberDisplay(memNumber_p);
 	memTempDataDisplay(IWonFunc->UnitCalc(memTemp_p(memNumber_p - 1), tempUnit_p));
-	measureModeSet(measureMode_p);
+	measureModeSet(measureMode_p==1);
 	IWonFunc->BuzzerCMD(buzzerState_p);
 	tempUnitSet(tempUnit_p);
 
