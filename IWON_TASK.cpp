@@ -310,25 +310,22 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		Koffset = -0.62;
 		tambx = 18.0f;
 #else
-		//n = 1.760f;
-		//Koffset = -0.62;
-		//tambx = 13.5f;
-
 		n = 1.725f;
 		Koffset = -0.62;
-		tambx = 18.0f;
+		tambx = 14.4f;
 #endif
 		
 		// AMB_REF = 244;
 		ta = (Tamb - (float)AMB_REF/10.f) * tambx;
+		// tb = (Tamb - (float)AMB_REF/10.f) * tambx;
 	}
 
 	if(caliFlag>1)
 	{
-#ifdef NEWCALMODE
-		float x = 0.0015f * (float)(caliFlag/2.0f);
-#else
 		float x;
+#ifdef NEWCALMODE
+		x = 0.0015f * (float)(caliFlag/2.0f);
+#else
 		if(SENSOR_TYPE==1)	// 독일센서
 		{
 			x = 0.0015f * (float)(caliFlag/2.0f);
