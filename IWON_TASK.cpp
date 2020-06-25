@@ -77,7 +77,7 @@ VOID IWON_TEMP_TASK::Init(VOID)
 	Init_ADC();
 
 	powerDown_msec = 0;
-    lowBattery_Count = 0;
+    lowBATTimerCount = 0;
 
 	medicalTestMode = 0;
 	medicalTestTimerCount = 0;
@@ -93,14 +93,18 @@ VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 		NTC_MIN = -30;
 		NTC_MAX = 100;
 		NTC_STEP = 5;	// 간격이 5도 단위
-		AMB_X = 13.0f;	// 독일센서 A 로 테스트 함 (드라이기로 40도 넘어까지, 식히면서 30도대, 20도대, 냉장고 이용 18도 이하)
+
+		if(AutoCaliMode==1)	// 33도 / 60도 2단계 (사물온도계에 유리하다)
+			NTC_AMB_X = 230;
+		else				// 33도 5단계 (체온계에 유리하다)
+			NTC_AMB_X = 130;	// 13.0f, 독일센서 A 로 테스트 함 (드라이기로 40도 넘어까지, 식히면서 30도대, 20도대, 냉장고 이용 18도 이하)		
 	}
 	else
 	{
 		NTC_MIN = -40;
 		NTC_MAX = 125;
 		NTC_STEP = 1;	// 간격이 1도 단위
-		AMB_X = 0.f;
+		NTC_AMB_X = 0;
 	}	
 }
 
@@ -303,7 +307,7 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		// B : 1759
 		// C : 1751
 		// D : 1761
-		// AMB_X = 18.5f;
+		// NTC_AMB_X = 185;	// 18.5f
 
 		n = 1.725f;
 		Koffset = -0.62;
@@ -314,9 +318,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	if(caliFlag>1)
 	{
 		float x;
-#ifdef NEWCALMODE
-		x = 0.0015f * (float)(caliFlag/2.0f);
-#else
 		if(SENSOR_TYPE==1)	// 독일센서
 		{
 			x = 0.0015f * (float)(caliFlag/2.0f);
@@ -325,7 +326,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		{
 			x = 0.002f * (float)(caliFlag/2.0f);
 		}		
-#endif
 		if(caliFlag%2==0)
 		{
 			// 짝수 : 올라가는 방향
@@ -360,13 +360,13 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float objtemp;
 	if(SENSOR_TYPE==1 && AMB_TEMP > AMB_REF)
 	{
-		ta = (Tamb - (float)AMB_REF/10.f) * AMB_X;
+		ta = (Tamb - (float)AMB_REF/10.f) * ((float)NTC_AMB_X/10.0f);
 		objtemp = pow( ( constant * V_tp + ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
 	}
 	else
 	if(SENSOR_TYPE==1 && AMB_TEMP < AMB_REF)
 	{
-		ta = ((float)AMB_REF/10.f - Tamb) * AMB_X;
+		ta = ((float)AMB_REF/10.f - Tamb) * ((float)NTC_AMB_X/10.0f);
 		objtemp = pow( ( constant * V_tp - ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
 	}
 	else
@@ -691,21 +691,21 @@ VOID IWON_TEMP_TASK::ClearPowerDown(VOID)
 
 VOID IWON_TEMP_TASK::LowBatteryDisp(VOID)
 {
-  lowBattery_Count++;
+  lowBATTimerCount++;
   
-  if(lowBattery_Count < 500)
+  if(lowBATTimerCount < 500)
   {
 	LCD->X5 = 1;
 	
   }
   
-  else if(lowBattery_Count < 1000)
+  else if(lowBATTimerCount < 1000)
   {
 	LCD->X5 = 0;
   }
   
   else 
-	lowBattery_Count = 0;
+	lowBATTimerCount = 0;
   
 }
 

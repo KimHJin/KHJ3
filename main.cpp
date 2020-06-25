@@ -74,8 +74,8 @@ void keyScan()
 		{
 			IWonFunc->Beep();
 #ifdef MYTEST
-			IWonTask->tambx -= 0.1f;
-			IWonFunc->TempValueDisplay((INT16)(IWonTask->tambx*10.f), false);
+			IWonTask->NTC_AMB_X -= 1;
+			IWonFunc->TempValueDisplay(IWonTask->NTC_AMB_X, false);
 #else
 			IWonFunc->TempLogDataTask(); // memory Data
 #endif			
@@ -119,8 +119,8 @@ void keyScan()
 		if (delayCount < 100) // SHORT_PRESS
 		{
 #ifdef MYTEST
-			IWonTask->tambx += 0.1f;
-			IWonFunc->TempValueDisplay((INT16)(IWonTask->tambx*10.f), false);
+			IWonTask->NTC_AMB_X += 1;
+			IWonFunc->TempValueDisplay(IWonTask->NTC_AMB_X, false);
 #else
 			IWonFunc->BuzzerStateTask(); // buzzer On / Off
 #endif			
@@ -163,6 +163,8 @@ int main(void)
 	IWonTask = new IWON_TEMP_TASK(10); 		// 온도를 10개 합산해서 평균낸다.
 	IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
 	IWonTask->Set_AdjValue(caliData_p); 	// 수동 보정값 읽어서 적용
+
+	IWonTask->AutoCaliMode = AutoCaliMode_p;
 
 	// HW 버전이 의료용인지 확인하여 변수를 초기화 한다.
 	if(IS_MEDICAL_VER)
@@ -231,7 +233,7 @@ int main(void)
 	
 
 	// caliVer_p 이 DEFINED_CALI_VER 값보다 작으면 무조건 오토 캘리브레이션을 가종 시킨다.
-	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=DEFINED_CALI_VER);
+	BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0) && (AutoCaliVer_p>=((AutoCaliMode_p==1)?DEFINED_CALI_VER_1:DEFINED_CALI_VER_0));
 	// BOOL IsAutoCalCompleted = (AutoCaliFlag_p!=0);
 	if( IsAutoCalCompleted ) // AUTO CAL 완료인가?
 	{
@@ -394,7 +396,7 @@ int main(void)
 					{
 						// 오토 캘리브레이션 모드에서 LEFT+RIGHT 버튼을 5초 이상 누르고 있으면 오토캘리브레이션 모드를 빠져나오게 된다.
 						AutoCaliFlag_p = 1;
-						AutoCaliVer_p = DEFINED_CALI_VER;
+						AutoCaliVer_p = DEFINED_CALI_VER_0;
 
 						// 이때 오토옵셋값 하고 수동보정값을 0 으로 저장된다.
 						offSetVolt_p = 0;

@@ -70,6 +70,24 @@ BOOL IWON_TEMP_CAL::IS_SUCCESS(INT32 target, INT32 measered)
 	return (DIST(target,measered)<=AutoCalTorn);
 }
 
+VOID IWON_TEMP_CAL::CHK_AutoCaliMode(IWON_TEMP_TASK *IWonTask)
+{
+	if(DIST(AutoCalTemp2_1, IWonTask->MeasredTemp)<=50)
+	{
+		IWonTask->AutoCaliMode = 1;
+		AutoCaliMode_p = IWonTask->AutoCaliMode;
+		IWonTask->SetSensorType(IWonTask->SENSOR_TYPE);
+
+	}
+	else
+	{
+		IWonTask->AutoCaliMode = 0;
+		AutoCaliMode_p = IWonTask->AutoCaliMode;
+		IWonTask->SetSensorType(IWonTask->SENSOR_TYPE);
+	}
+}
+
+
 VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 {
 	switch(AutoCalStep)
@@ -145,9 +163,13 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						IWonTask->Task(AutoCalFlag);
 						IWonFunc->Delay_ms(DEFINED_ADC_DELAY);
 					}
+
+					CHK_AutoCaliMode(IWonTask);
 				}
 
-				INT32 target = AutoCalTemp2;				// 사물모드
+				INT32 target = AutoCalTemp2_0;				// 사물모드
+				if(IWonTask->AutoCaliMode==1) target = AutoCalTemp2_1;
+				
 				if(AutoCalStep==3) target = AutoCalTemp3;	// 체온모드
 				if(AutoCalStep==4) target = AutoCalTemp4;	// 체온모드
 				if(AutoCalStep==5) target = AutoCalTemp5;	// 체온모드
@@ -157,52 +179,63 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 				if(IS_SUCCESS(target, IWonTask->MeasredTemp))
 				{
 					SUCCESS(IWonFunc);
-					
-#ifdef NEWCALMODE
-					if(AutoCalStep==3)
+
+					if(IWonTask->AutoCaliMode==1)
 					{
-						// 인체모드로 변경해야 한다.
-						IWonFunc->MeasureModeTask();
+						if(AutoCalStep==3)
+						{
+							// 인체모드로 변경해야 한다.
+							IWonFunc->MeasureModeTask();
 
-						// 오토 캘리브레이션 완료 저장
-						AutoCaliFlag_p = AutoCalFlag;
-						AutoCaliVer_p = DEFINED_CALI_VER;
+							// 오토 캘리브레이션 완료 저장
+							AutoCaliFlag_p = AutoCalFlag;
 
-						IWonFunc->DisplayRGB(GREEN);
-						IWonFunc->OkDisp();
-						IWonFunc->Delay_ms(500);
-						IWonFunc->Beep();
-						IWonFunc->Delay_ms(100);	   
-						IWonFunc->Beep();
+							if(IWonTask->AutoCaliMode==1) 
+								AutoCaliVer_p = DEFINED_CALI_VER_1;
+							else
+								AutoCaliVer_p = DEFINED_CALI_VER_0;
 
-						memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
+							IWonFunc->DisplayRGB(GREEN);
+							IWonFunc->OkDisp();
+							IWonFunc->Delay_ms(500);
+							IWonFunc->Beep();
+							IWonFunc->Delay_ms(100);	   
+							IWonFunc->Beep();
 
-						AutoCalStep = 0;
+							memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
+
+							AutoCalStep = 0;
+						}
 					}
-#else
-					if(AutoCalStep==3)
-					{
-						// 인체모드로 변경해야 한다.
-						IWonFunc->MeasureModeTask();
+					else
+					{					
+						if(AutoCalStep==3)
+						{
+							// 인체모드로 변경해야 한다.
+							IWonFunc->MeasureModeTask();
+						}
+						if(AutoCalStep==6)
+						{
+							// 오토 캘리브레이션 완료 저장
+							AutoCaliFlag_p = AutoCalFlag;
+
+							if(IWonTask->AutoCaliMode==1) 
+								AutoCaliVer_p = DEFINED_CALI_VER_1;
+							else
+								AutoCaliVer_p = DEFINED_CALI_VER_0;
+
+							IWonFunc->DisplayRGB(GREEN);
+							IWonFunc->OkDisp();
+							IWonFunc->Delay_ms(500);
+							IWonFunc->Beep();
+							IWonFunc->Delay_ms(100);	   
+							IWonFunc->Beep();
+
+							memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
+
+							AutoCalStep = 0;
+						}
 					}
-					if(AutoCalStep==6)
-					{
-						// 오토 캘리브레이션 완료 저장
-						AutoCaliFlag_p = AutoCalFlag;
-						AutoCaliVer_p = DEFINED_CALI_VER;
-
-						IWonFunc->DisplayRGB(GREEN);
-						IWonFunc->OkDisp();
-						IWonFunc->Delay_ms(500);
-						IWonFunc->Beep();
-						IWonFunc->Delay_ms(100);	   
-						IWonFunc->Beep();
-
-						memTempDataDisplay((AutoCalStep-1) * 100 + AutoCalFlag);
-
-						AutoCalStep = 0;
-					}
-#endif
 				}
 				else 
 				{

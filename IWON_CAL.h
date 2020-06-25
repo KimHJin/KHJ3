@@ -22,11 +22,8 @@
 // 오토 캘리브레이션 타겟 온도
 #define AutoCalTemp1 330	/* STEP 1 : 사물온도 33.0 도 = 인체 36.5 도 */
 
-#ifdef NEWCALMODE
-#define AutoCalTemp2 600	/* STEP 2 : 사물온도 60.0 도 */
-#else
-#define AutoCalTemp2 450	/* STEP 2 : 사물온도 45.0 도 */
-#endif
+#define AutoCalTemp2_0 450	/* STEP 2 : 사물온도 45.0 도 : AutoCaliMode:0 */
+#define AutoCalTemp2_1 600	/* STEP 2 : 사물온도 60.0 도 : AutoCaliMode:1 */
 
 #define AutoCalTemp3 375	/* STEP 3 : 인체온도 미열 37.1 ~ 38.0 */
 //#define AutoCalTemp3 363	/* STEP 3 : 인체온도 미열 - 개발용*/
@@ -55,6 +52,7 @@ public:
 
 	VOID AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc);
 	INT8 GET_AutoCalStep(VOID);
+	VOID CHK_AutoCaliMode(IWON_TEMP_TASK *IWonTask);
 
 	INT8 AutoCalStep;
 	INT8 AutoCalFlag;

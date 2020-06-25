@@ -21,7 +21,6 @@
 
 //#define MYTEST
 //#define JIG
-//#define NEWCALMODE
 #define DEFINED_JIG_TEST_INTEVAL 500
 
 // 펌웨어 버전의 : 10 이면 1.0 이다. 11 이면 1.1 이다.
@@ -42,14 +41,12 @@
 //           LED 램프 색상 조정
 //			 인체모드 : 녹색, 결과 : 정상 녹색, 미열 황색, 고열 적색, 에러 적색
 //           사물모드 : 청색, 결과 : 청색
-// 버전 4.3 : 센서 AMB 온도 테스트, AMB_X 13.0 
-#define DEFINED_FW_VER 43
+// 버전 4.3 : 센서 AMB 온도 테스트, NTC_AMB_X 130 = 13.0f 
+// 버전 4.4 : 캘리브레이션 모드 (0:5단계, 1:2단계,60도)
+#define DEFINED_FW_VER 44
 
-#ifdef NEWCALMODE
-#define DEFINED_CALI_VER 39
-#else
-#define DEFINED_CALI_VER 38
-#endif
+#define DEFINED_CALI_VER_1 39
+#define DEFINED_CALI_VER_0 38
 
 
 #define DEFINED_adcVREFValue 1224

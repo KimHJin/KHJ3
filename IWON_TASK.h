@@ -97,8 +97,9 @@ public:
 	INT8 NTC_MIN;
 	INT8 NTC_MAX;
 	INT8 NTC_STEP;
-
-	float AMB_X;	// 센서의 온도특성 관련 값 (센서 자체온도 특성에 따른 값)
+	INT16 NTC_AMB_X;	// 센서의 온도특성 관련 값 (센서 자체온도 특성에 따른 값)
+	
+	INT8 AutoCaliMode;
 
 private:
 	VOID Init(VOID);
@@ -172,7 +173,7 @@ private:
 	INT16 ADJ_VALUE;
 	INT32 OFS_VALUE;
 
-	int lowBattery_Count;	
+	INT16 lowBATTimerCount;
 };
 
 #endif
