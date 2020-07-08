@@ -284,114 +284,43 @@ INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 
 INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
-	float A_v = 454.54f;	// OPAMP 증폭도
-	
-	//AMB_TEMP = 344;
-	//TPCmV = 1052;
-
+	float Tref = 25.0f;
 	float Tamb = (float)AMB_TEMP / 10.f;
 	
-	float k = 0.00066f;
-	float n = 1.93f;
-	float Koffset = -0.57f;
-	float Yoffset = 300.f;
-	float ta = 0.0f;	
-	if(SENSOR_TYPE==1)	// 독일센서
-	{
-		A_v = 666.66f;	// OPAMP 증폭도
-		Yoffset = 300.f;
-		k = 0.00091f;
-
-		// n = 1.725f;
-		// 독일센서 n 값.
-		// B : 1759
-		// C : 1751
-		// D : 1761
-		// NTC_AMB_X = 185;	// 18.5f
-
-		n = 1.725f;
-		Koffset = -0.62;
-	}
+	float k = 0.004313f;
+	float Vshift = -0.54f;
+	float Xoffset = -1.38f;
+	float Yoffset = 120.f;
+	float Vambx = 0.14f;
 	
-
-
+	float d = 4.0f - 2.65f;
 	if(caliFlag>1)
 	{
-		float x;
-		if(SENSOR_TYPE==1)	// 독일센서
-		{
-			x = 0.0015f * (float)(caliFlag/2.0f);
-		}
-		else
-		{
-			x = 0.002f * (float)(caliFlag/2.0f);
-		}		
+		float n = 0.001f * (float)(caliFlag/2.0f);
 		if(caliFlag%2==0)
 		{
 			// 짝수 : 올라가는 방향
-			n -= x;
+			d -= n;
 		}
 		else
 		{
 			// 홀수 : 내려가는 방향
-			n += x;
+			d += n;
 		}				
 	}
 
-
-	//tempValueDisplay((INT16)(n*1000.0f), false);
-	//while(1);
-	
 	/*						
-	float ambtemp = (float)AMB_TEMP / 10.f;
-
-	const float reftemp = 25.f;		
 	float comp = k * (pow(ambtemp, 4.f - delta) - pow(reftemp, 4.f - delta)); // equivalent thermopile V for amb temp			
 	float v2 = (float)TPCmV / 1000.f + comp - Koffset;			
 	float objtemp = pow((v2 + k * pow(ambtemp, 4.f - delta)) / k, 1.f / (4.f - delta)); // object temp			
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
 	*/
 
+	float Vcomp = (k * ((pow(Tamb, d) - pow(Tref, d)) * Vambx)) - Vshift + Xoffset;
+	float Vtpc = (float)TPCmV / 1000.f;
+	float Tobj = (pow((((Vtpc + Vcomp) + k * pow(Tamb, d)) / k), 1.0f/d) * 10.f) - Yoffset;
 
-
-	float constant = 1000.f / (A_v * k);
-	float V_tp =  (float)TPCmV / 1000.f + Koffset;
-
-	float objtemp;
-	if(SENSOR_TYPE==1 && AMB_TEMP > AMB_REF)
-	{
-		ta = (Tamb - (float)AMB_REF/10.f) * ((float)NTC_AMB_X/10.0f);
-		objtemp = pow( ( constant * V_tp + ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
-	}
-	else
-	if(SENSOR_TYPE==1 && AMB_TEMP < AMB_REF)
-	{
-		ta = ((float)AMB_REF/10.f - Tamb) * ((float)NTC_AMB_X/10.0f);
-		objtemp = pow( ( constant * V_tp - ta + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
-	}
-	else
-	{
-		objtemp = pow( ( constant * V_tp + pow( Tamb, n ) ), 1.f / n ) * 10.f - Yoffset;	
-	}
-
-	INT16 T_OBJ = (INT16)objtemp;	
-
-	INT16 AMBADJ = 0;
-	if(SENSOR_TYPE==0 && AMB_TEMP > AMB_REF)
-	{
-		AMBADJ = AMB_TEMP - AMB_REF;
-		T_OBJ = AddTSUMB(T_OBJ + (INT16)((float)AMBADJ / n));
-	}
-	else
-	if(SENSOR_TYPE==0 && AMB_TEMP < AMB_REF)
-	{
-		AMBADJ = AMB_REF - AMB_TEMP;
-		T_OBJ = AddTSUMB(T_OBJ - (INT16)((float)AMBADJ / n));
-	}
-	else
-	{
-		T_OBJ = AddTSUMB(T_OBJ);
-	}
+	INT16 T_OBJ = AddTSUMB((INT16)Tobj);
 
 	return T_OBJ;
 }
