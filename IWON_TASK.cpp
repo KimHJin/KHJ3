@@ -297,12 +297,12 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 
 	if(SENSOR_TYPE==2)	// 독일센서2
 	{
-		k = 0.0045f;
+		k = 0.004313f;
 		Vshift = -0.54f;
 		Xoffset = -1.33f;
 		Yoffset = 120.f;
 		Vambx = 0.14f;
-		d = 4.0f - 2.594f;
+		d = 4.0f - 2.575f;
 	}
 
 	if(caliFlag>1)

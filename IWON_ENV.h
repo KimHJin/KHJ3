@@ -44,7 +44,7 @@
 // 버전 4.3 : 센서 AMB 온도 테스트, NTC_AMB_X 130 = 13.0f 
 // 버전 4.4 : 캘리브레이션 모드 (0:5단계, 1:2단계,60도)
 // 버전 4.5 : 새로운 온도공식 적용 (의료용, 독일센서)
-#define DEFINED_FW_VER 46
+#define DEFINED_FW_VER 47
 
 // VER 4.4
 //#define DEFINED_CALI_VER_1 39
