@@ -287,13 +287,24 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	float Tref = 25.0f;
 	float Tamb = (float)AMB_TEMP / 10.f;
 	
+	// 독일센서 (의료용) 기준
 	float k = 0.004313f;
 	float Vshift = -0.54f;
 	float Xoffset = -1.38f;
 	float Yoffset = 120.f;
 	float Vambx = 0.14f;
-	
 	float d = 4.0f - 2.65f;
+
+	if(SENSOR_TYPE==2)	// 독일센서2
+	{
+		k = 0.0045f;
+		Vshift = -0.54f;
+		Xoffset = -1.33f;
+		Yoffset = 120.f;
+		Vambx = 0.14f;
+		d = 4.0f - 2.594f;
+	}
+
 	if(caliFlag>1)
 	{
 		float n = 0.001f * (float)(caliFlag/2.0f);

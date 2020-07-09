@@ -170,7 +170,8 @@ int main(void)
 	if(IS_MEDICAL_VER)
 	{
 		IWonTask->HWVersion = 0x01; // 01: 의료용
-		IWonTask->SetSensorType(1);	// 1: 독일센서
+		//IWonTask->SetSensorType(1);	// 1: 독일센서
+		IWonTask->SetSensorType(2);	// 2: 독일센서2
 	}
 
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
