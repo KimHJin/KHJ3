@@ -49,7 +49,7 @@ protected:
 	// 입력 : T_OBJ 는 측정된 사물 온도를 10 배수한 정수이다.
 	// 출력 : -110 = LO
 	//       -120 = HI
-	INT8 GetTBLValue(INT16 T_OBJ);
+	INT16 GetTBLValue(INT16 T_OBJ);
 
 	// 평균값을 구하는 링 메모리 관련 함수
 	INT16 GetTSUMB();

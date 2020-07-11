@@ -417,7 +417,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			}
 
 			// 사물 to 인체 테이블 사용
-			INT8 TBL = GetTBLValue(OBJ_TEMP);
+			INT16 TBL = GetTBLValue(OBJ_TEMP);
 			if (TBL == -110)
 			{
 				BDY_TEMP = -110; // LOW
@@ -429,7 +429,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			}
 			else
 			{
-				BDY_TEMP = OBJ_TEMP + (INT16)TBL;				
+				BDY_TEMP = ((OBJ_TEMP*100) + (INT16)TBL) / 100;
 			}
 		}
 

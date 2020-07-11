@@ -44,15 +44,16 @@
 // 버전 4.3 : 센서 AMB 온도 테스트
 // 버전 4.4 : 캘리브레이션 모드 (0:5단계, 1:2단계,60도)
 // 버전 4.9 : 새로운 온도공식 적용 (의료용, 독일센서2,3)
-#define DEFINED_FW_VER 49
+// 버전 5.0 : 새로운 체온 변환공식 적용 (의료용, 독일센서2,3)
+#define DEFINED_FW_VER 50
 
 // VER 4.4
 //#define DEFINED_CALI_VER_1 39
 //#define DEFINED_CALI_VER_0 38
 
 // From VER 4.9
-#define DEFINED_CALI_VER_1 43
-#define DEFINED_CALI_VER_0 43
+#define DEFINED_CALI_VER_1 44
+#define DEFINED_CALI_VER_0 44
 
 
 #define DEFINED_adcVREFValue 1224
@@ -78,7 +79,7 @@
 
 // 사물기준 (체온 계산용)
 #define TB_MIN 281
-#define TB_MAX 430
+#define TB_MAX 422
 
 //#define ADC_CONVERT_RATIO	806		/* (3300mV / 0xFFF) x 1000 */
 #define ADC_CONVERT_RATIO 804 /* (3287mV ~ 3300mV / 0xFFF) x 1000 */
