@@ -290,7 +290,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	// 독일센서 (의료용) 기준
 	float k = 0.004313f;
 	float Vshift = -0.54f;
-	float Xoffset = -1.38f;
 	float Yoffset = 120.f;
 	float Vambx = 0.14f;
 	float d = 4.0f - 2.65f;
@@ -299,7 +298,6 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	{
 		k = 0.004313f;
 		Vshift = -0.54f;
-		Xoffset = -1.33f;
 		Yoffset = 120.f;
 		Vambx = 0.14f;
 		d = 4.0f - 2.575f;
@@ -327,7 +325,7 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	INT16 T_OBJ = (INT16)(objtemp * 10.f);
 	*/
 
-	float Vcomp = (k * ((pow(Tamb, d) - pow(Tref, d)) * Vambx)) - Vshift + Xoffset;
+	float Vcomp = (k * ((pow(Tamb, d) - pow(Tref, d)) * Vambx)) - Vshift;
 	float Vtpc = (float)TPCmV / 1000.f;
 	float Tobj = (pow((((Vtpc + Vcomp) + k * pow(Tamb, d)) / k), 1.0f/d) * 10.f) - Yoffset;
 
@@ -367,7 +365,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + (ADJ_VALUE + OFS_VALUE) + (ADJ_VALUE + OFS_VALUE);	// 보정값 1마다 2mV 보정한다.
 		
 		// VreftpcmV = 500; // HI 로 표시되는 이유가...
 
