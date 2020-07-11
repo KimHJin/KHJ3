@@ -429,7 +429,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 			}
 			else
 			{
-				BDY_TEMP = ((OBJ_TEMP*100) + (INT16)TBL) / 100;
+				BDY_TEMP = (INT16)(((INT32)OBJ_TEMP * 100 + (INT32)TBL) / 100);
 			}
 		}
 
