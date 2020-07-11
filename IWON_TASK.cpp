@@ -289,18 +289,19 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 	
 	// 독일센서 (의료용) 기준
 	float k = 0.004313f;
-	float Vshift = -0.54f;
-	float Yoffset = 120.f;
-	float Vambx = 0.14f;
-	float d = 4.0f - 2.65f;
+	float Vshift = 0.45f;
+	float Yoffset = 200.f;
+	float Vambx = 0.28f - ((Tamb - Tref)/200.f);
+	float d = 4.0f - 2.574f;
 
 	if(SENSOR_TYPE==2)	// 독일센서2
 	{
 		k = 0.004313f;
-		Vshift = -0.54f;
-		Yoffset = 120.f;
-		Vambx = 0.14f;
-		d = 4.0f - 2.575f;
+		Vshift = 0.45f;
+		Yoffset = 200.f;
+		Vambx = 0.26f - ((Tamb - Tref)/400.f);
+		Vambx = 0.0f;
+		d = 4.0f - 2.576f;
 	}
 
 	if(caliFlag>1)
@@ -309,12 +310,12 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		if(caliFlag%2==0)
 		{
 			// 짝수 : 올라가는 방향
-			d -= n;
+			d += n;
 		}
 		else
 		{
 			// 홀수 : 내려가는 방향
-			d += n;
+			d -= n;
 		}				
 	}
 
@@ -365,7 +366,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + (ADJ_VALUE + OFS_VALUE) + (ADJ_VALUE + OFS_VALUE);	// 보정값 1마다 2mV 보정한다.
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + (OFS_VALUE * 2);	// 오토캘 1 마다 2mV 보정
 		
 		// VreftpcmV = 500; // HI 로 표시되는 이유가...
 
@@ -404,7 +405,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 				INT16 CC = DIST(BB, OBJ_TEMP);
 				//if (CC > 35)	// 센서 악조건 속에서 온도차가 너무 변하는 경우 발생 (2020.06.15)
 				//if (CC > 15)
-				if (CC > 10) // 오토캘 주변온도 편차를 TSUMB 계산에 넣었기 때문에 오히려 10로 내려서 정확성 향상 (2020.06.17), TODO : 충분한 테스트 필요 (테스트됨)
+				if (CC > 3) // 오토캘 주변온도 편차를 TSUMB 계산에 넣었기 때문에 오히려 10로 내려서 정확성 향상 (2020.06.17), TODO : 충분한 테스트 필요 (테스트됨)
 				{
 					ClearTSUMB();
 					TSUMBerrCount++;

@@ -43,16 +43,16 @@
 //           사물모드 : 청색, 결과 : 청색
 // 버전 4.3 : 센서 AMB 온도 테스트, NTC_AMB_X 130 = 13.0f 
 // 버전 4.4 : 캘리브레이션 모드 (0:5단계, 1:2단계,60도)
-// 버전 4.5 : 새로운 온도공식 적용 (의료용, 독일센서)
-#define DEFINED_FW_VER 47
+// 버전 4.9 : 새로운 온도공식 적용 (의료용, 독일센서2,3)
+#define DEFINED_FW_VER 49
 
 // VER 4.4
 //#define DEFINED_CALI_VER_1 39
 //#define DEFINED_CALI_VER_0 38
 
-// From VER 4.5
-#define DEFINED_CALI_VER_1 41
-#define DEFINED_CALI_VER_0 41
+// From VER 4.9
+#define DEFINED_CALI_VER_1 43
+#define DEFINED_CALI_VER_0 43
 
 
 #define DEFINED_adcVREFValue 1224

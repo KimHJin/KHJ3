@@ -65,7 +65,7 @@ BOOL IWON_TEMP_CAL::IS_SUCCESS(INT32 target, INT32 measered)
 {
 	if(AutoCalStep==2)
 	{
-		return (DIST(target,measered)<=2);
+		return (DIST(target,measered)<2);
 	}
 	return (DIST(target,measered)<=AutoCalTorn);
 }
@@ -267,11 +267,6 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						}
 						if(dist!=0)
 						{
-							// 온도차가 1도 이상 차이가 나면
-							if(dist>=20) dist += 10;
-							else
-							if(dist>=10) dist += 5;
-
 							dist /= 2;
 							dist *= 2;
 							if(dist<2) dist = 2;
