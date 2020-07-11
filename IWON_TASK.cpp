@@ -93,18 +93,12 @@ VOID IWON_TEMP_TASK::SetSensorType(INT8 TYPE)
 		NTC_MIN = -30;
 		NTC_MAX = 100;
 		NTC_STEP = 5;	// 간격이 5도 단위
-
-		if(AutoCaliMode==1)	// 33도 / 60도 2단계 (사물온도계에 유리하다)
-			NTC_AMB_X = 230;
-		else				// 33도 5단계 (체온계에 유리하다)
-			NTC_AMB_X = 130;	// 13.0f, 독일센서 A 로 테스트 함 (드라이기로 40도 넘어까지, 식히면서 30도대, 20도대, 냉장고 이용 18도 이하)		
 	}
 	else
 	{
 		NTC_MIN = -40;
 		NTC_MAX = 125;
 		NTC_STEP = 1;	// 간격이 1도 단위
-		NTC_AMB_X = 0;
 	}	
 }
 
@@ -284,24 +278,34 @@ INT32 IWON_TEMP_TASK::CALC_TPC_mV(INT16 ObjTemp, INT8 caliFlag)
 
 INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 {
-	float Tref = 25.0f;
+	//float Tref = 25.0f;
+	float Tref = (float)AMB_REF / 10.f;
 	float Tamb = (float)AMB_TEMP / 10.f;
 	
 	// 독일센서 (의료용) 기준
 	float k = 0.004313f;
 	float Vshift = 0.45f;
 	float Yoffset = 200.f;
-	float Vambx = 0.28f - ((Tamb - Tref)/200.f);
-	float d = 4.0f - 2.574f;
+	float Vambx = 0.283f;
+	float d = 4.0f - 2.576f;
+	if(Tamb>Tref) {
+		Vambx = Vambx - ((Tamb - Tref)/400.f);
+	} else {
+		Vambx = Vambx - ((Tref - Tamb)/400.f);
+	}
 
 	if(SENSOR_TYPE==2)	// 독일센서2
 	{
 		k = 0.004313f;
 		Vshift = 0.45f;
 		Yoffset = 200.f;
-		Vambx = 0.26f - ((Tamb - Tref)/400.f);
-		Vambx = 0.0f;
+		Vambx = 0.295f;
 		d = 4.0f - 2.576f;
+		if(Tamb>Tref) {
+			Vambx = Vambx - ((Tamb - Tref)/990.f);
+		} else {
+			Vambx = Vambx - ((Tref - Tamb)/1000.f);
+		}
 	}
 
 	if(caliFlag>1)
@@ -310,12 +314,12 @@ INT16 IWON_TEMP_TASK::CALC_OBJTEMP(INT32 TPCmV, INT8 caliFlag)
 		if(caliFlag%2==0)
 		{
 			// 짝수 : 올라가는 방향
-			d += n;
+			d -= n;
 		}
 		else
 		{
 			// 홀수 : 내려가는 방향
-			d -= n;
+			d += n;
 		}				
 	}
 
@@ -366,7 +370,7 @@ BOOL IWON_TEMP_TASK::Task(UINT MGInterval, UINT TTInterval, INT8 caliFlag)
 		VrefvddmV = (INT32)(((INT32)Vrefvdd * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefbatmV = (INT32)(((INT32)Vrefbat * (INT32)ADC_CONVERT_RATIO) / 1000);
 		VrefntcmV = (INT32)(((INT32)Vrefntc * (INT32)ADC_CONVERT_RATIO) / 1000);
-		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + (OFS_VALUE * 2);	// 오토캘 1 마다 2mV 보정
+		VreftpcmV = (INT32)(((INT32)Vreftpc * (INT32)ADC_CONVERT_RATIO) / 1000) + ADJ_VALUE + OFS_VALUE;
 		
 		// VreftpcmV = 500; // HI 로 표시되는 이유가...
 
@@ -634,15 +638,12 @@ VOID IWON_TEMP_TASK::LowBatteryDisp(VOID)
   
   if(lowBATTimerCount < 500)
   {
-	LCD->X5 = 1;
-	
-  }
-  
+	LCD->X5 = 1;	
+  }  
   else if(lowBATTimerCount < 1000)
   {
 	LCD->X5 = 0;
-  }
-  
+  }  
   else 
 	lowBATTimerCount = 0;
   

@@ -97,7 +97,6 @@ public:
 	INT8 NTC_MIN;
 	INT8 NTC_MAX;
 	INT8 NTC_STEP;
-	INT16 NTC_AMB_X;	// 센서의 온도특성 관련 값 (센서 자체온도 특성에 따른 값)
 	
 	INT8 AutoCaliMode;
 

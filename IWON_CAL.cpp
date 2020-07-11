@@ -267,6 +267,12 @@ VOID IWON_TEMP_CAL::AUTOCAL(IWON_TEMP_TASK *IWonTask, IWON_TEMP_FUNC *IWonFunc)
 						}
 						if(dist!=0)
 						{
+							if(dist>15) dist *= 4;
+							else
+							if(dist>10) dist *= 3;
+							else
+							if(dist>5) dist *= 2;
+
 							dist /= 2;
 							dist *= 2;
 							if(dist<2) dist = 2;
