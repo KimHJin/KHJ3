@@ -27,7 +27,7 @@ INTERRUPT_HANDLER(TIM4_UPD_OVF_TRG_IRQHandler, 25)
 {
 	IWonTask->Time();
 	
-	if(IWonFunc->LowBatteryFlag==1)
+	if(IWonFunc->LowBatteryFlag)
 	    IWonTask->LowBatteryDisp();
 
 	//
@@ -73,7 +73,12 @@ void keyScan()
 		if (delayCount < 100) // SHORT_PRESS
 		{
 			IWonFunc->Beep();
+#ifdef MYTEST
+			IWonTask->NTC_AMB_X -= 1;
+			IWonFunc->TempValueDisplay(IWonTask->NTC_AMB_X, false);
+#else
 			IWonFunc->TempLogDataTask(); // memory Data
+#endif			
 		}
 		IWonFunc->Delay_ms(10);
 	}
@@ -113,7 +118,12 @@ void keyScan()
 
 		if (delayCount < 100) // SHORT_PRESS
 		{
+#ifdef MYTEST
+			IWonTask->NTC_AMB_X += 1;
+			IWonFunc->TempValueDisplay(IWonTask->NTC_AMB_X, false);
+#else
 			IWonFunc->BuzzerStateTask(); // buzzer On / Off
+#endif			
 			IWonFunc->Beep();
 		}
 		IWonFunc->Delay_ms(10);
@@ -165,6 +175,21 @@ int main(void)
 	}
 
 	IWonTask->AMB_REF = ambRef_p;			// 자동 캘리브레이션 할 때 센서의 온도
+	if(IWonTask->AMB_REF<50 || IWonTask->AMB_REF>800)
+	{
+		if(IWonTask->SENSOR_TYPE==1)	// 독일센서
+		{
+			// 공식 산출시 24.4도 였다.
+			ambRef_p = 244;
+			IWonTask->AMB_REF = ambRef_p;
+		}
+		else
+		{
+			// 만약 없으면 생산이 대략 24.0 도에서 생산하고 있다.
+			ambRef_p = 240;
+			IWonTask->AMB_REF = ambRef_p;
+		}
+	}
 
 //	IWonFunc->TempValueDisplay(IWonTask->AMB_REF, false);
 //	IWonFunc->Delay_ms(3000);
@@ -321,28 +346,18 @@ int main(void)
 		LCD_Display_init(IWonFunc);
 		IWonFunc->TempValueDisplay(0);		
 
-
-		//IWonFunc->TempValueDisplay(IWonTask->BATmV/10, false);
-		//IWonFunc->Delay_ms(1000);
-
 		// 테스트 결과 1.1V 에서는 전원이 켜지지도 않음
 		if(IWonTask->BATmV/100 <= 20)
 			IWonFunc->LowBatteryDisplay_2v0();
-		else 
-		if(IWonTask->BATmV/100 < 22)
+		else if(IWonTask->BATmV/100 < 22)
 			IWonFunc->LowBatteryDisplay_2v2();
-		else 
-		if(IWonTask->BATmV/100 < 24)
+		else if(IWonTask->BATmV/100 < 24)
 			IWonFunc->LowBatteryDisplay_2v4();
-		else 
-			IWonFunc->LowBatteryDisplay_Off();
+		else IWonFunc->LowBatteryDisplay_Off();
 	}
 	else 
 	{
 		// 오토 캘리브레이션 동작으로 진입
-		ambRef_p = AMB;
-		IWonTask->AMB_REF = ambRef_p;
-
 		IWonCal = new IWON_TEMP_CAL();
 		IWonFunc->AutoCalDisp();		
 		IWonTask->Set_OfsValue(offSetVolt_p);	// 자동 보정값 읽어서 적용
